@@ -1,4 +1,4 @@
-export type Position = "Portero" | "Defensa" | "Medio" | "Delantero" | "Banca o Mister(feka)";
+export type Position = "Portero" | "Defensa" | "Medio" | "Delantero" | "Mister(Banca)" | "Rellena Botellas";
 
 export interface Player {
   id: number;
@@ -42,8 +42,10 @@ export const players: Player[] = [
   { id: 9, name: "Marcos Rivera", position: "Medio", number: 11, description: "Jueo de pies a la orden del día (solo viene con la novia).", avatar: "/images/Markitos.jpeg" },
   { id: 10, name: "Alberto Suárez", position: "Medio", number: 26, description: "Ni se quien es (no ha venido).", avatar: "/images/player-8.jpg" },
   { id: 11, name: "David Sastre", position: "Delantero", number: 88, description: "Ejemplo a bajos rasos de fernando llorente (está cansado antes de entrar).", avatar: "/images/Sastre.jpeg" },
-  { id: 12, name: "Mario García", position: "Banca o Mister(feka)", number: 21, description: "Ha jugado 2 partidos (tiene la rodilla de plastilina), en teoría mister.", avatar: "/images/player-8.jpg" },
+  { id: 12, name: "Mario García", position: "Mister(Banca)", number: 21, description: "Ha jugado 2 partidos (tiene la rodilla de plastilina), en teoría mister.", avatar: "/images/player-8.jpg" },
   { id: 13, name: "Rodrigo Casado", position: "Delantero", number: 33, description: "El presionador del equipo (no da pie con bola).", avatar: "/images/Roch.jpeg" },
+  { id: 14, name: "Fernando Gallego", position: "Rellena Botellas", number: 99, description: "No se metio al equipo porque le duele la rodilla (parece florentino) .", avatar: "/images/Fer.jpeg" },
+
 ];
 
 export const matches: Match[] = [
