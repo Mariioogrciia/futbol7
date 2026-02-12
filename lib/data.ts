@@ -11,13 +11,16 @@ export interface Player {
 
 export interface Match {
   id: number;
+  jornada: number;
   rival: string;
   date: string;
   time: string;
   location: string;
-  fieldType: string;
-  status: "Confirmado" | "Pendiente";
-  isNext?: boolean;
+  isHome: boolean;
+  result?: "victoria" | "derrota" | "empate";
+  goalsFor?: number;
+  goalsAgainst?: number;
+  status: "Jugado" | "Proximo" | "Pendiente";
 }
 
 export interface GalleryImage {
@@ -44,21 +47,35 @@ export const players: Player[] = [
 ];
 
 export const matches: Match[] = [
-  { id: 1, rival: "Deportivo Aluche", date: "15 Mar 2026", time: "20:30", location: "Campo Municipal Norte", fieldType: "Cesped artificial", status: "Confirmado", isNext: true },
-  { id: 2, rival: "CF Vallecas United", date: "22 Mar 2026", time: "21:00", location: "Polideportivo Sur", fieldType: "Indoor", status: "Confirmado" },
-  { id: 3, rival: "Racing Moncloa", date: "29 Mar 2026", time: "20:00", location: "Campo Municipal Norte", fieldType: "Cesped artificial", status: "Pendiente" },
-  { id: 4, rival: "Atletico Carabanchel", date: "5 Abr 2026", time: "21:30", location: "Complejo Deportivo Este", fieldType: "Cesped artificial", status: "Pendiente" },
+  // Jornada 1 - 31/01/2026 - LOCAL - GANADO 4-1
+  { id: 1, jornada: 1, rival: "AD Isineta", date: "31 Ene 2026", time: "15:45", location: "Futbol 7 B Casa Grande", isHome: true, result: "victoria", goalsFor: 4, goalsAgainst: 1, status: "Jugado" },
+  // Jornada 2 - 07/02/2026 - VISITANTE - PERDIDO 2-11
+  { id: 2, jornada: 2, rival: "La Corrala FC", date: "7 Feb 2026", time: "20:45", location: "Futbol 7 C Santa Ana", isHome: false, result: "derrota", goalsFor: 2, goalsAgainst: 11, status: "Jugado" },
+  // Jornada 3 - 14/02/2026 - LOCAL
+  { id: 3, jornada: 3, rival: "Mercenarios", date: "14 Feb 2026", time: "20:45", location: "Futbol 7 C Santa Ana", isHome: true, status: "Proximo" },
+  // Jornada 4 - 21/02/2026 - VISITANTE
+  { id: 4, jornada: 4, rival: "El Conclave", date: "21 Feb 2026", time: "19:30", location: "Campo de Futbol 7 - D - Sur C.Teleg.", isHome: false, status: "Pendiente" },
+  // Jornada 5 - 28/02/2026 - LOCAL
+  { id: 5, jornada: 5, rival: "Bayern Rivas FC", date: "28 Feb 2026", time: "15:45", location: "Futbol 7 C Casa Grande", isHome: true, status: "Pendiente" },
+  // Jornada 6 - 07/03/2026 - LOCAL
+  { id: 6, jornada: 6, rival: "Los Cha", date: "7 Mar 2026", time: "15:45", location: "Futbol 7 B Casa Grande", isHome: true, status: "Pendiente" },
+  // Jornada 7 - 14/03/2026 - VISITANTE
+  { id: 7, jornada: 7, rival: "Moniacos FC", date: "14 Mar 2026", time: "17:00", location: "Futbol 7 C Santa Ana", isHome: false, status: "Pendiente" },
+  // Jornada 8 - 21/03/2026 - LOCAL
+  { id: 8, jornada: 8, rival: "Blue Ladies", date: "21 Mar 2026", time: "17:00", location: "Futbol 7 C Santa Ana", isHome: true, status: "Pendiente" },
+  // Jornada 9 - 11/04/2026 - VISITANTE
+  { id: 9, jornada: 9, rival: "Cipreces FC", date: "11 Abr 2026", time: "17:00", location: "Futbol 7 C Santa Ana", isHome: false, status: "Pendiente" },
 ];
 
 export const stats = {
-  played: 24,
-  won: 16,
-  drawn: 4,
-  lost: 4,
-  goalsFor: 58,
-  goalsAgainst: 22,
-  topScorer: "Luis Navarro",
-  topScorerGoals: 18,
+  played: 2,
+  won: 1,
+  drawn: 0,
+  lost: 1,
+  goalsFor: 6,
+  goalsAgainst: 12,
+  topScorer: "Por determinar",
+  topScorerGoals: 0,
 };
 
 export const galleryImages: GalleryImage[] = [
