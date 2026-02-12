@@ -1,4 +1,4 @@
-export type Position = "Portero" | "Defensa" | "Medio" | "Delantero" / "Banca o Mister(feka)";
+export type Position = "Portero" | "Defensa" | "Medio" | "Delantero" | "Banca o Mister(feka)";
 
 export interface Player {
   id: number;
