@@ -60,15 +60,9 @@ export function Hero() {
             </h1>
 
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-primary-foreground/70">
-<<<<<<< HEAD
-              Somos Impersed Cubiertas FC, un equipo que vive y respira cada partido con
-              la intensidad de un estadio lleno. Conoce a nuestra plantilla,
-              nuestros proximos retos y nuestra historia.
-=======
               Somos Impersed Cubiertas FC, no ganamos ni a las canicas pero como se dice la intención
               es lo que cuenta, le ponemos ganas que no es poco. Conoce aquí a los valientes que componen
               el equipo así como los resultados y próximos partidos.
->>>>>>> master
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
