@@ -29,17 +29,16 @@ export function Footer() {
         <div className="grid gap-10 lg:grid-cols-3">
           {/* Brand */}
           <div>
-              <Image
-                src="/images/Escudo.png"   //
-                alt="Impersed Cubiertas FC"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <span className="text-lg font-bold text-primary-foreground">
-                Impersed <span className="text-accent">Cubiertas FC</span>
-              </span>
-            </div>
+            <Image
+             src="/images/Escudo.png"   //
+              alt="Impersed Cubiertas FC"
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <span className="text-lg font-bold text-primary-foreground">
+              Impersed <span className="text-accent">Cubiertas FC</span>
+            </span>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/60">
               Un equipo unido por la pasion del futbol 7. Compitiendo con
               corazon desde 2025.
