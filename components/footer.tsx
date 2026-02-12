@@ -41,7 +41,7 @@ export function Footer() {
                 </svg>
               </div>
               <span className="text-lg font-bold text-primary-foreground">
-                Futbol7 <span className="text-accent">Club</span>
+                Impersed <span className="text-accent">Cubiertas FC</span>
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/60">

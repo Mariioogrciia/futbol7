@@ -47,7 +47,7 @@ export function Header() {
             </svg>
           </div>
           <span className="text-xl font-bold tracking-tight text-foreground">
-            Futbol7 <span className="text-accent">Club</span>
+            Impersed <span className="text-accent">Cubiertas FC</span>
           </span>
         </a>
 
@@ -63,16 +63,6 @@ export function Header() {
             </a>
           ))}
         </nav>
-
-        {/* CTA */}
-        <div className="hidden lg:block">
-          <a
-            href="#contacto"
-            className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:bg-primary/90"
-          >
-            Unite al equipo
-          </a>
-        </div>
 
         {/* Mobile Toggle */}
         <button
@@ -104,13 +94,7 @@ export function Header() {
                   {link.label}
                 </a>
               ))}
-              <a
-                href="#contacto"
-                onClick={() => setMobileOpen(false)}
-                className="mt-2 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-md"
-              >
-                Unite al equipo
-              </a>
+
             </nav>
           </motion.div>
         )}
