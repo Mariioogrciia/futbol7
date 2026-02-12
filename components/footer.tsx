@@ -29,17 +29,13 @@ export function Footer() {
         <div className="grid gap-10 lg:grid-cols-3">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5 text-accent"
-                  fill="currentColor"
-                >
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-                  <circle cx="12" cy="12" r="3" fill="currentColor" />
-                </svg>
-              </div>
+              <Image
+                src="/images/Escudo.png"   //
+                alt="Impersed Cubiertas FC"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
               <span className="text-lg font-bold text-primary-foreground">
                 Impersed <span className="text-accent">Cubiertas FC</span>
               </span>
