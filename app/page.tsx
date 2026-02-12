@@ -15,7 +15,6 @@ export default function Home() {
       <MatchesSection />
       <StatsSection />
       <GallerySection />
-      <ContactSection />
       <Footer />
     </main>
   );
