@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Futbol7 Club | Pagina Oficial",
+  title: "Impersed Cubiertas FC  | Pagina Oficial",
   description:
-    "Pagina oficial de Futbol7 Club. Conoce a nuestro equipo, proximos partidos, estadisticas y mas.",
+    "Pagina oficial de Impersed Cubiertas FC. Conoce a nuestro equipo, proximos partidos, estadisticas y más.",
 };
 
 export const viewport: Viewport = {
