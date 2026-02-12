@@ -6,7 +6,6 @@ const footerLinks = [
   { label: "Partidos", href: "#partidos" },
   { label: "Estadisticas", href: "#estadisticas" },
   { label: "Galeria", href: "#galeria" },
-  { label: "Contacto", href: "#contacto" },
 ];
 
 function SocialIcon({ children, href }: { children: React.ReactNode; href: string }) {
