@@ -28,14 +28,19 @@ export interface GalleryImage {
 }
 
 export const players: Player[] = [
-  { id: 1, name: "Carlos Herrera", position: "Portero", number: 1, description: "Reflejos felinos y gran presencia bajo palos.", avatar: "/images/player-1.jpg" },
-  { id: 2, name: "Sergio Ramos", position: "Defensa", number: 4, description: "Lider de la zaga, contundente y con gol.", avatar: "/images/player-2.jpg" },
-  { id: 3, name: "Alejandro Vidal", position: "Defensa", number: 2, description: "Velocidad y anticipacion en cada jugada.", avatar: "/images/player-3.jpg" },
-  { id: 4, name: "Daniel Ortiz", position: "Medio", number: 8, description: "Motor del equipo, vision de juego excepcional.", avatar: "/images/player-4.jpg" },
-  { id: 5, name: "Pablo Mendez", position: "Medio", number: 6, description: "Control del ritmo y pases de ruptura.", avatar: "/images/player-5.jpg" },
-  { id: 6, name: "Marcos Torres", position: "Medio", number: 10, description: "Creatividad y tecnica al servicio del equipo.", avatar: "/images/player-6.jpg" },
-  { id: 7, name: "Luis Navarro", position: "Delantero", number: 9, description: "Instinto goleador, siempre en el lugar justo.", avatar: "/images/player-7.jpg" },
-  { id: 8, name: "Javier Ruiz", position: "Delantero", number: 7, description: "Velocidad electrica y desborde por banda.", avatar: "/images/player-8.jpg" },
+  { id: 1, name: "Ignacio Soto", position: "Portero", number: 1, description: "Reflejos felinos y gran presencia bajo palos (no sale).", avatar: "/images/player-1.jpg" },
+  { id: 2, name: "Javier Martín (Coarasa)", position: "Defensa", number: 2, description: "Lider de la zaga, contundente (a favor de los rivales) y con 2 piernas zurdas.", avatar: "/images/player-2.jpg" },
+  { id: 3, name: "Carlos Barragán", position: "Defensa", number: 7, description: "Velocidad y anticipacion en cada jugada (para coger el cigarro).", avatar: "/images/player-3.jpg" },
+  { id: 4, name: "Guillermo García", position: "Defensa", number: 69, description: "Motor del equipo, vision de juego excepcional (menos para correr hacia atrás).", avatar: "/images/player-4.jpg" },
+  { id: 5, name: "David García", position: "Defensa", number: 08, description: "Control del ritmo (bajo) y ruptura (de tobillos).", avatar: "/images/player-5.jpg" },
+  { id: 6, name: "Miguel Sicilia", position: "Defensa", number: 47, description: "Creatividad y tecnica al servicio del equipo (no la pasa).", avatar: "/images/player-6.jpg" },
+  { id: 7, name: "Adrián Moreno", position: "Defensa", number: 22, description: "Lateral sólido, siempre en el lugar justo (para no marcar).", avatar: "/images/player-7.jpg" },
+  { id: 8, name: "Hugo Hernández", position: "Medio", number: 10, description: "Velocidad electrica (para chuparla) y el capitán (vive en un edit).", avatar: "/images/player-8.jpg" },
+  { id: 9, name: "Marcos Rivera", position: "Medio", number: 11, description: "Jueo de pies a la orden del día (solo viene con la novia).", avatar: "/images/player-8.jpg" },
+  { id: 10, name: "Alberto Suárez", position: "Medio", number: 88, description: "Ni se quien es (no ha venido).", avatar: "/images/player-8.jpg" },
+  { id: 10, name: "David Sastre", position: "Delantero", number: 88, description: "Ejemplo a bajos rasos de fernando llorente (está cansado antes de entrar).", avatar: "/images/player-8.jpg" },
+  { id: 11, name: "Mario García", position: "Banca/Mister(feka)", number: 21, description: "Ha jugado 2 partidos (tiene la rodilla de plastilina), en teoría mister.", avatar: "/images/player-8.jpg" },
+  { id: 12, name: "Rodrigo Casado", position: "Delantero", number: 33, description: "El presionador del equipo (no da pie con bola).", avatar: "/images/player-8.jpg" },
 ];
 
 export const matches: Match[] = [
