@@ -42,7 +42,7 @@ export function Footer() {
                 </svg>
               </div>
               <span className="text-lg font-bold text-primary-foreground">
-                Futbol7 <span className="text-accent">Club</span>
+                Impersed <span className="text-accent">Cubiertas FC</span>
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/60">
@@ -99,7 +99,7 @@ export function Footer() {
 
         <div className="mt-12 border-t border-primary-foreground/10 pt-8 text-center">
           <p className="text-sm text-primary-foreground/40">
-            {"2025 Futbol7 Club. Todos los derechos reservados."}
+            {"2025 Impersed Cubiertas FC. Todos los derechos reservados."}
           </p>
         </div>
       </div>

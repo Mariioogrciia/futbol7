@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
-import { players, type Position } from "@/lib/data";
+import { players, staff, type Position } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 const positions: ("Todos" | Position)[] = [
@@ -129,6 +129,57 @@ export function TeamSection() {
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {filtered.map((player, i) => (
             <PlayerCard key={player.id} player={player} index={i} />
+          ))}
+        </div>
+
+        {/* Cuerpo Tecnico */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mt-20 text-center"
+        >
+          <h3 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Cuerpo Tecnico
+          </h3>
+          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+            Los que dirigen desde la banda (o rellenan botellas).
+          </p>
+        </motion.div>
+
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-2 max-w-2xl mx-auto">
+          {staff.map((member, i) => (
+            <motion.div
+              key={member.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow duration-300 hover:shadow-xl hover:border-primary/40"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-4 h-24 w-24 overflow-hidden rounded-full border-2 border-border transition-colors duration-300 group-hover:border-accent">
+                  <Image
+                    src={member.avatar}
+                    alt={member.name}
+                    fill
+                    className="object-cover"
+                    sizes="96px"
+                  />
+                </div>
+
+                <h3 className="text-lg font-bold text-card-foreground">{member.name}</h3>
+
+                <span className="mt-1 inline-flex rounded-full bg-primary/10 px-3 py-0.5 text-xs font-semibold text-primary">
+                  {member.role}
+                </span>
+
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {member.description}
+                </p>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
