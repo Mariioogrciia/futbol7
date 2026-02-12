@@ -1,0 +1,32 @@
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+export const metadata: Metadata = {
+  title: "Futbol7 Club | Pagina Oficial",
+  description:
+    "Pagina oficial de Futbol7 Club. Conoce a nuestro equipo, proximos partidos, estadisticas y mas.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#022B1F",
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="es" className={inter.variable}>
+      <body className="font-sans antialiased">{children}</body>
+    </html>
+  );
+}
