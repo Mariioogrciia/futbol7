@@ -79,6 +79,25 @@ export const matches: Match[] = [
   { id: 9, jornada: 9, rival: "Cipreces FC", date: "11 Abr 2026", time: "17:00", location: "Futbol 7 C Santa Ana", isHome: false, status: "Pendiente" },
 ];
 
+// Liga 5a Division - Grupo Mixto (Temporada anterior)
+export const leagueMatches: Match[] = [
+  { id: 101, jornada: 1, rival: "El Conclave", date: "20 Sep 2025", time: "17:45", location: "Campo Futbol 7 - A - Est. Atmo. - C. Teleg.", isHome: true, result: "derrota", goalsFor: 2, goalsAgainst: 4, status: "Jugado" },
+  { id: 102, jornada: 2, rival: "Inter Ofi FC", date: "27 Sep 2025", time: "15:45", location: "Futbol 7 D Casa Grande", isHome: false, result: "derrota", goalsFor: 2, goalsAgainst: 5, status: "Jugado" },
+  { id: 103, jornada: 3, rival: "Los Molomazo", date: "4 Oct 2025", time: "15:45", location: "Futbol 7 D Casa Grande", isHome: true, result: "victoria", goalsFor: 5, goalsAgainst: 2, status: "Jugado" },
+  { id: 104, jornada: 4, rival: "La Corrala FC", date: "11 Oct 2025", time: "20:45", location: "Futbol 7 C Casa Grande", isHome: false, result: "derrota", goalsFor: 0, goalsAgainst: 5, status: "Jugado" },
+  { id: 105, jornada: 5, rival: "Cabras Maltesas", date: "18 Oct 2025", time: "18:15", location: "Futbol 7 D Casa Grande", isHome: true, result: "derrota", goalsFor: 1, goalsAgainst: 5, status: "Jugado" },
+  { id: 106, jornada: 6, rival: "Fary CF", date: "25 Oct 2025", time: "17:00", location: "Futbol 7 D Casa Grande", isHome: false, result: "empate", goalsFor: 2, goalsAgainst: 2, status: "Jugado" },
+  { id: 107, jornada: 7, rival: "Cachorritas FC", date: "8 Nov 2025", time: "17:00", location: "Futbol 7 D Casa Grande", isHome: true, result: "derrota", goalsFor: 4, goalsAgainst: 6, status: "Jugado" },
+  { id: 108, jornada: 8, rival: "Esmeralda", date: "15 Nov 2025", time: "20:45", location: "Futbol 7 C Casa Grande", isHome: false, result: "victoria", goalsFor: 5, goalsAgainst: 4, status: "Jugado" },
+  { id: 109, jornada: 9, rival: "AD Isineta", date: "22 Nov 2025", time: "20:45", location: "Futbol 7 D Casa Grande", isHome: true, result: "victoria", goalsFor: 7, goalsAgainst: 2, status: "Jugado" },
+  { id: 110, jornada: 10, rival: "Galletasaray", date: "29 Nov 2025", time: "16:30", location: "Futbol 7 C El Vivero", isHome: false, result: "derrota", goalsFor: 3, goalsAgainst: 4, status: "Jugado" },
+  { id: 111, jornada: 11, rival: "Casa 441", date: "13 Dic 2025", time: "19:30", location: "Futbol 7 D Casa Grande", isHome: true, result: "derrota", goalsFor: 4, goalsAgainst: 5, status: "Jugado" },
+  { id: 112, jornada: 12, rival: "Kuda FC", date: "20 Dic 2025", time: "17:45", location: "Futbol 7 C El Vivero", isHome: false, result: "victoria", goalsFor: 4, goalsAgainst: 0, status: "Jugado" },
+  { id: 113, jornada: 13, rival: "Descanso", date: "10 Ene 2026", time: "-", location: "-", isHome: true, status: "Jugado" },
+  { id: 114, jornada: 14, rival: "DKT", date: "17 Ene 2026", time: "19:30", location: "Futbol 7 D Casa Grande", isHome: true, result: "empate", goalsFor: 3, goalsAgainst: 3, status: "Jugado" },
+  { id: 115, jornada: 15, rival: "Betsiktas FC", date: "24 Ene 2026", time: "20:45", location: "Futbol 7 D Casa Grande", isHome: false, result: "derrota", goalsFor: 2, goalsAgainst: 5, status: "Jugado" },
+];
+
 export const stats = {
   played: 2,
   won: 1,
