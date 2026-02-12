@@ -36,17 +36,6 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
         {/* Logo */}
         <a href="#inicio" className="flex items-center gap-2 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary transition-transform duration-200 group-hover:scale-105">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-6 w-6 text-primary-foreground"
-              fill="currentColor"
-            >
-              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-              <path d="M12 2 C14 6, 18 8, 22 12 C18 16, 14 18, 12 22 C10 18, 6 16, 2 12 C6 8, 10 6, 12 2Z" fill="currentColor" opacity="0.3" />
-              <circle cx="12" cy="12" r="3" fill="currentColor" />
-            </svg>
-          </div>
           <div className="flex items-center gap-2">
             <Image
               src="/images/Escudo.png"   //
