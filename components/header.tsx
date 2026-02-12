@@ -46,9 +46,19 @@ export function Header() {
               <circle cx="12" cy="12" r="3" fill="currentColor" />
             </svg>
           </div>
-          <span className="text-xl font-bold tracking-tight text-foreground">
-            Impersed <span className="text-accent">Cubiertas FC</span>
-          </span>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/images/Escudo.png"   //
+              alt="Impersed Cubiertas FC"
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              Impersed <span className="text-accent">Cubiertas FC</span>
+            </span>
+          </div>
+
         </a>
 
         {/* Desktop Nav */}
