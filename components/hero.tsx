@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { ChevronRight, Users } from "lucide-react";
 
 const quickStats = [
-  { label: "Partidos ganados", value: "16" },
-  { label: "Goles esta temporada", value: "58" },
+  { label: "Partidos ganados", value: "5" },
+  { label: "Goles esta temporada", value: "48" },
   { label: "Jugadores", value: "13" },
   { label: "Temporadas", value: "1" },
 ];
