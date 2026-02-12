@@ -60,7 +60,7 @@ export function Hero() {
             </h1>
 
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-primary-foreground/70">
-              Somos Futbol7 Club, un equipo que vive y respira cada partido con
+              Somos Impersed Cubiertas FC, un equipo que vive y respira cada partido con
               la intensidad de un estadio lleno. Conoce a nuestra plantilla,
               nuestros proximos retos y nuestra historia.
             </p>

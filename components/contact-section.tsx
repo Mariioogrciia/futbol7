@@ -26,10 +26,10 @@ export function ContactSection() {
           className="text-center"
         >
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            Unite al equipo
+            Contacto
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Buscamos jugadores con ganas de competir y disfrutar del futbol 7.
+            Tienes alguna pregunta o quieres saber mas sobre nosotros?
             Rellena el formulario y nos pondremos en contacto contigo.
           </p>
         </motion.div>

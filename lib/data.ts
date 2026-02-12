@@ -1,10 +1,18 @@
-export type Position = "Portero" | "Defensa" | "Medio" | "Delantero" | "Banca o Mister(feka)";
+export type Position = "Portero" | "Defensa" | "Medio" | "Delantero";
 
 export interface Player {
   id: number;
   name: string;
   position: Position;
   number: number;
+  description: string;
+  avatar: string;
+}
+
+export interface StaffMember {
+  id: number;
+  name: string;
+  role: string;
   description: string;
   avatar: string;
 }
@@ -42,8 +50,13 @@ export const players: Player[] = [
   { id: 9, name: "Marcos Rivera", position: "Medio", number: 11, description: "Jueo de pies a la orden del día (solo viene con la novia).", avatar: "/images/Markitos.jpeg" },
   { id: 10, name: "Alberto Suárez", position: "Medio", number: 26, description: "Ni se quien es (no ha venido).", avatar: "/images/player-8.jpg" },
   { id: 11, name: "David Sastre", position: "Delantero", number: 88, description: "Ejemplo a bajos rasos de fernando llorente (está cansado antes de entrar).", avatar: "/images/Sastre.jpeg" },
-  { id: 12, name: "Mario García", position: "Banca o Mister(feka)", number: 21, description: "Ha jugado 2 partidos (tiene la rodilla de plastilina), en teoría mister.", avatar: "/images/player-8.jpg" },
+
   { id: 13, name: "Rodrigo Casado", position: "Delantero", number: 33, description: "El presionador del equipo (no da pie con bola).", avatar: "/images/Roch.jpeg" },
+];
+
+export const staff: StaffMember[] = [
+  { id: 1, name: "Mario García", role: "Mister", description: "Ha jugado 2 partidos (tiene la rodilla de plastilina), en teoria mister.", avatar: "/images/player-8.jpg" },
+  { id: 2, name: "Fernando Gallego", role: "Rellena Botellas", description: "El alma del equipo desde la banda. Sin el no hay hidratacion.", avatar: "/images/player-8.jpg" },
 ];
 
 export const matches: Match[] = [
