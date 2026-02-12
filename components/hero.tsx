@@ -6,8 +6,8 @@ import { ChevronRight, Users } from "lucide-react";
 const quickStats = [
   { label: "Partidos ganados", value: "16" },
   { label: "Goles esta temporada", value: "58" },
-  { label: "Jugadores", value: "8" },
-  { label: "Temporadas", value: "3" },
+  { label: "Jugadores", value: "13" },
+  { label: "Temporadas", value: "1" },
 ];
 
 export function Hero() {
