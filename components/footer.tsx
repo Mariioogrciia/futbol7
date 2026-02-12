@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 const footerLinks = [
   { label: "Inicio", href: "#inicio" },
   { label: "Equipo", href: "#equipo" },
