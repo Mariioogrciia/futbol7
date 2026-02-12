@@ -4,7 +4,6 @@ import { TeamSection } from "@/components/team-section";
 import { MatchesSection } from "@/components/matches-section";
 import { StatsSection } from "@/components/stats-section";
 import { GallerySection } from "@/components/gallery-section";
-import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 
 export default function Home() {
@@ -16,7 +15,6 @@ export default function Home() {
       <MatchesSection />
       <StatsSection />
       <GallerySection />
-      <ContactSection />
       <Footer />
     </main>
   );
