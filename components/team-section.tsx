@@ -11,9 +11,7 @@ const positions: ("Todos" | Position)[] = [
   "Portero",
   "Defensa",
   "Medio",
-  "Delantero",
-  "Mister(Banca)",
-  "Rellena Botellas"
+  "Delantero"
 ];
 
 function PlayerCard({
