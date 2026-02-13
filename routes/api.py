@@ -1,8 +1,45 @@
+
 from flask import Blueprint, jsonify, request
-from models import db, Jugador, Equipo, Partido, Gol
-from datetime import date
+from models import db, Jugador, Equipo, Partido, Gol, AdminUser
+from datetime import date, timedelta
+import jwt
+import os
+from functools import wraps
+
 
 api_bp = Blueprint('api', __name__)
+
+# Utilidad para proteger rutas con JWT
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[-1]
+        if not token:
+            return jsonify({'message': 'Token requerido'}), 401
+        try:
+            data = jwt.decode(token, os.getenv('SECRET_KEY', 'devsecret'), algorithms=["HS256"])
+            current_user = AdminUser.query.filter_by(id=data['user_id']).first()
+        except Exception as e:
+            return jsonify({'message': 'Token inválido', 'error': str(e)}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+# Endpoint de login admin
+@api_bp.route('/login', methods=['POST'])
+def login_admin():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    user = AdminUser.query.filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return jsonify({'message': 'Credenciales incorrectas'}), 401
+    token = jwt.encode({
+        'user_id': user.id,
+        'exp': (date.today() + timedelta(days=1)).strftime('%s')
+    }, os.getenv('SECRET_KEY', 'devsecret'), algorithm="HS256")
+    return jsonify({'token': token})
 
 
 # 1. Jugadores (GET)
@@ -47,6 +84,7 @@ def get_goleadores():
     } for j in goleadores])
 
 
+
 # 4. Equipos (GET)
 @api_bp.route('/equipos', methods=['GET'])
 def get_equipos():
@@ -56,6 +94,30 @@ def get_equipos():
         'nombre': e.nombre,
         'jugadores_count': len(e.jugadores)
     } for e in equipos])
+
+
+# 5. Actualizar resultado y goleadores (solo admin)
+@api_bp.route('/partido/<int:partido_id>/update', methods=['POST'])
+@token_required
+def update_partido(current_user, partido_id):
+    data = request.get_json()
+    partido = Partido.query.get_or_404(partido_id)
+    # Actualizar resultado
+    partido.goles_nuestro = data.get('goles_nuestro', partido.goles_nuestro)
+    partido.goles_rival = data.get('goles_rival', partido.goles_rival)
+    # Actualizar goleadores (opcional)
+    goleadores = data.get('goleadores')
+    if goleadores is not None:
+        # Borrar goles previos
+        for g in partido.goles:
+            db.session.delete(g)
+        for gol in goleadores:
+            jugador = Jugador.query.get(gol['jugador_id'])
+            if jugador:
+                nuevo_gol = Gol(jugador=jugador, partido=partido, tipo=gol.get('tipo', 'Pie'))
+                db.session.add(nuevo_gol)
+    db.session.commit()
+    return jsonify({'message': 'Partido actualizado'})
 
 
 # 5. Crear Partido + Goles (POST)
