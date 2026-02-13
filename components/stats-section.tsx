@@ -12,6 +12,7 @@ import {
   Star,
 } from "lucide-react";
 import { stats } from "@/lib/data";
+import StatsChart from "@/components/stats-chart";
 
 function AnimatedCounter({
   target,
@@ -139,6 +140,11 @@ export function StatsSection() {
             Numeros que hablan por si solos esta temporada.
           </p>
         </motion.div>
+
+        {/* Gráfico de pastel de estadísticas */}
+        <div className="mt-8 flex justify-center">
+          <StatsChart />
+        </div>
 
         {/* Stat cards grid */}
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
