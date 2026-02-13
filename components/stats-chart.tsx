@@ -30,7 +30,7 @@ export default function StatsChart() {
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => `${value} partido(s)`} />
+          <Tooltip formatter={(value) => `${value ?? 0} partido(s)`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
