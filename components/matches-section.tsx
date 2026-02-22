@@ -481,30 +481,36 @@ export function MatchesSection() {
     }
   }
 
-  async function fetchData() {
-    try {
-      // Traer partidos donde formato = 'copa'
-      const { data: matchesData, error: matchesError } = await supabase
-        .from("partidos")
-        .select("*")
-        .eq("formato", "copa")
-        .order("fecha", { ascending: true });
+    async function fetchData() {
+      try {
+    // Traer partidos donde formato = 'copa'
+    const { data: matchesData, error: matchesError } = await supabase
+      .from("partidos")
+      .select("*")
+      .eq("formato", "copa")
+      .order("fecha", { ascending: true });
 
-      if (matchesError) throw matchesError;
+    // Log visual para depuración
+    window.matchesDataDebug = matchesData;
+    setDebugMatches(matchesData);
 
-      const formattedMatches: Match[] = (matchesData || []).map((m: any) => ({
-        id: m.id,
-        equipo_id: m.equipo_id,
-        rival: m.rival,
-        fecha: m.fecha,
-        lokasion: m.lokasion,
-        estado: m.estado as any,
-        goles_equipo: m.goles_equipo || 0,
-        goles_rival: m.goles_rival || 0,
-        resultado: m.resultado as any || null,
-      }));
+    if (matchesError) throw matchesError;
 
-      setMatches(formattedMatches);
+    const formattedMatches: Match[] = (matchesData || []).map((m: any) => ({
+      id: m.id,
+      equipo_id: m.equipo_id,
+      rival: m.rival,
+      fecha: m.fecha,
+      lokasion: m.lokasion,
+      estado: m.estado as any,
+      goles_equipo: m.goles_equipo || 0,
+      goles_rival: m.goles_rival || 0,
+      resultado: m.resultado as any || null,
+    }));
+
+    setMatches(formattedMatches);
+  // Estado para mostrar el log visual de matchesData
+  const [debugMatches, setDebugMatches] = useState<any[]>([]);
 
       // Traer jugadores desde Supabase
       const { data: playersData, error: playersError } = await supabase
@@ -629,6 +635,12 @@ export function MatchesSection() {
         {/* Timeline layout */}
         <div className="relative mt-12 lg:ml-8">
           <div className="absolute left-0 top-0 hidden h-full w-px bg-border lg:block" />
+          {/* Log visual de matchesData para depuración */}
+          {debugMatches && (
+            <pre style={{background:'#eee',color:'#222',padding:'8px',marginBottom:'16px',fontSize:'12px',overflow:'auto'}}>
+              <strong>matchesData (raw):</strong>\n{JSON.stringify(debugMatches, null, 2)}
+            </pre>
+          )}
           <div className="grid gap-5 lg:pl-10">
             {loading ? (
               <div className="text-center text-muted-foreground">
