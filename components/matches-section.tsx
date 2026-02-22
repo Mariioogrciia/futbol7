@@ -2,43 +2,35 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import {
-  CalendarDays,
-  Clock,
-  MapPin,
-  Trophy,
-  Home,
-  Plane,
-  Shield,
-  Edit,
-  User,
-} from "lucide-react";
+import { Clock, MapPin, Trophy, Shield, Edit, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
+const EQUIPO_ID = "7ec6e1c6-9704-496c-ae72-a590817b9568"; // <-- pon aquí tu equipo_id
+
 interface Match {
-  id: number;
+  id: string;
   equipo_id: string;
   rival: string;
   fecha: string;
   lokasion: string;
-  estado: 'programado' | 'en_vivo' | 'finalizado';
+  estado: "programado" | "en_vivo" | "finalizado";
   goles_equipo: number;
   goles_rival: number;
-  resultado: 'victoria' | 'derrota' | 'empate' | null;
+  resultado: "victoria" | "derrota" | "empate" | null;
 }
 
 interface Jugador {
-  id: number;
+  id: string;
   nombre: string;
   posicion: string;
-  dorsal?: number;
+  dorsal?: number | null;
 }
 
 interface GolesPartido {
-  id: number;
-  partido_id: number;
-  jugador_id: number;
+  id: string;
+  partido_id: string;
+  jugador_id: string;
   nombre: string;
   goles: number;
 }
@@ -127,7 +119,7 @@ function EditMatchModal({
   const [goleadores, setGoleadores] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleGoleadorChange = (playerId: number, goals: number) => {
+  const handleGoleadorChange = (playerId: string, goals: number) => {
     setGoleadores((prev) => {
       const existing = prev.find((g) => g.id === playerId);
       if (goals > 0) {
@@ -141,7 +133,7 @@ function EditMatchModal({
               id: playerId,
               nombre: player?.nombre || "",
               posicion: player?.posicion || "",
-              dorsal: player?.dorsal,
+              dorsal: player?.dorsal ?? null,
               goles: goals,
             },
           ];
@@ -155,7 +147,9 @@ function EditMatchModal({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         alert("Sesión expirada");
         return;
@@ -208,15 +202,11 @@ function EditMatchModal({
             className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4">
-              Editar Resultado: {match.rival}
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Editar Resultado: {match.rival}</h2>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  Goles Impersed Cubiertas FC
-                </label>
+                <label className="block text-sm font-medium mb-1">Goles Impersed</label>
                 <input
                   type="number"
                   value={golesEquipo}
@@ -226,9 +216,7 @@ function EditMatchModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  Goles {match.rival}
-                </label>
+                <label className="block text-sm font-medium mb-1">Goles {match.rival}</label>
                 <input
                   type="number"
                   value={golesRival}
@@ -255,14 +243,12 @@ function EditMatchModal({
                       placeholder="0"
                       min="0"
                       className="w-16 p-1 border rounded text-center"
-                      onChange={(e) =>
-                        handleGoleadorChange(player.id, Number(e.target.value))
-                      }
+                      onChange={(e) => handleGoleadorChange(player.id, Number(e.target.value))}
                     />
                     <div className="flex-1">
                       <div className="text-sm font-semibold">{player.nombre}</div>
                       <div className="text-xs text-gray-500">
-                        {player.posicion} #{player.dorsal}
+                        {player.posicion} #{player.dorsal ?? "-"}
                       </div>
                     </div>
                   </div>
@@ -278,10 +264,7 @@ function EditMatchModal({
               >
                 {loading ? "Guardando..." : "Guardar"}
               </button>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
-              >
+              <button onClick={onClose} className="px-4 py-2 border rounded hover:bg-gray-100">
                 Cancelar
               </button>
             </div>
@@ -359,10 +342,7 @@ function MatchCard({
       >
         <div className="absolute -left-[41px] top-8 hidden lg:block">
           <div
-            className={cn(
-              "h-4 w-4 rounded-full border-2 transition-colors duration-300",
-              dotColor
-            )}
+            className={cn("h-4 w-4 rounded-full border-2 transition-colors duration-300", dotColor)}
           />
         </div>
 
@@ -376,7 +356,7 @@ function MatchCard({
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-accent" />
               <span className="text-xs font-bold text-accent uppercase tracking-wider">
-                {match.fecha}
+                {new Date(match.fecha).toLocaleDateString("es-ES")}
               </span>
             </div>
             <StatusBadge match={match} />
@@ -389,6 +369,7 @@ function MatchCard({
                 <span className="mx-2 text-muted-foreground font-normal">vs</span>
                 {match.rival}
               </h3>
+
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Clock className="h-3.5 w-3.5 text-accent" />
@@ -405,9 +386,7 @@ function MatchCard({
 
               {matchGoleadores.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-border/30">
-                  <p className="text-xs font-semibold text-muted-foreground mb-2">
-                    Goleadores:
-                  </p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Goleadores:</p>
                   <div className="flex flex-wrap gap-2">
                     {matchGoleadores.map((g) => (
                       <span
@@ -451,6 +430,7 @@ function MatchCard({
 export function MatchesSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
@@ -464,7 +444,9 @@ export function MatchesSection() {
 
   async function checkAdminStatus() {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
 
       const { data: userData } = await supabase
@@ -473,49 +455,37 @@ export function MatchesSection() {
         .eq("id", session.user.id)
         .single();
 
-      if (userData?.rol === "admin") {
-        setIsAdmin(true);
-      }
+      if (userData?.rol === "admin") setIsAdmin(true);
     } catch (e) {
       console.error(e);
     }
   }
 
-    async function fetchData() {
-      try {
-    // Traer partidos donde formato = 'copa'
-    const { data: matchesData, error: matchesError } = await supabase
-      .from("partidos")
-      .select("*")
-      .eq("formato", "copa")
-      .order("fecha", { ascending: true });
+  async function fetchData() {
+    try {
+      const res = await fetch(`/api/copa?equipo_id=${EQUIPO_ID}`);
+      if (!res.ok) throw new Error("Error API /api/copa");
+      const json = await res.json();
 
-    // Log visual para depuración
-    window.matchesDataDebug = matchesData;
-    setDebugMatches(matchesData);
+      const formattedMatches: Match[] = (json.partidos || []).map((m: any) => ({
+        id: m.id,
+        equipo_id: m.equipo_id,
+        rival: m.rival,
+        fecha: m.fecha,
+        lokasion: m.lokasion,
+        estado: m.estado,
+        goles_equipo: m.goles_equipo || 0,
+        goles_rival: m.goles_rival || 0,
+        resultado: m.resultado || null,
+      }));
 
-    if (matchesError) throw matchesError;
+      setMatches(formattedMatches);
+      setGoleadores(json.goleadores || []);
 
-    const formattedMatches: Match[] = (matchesData || []).map((m: any) => ({
-      id: m.id,
-      equipo_id: m.equipo_id,
-      rival: m.rival,
-      fecha: m.fecha,
-      lokasion: m.lokasion,
-      estado: m.estado as any,
-      goles_equipo: m.goles_equipo || 0,
-      goles_rival: m.goles_rival || 0,
-      resultado: m.resultado as any || null,
-    }));
-
-    setMatches(formattedMatches);
-  // Estado para mostrar el log visual de matchesData
-  const [debugMatches, setDebugMatches] = useState<any[]>([]);
-
-      // Traer jugadores desde Supabase
       const { data: playersData, error: playersError } = await supabase
         .from("jugadores")
-        .select("*");
+        .select("*")
+        .eq("equipo_id", EQUIPO_ID);
 
       if (!playersError && playersData) {
         setJugadores(
@@ -527,41 +497,11 @@ export function MatchesSection() {
           }))
         );
       }
-
-      // Traer goleadores de Supabase
-      const { data: scorersData, error: scorersError } = await supabase
-        .from("goleadores_partido")
-        .select("*");
-
-      if (!scorersError && scorersData) {
-        setGoleadores(scorersData || []);
-      }
     } catch (error) {
       console.error("Error fetching data:", error);
-      // Fallback: usar datos estáticos
-      const { matches: staticMatches, players } = await import("@/lib/data");
-      
-      const formattedMatches: Match[] = staticMatches.map((m: any) => ({
-        id: m.id,
-        equipo_id: "futbol7",
-        rival: m.rival,
-        fecha: m.date,
-        lokasion: m.location,
-        estado: m.status === "Jugado" ? "finalizado" : m.status === "Proximo" ? "en_vivo" : "programado",
-        goles_equipo: m.goalsFor || 0,
-        goles_rival: m.goalsAgainst || 0,
-        resultado: m.result as any || null,
-      }));
-
-      setMatches(formattedMatches);
-      setJugadores(
-        players.map((p: any) => ({
-          id: p.id,
-          nombre: p.name,
-          posicion: p.position,
-          dorsal: p.number,
-        }))
-      );
+      setMatches([]);
+      setJugadores([]);
+      setGoleadores([]);
     } finally {
       setLoading(false);
     }
@@ -585,9 +525,7 @@ export function MatchesSection() {
         >
           <div className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full bg-accent/10 border border-accent/20 px-4 py-1.5">
             <Trophy className="h-4 w-4 text-accent" />
-            <span className="text-sm font-semibold text-accent">
-              Copa Futbol 7 - Grupo F
-            </span>
+            <span className="text-sm font-semibold text-accent">Copa Futbol 7</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl text-balance">
             Calendario de Copa
@@ -597,7 +535,6 @@ export function MatchesSection() {
           </p>
         </motion.div>
 
-        {/* Mini stats bar */}
         {played.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -607,9 +544,7 @@ export function MatchesSection() {
           >
             <div className="flex items-center gap-2 rounded-lg bg-card border border-border px-4 py-2">
               <span className="text-sm text-muted-foreground">PJ</span>
-              <span className="text-lg font-bold text-card-foreground">
-                {played.length}
-              </span>
+              <span className="text-lg font-bold text-card-foreground">{played.length}</span>
             </div>
             <div className="flex items-center gap-2 rounded-lg bg-card border border-emerald-500/20 px-4 py-2">
               <span className="text-sm text-emerald-400">V</span>
@@ -632,24 +567,13 @@ export function MatchesSection() {
           </motion.div>
         )}
 
-        {/* Timeline layout */}
         <div className="relative mt-12 lg:ml-8">
           <div className="absolute left-0 top-0 hidden h-full w-px bg-border lg:block" />
-          {/* Log visual de matchesData para depuración */}
-          {debugMatches && (
-            <pre style={{background:'#eee',color:'#222',padding:'8px',marginBottom:'16px',fontSize:'12px',overflow:'auto'}}>
-              <strong>matchesData (raw):</strong>\n{JSON.stringify(debugMatches, null, 2)}
-            </pre>
-          )}
           <div className="grid gap-5 lg:pl-10">
             {loading ? (
-              <div className="text-center text-muted-foreground">
-                Cargando partidos...
-              </div>
+              <div className="text-center text-muted-foreground">Cargando partidos...</div>
             ) : matches.length === 0 ? (
-              <div className="text-center text-muted-foreground">
-                No hay partidos disponibles.
-              </div>
+              <div className="text-center text-muted-foreground">No hay partidos disponibles.</div>
             ) : (
               matches.map((match, i) => (
                 <MatchCard
