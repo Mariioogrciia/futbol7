@@ -17,8 +17,9 @@ interface Match {
   estado: "programado" | "en_vivo" | "finalizado";
   goles_equipo: number;
   goles_rival: number;
-  resultado: "victoria" | "derrota" | "empate" | null;
+  resultado: string | null; // marcador "2-4"
 }
+
 
 interface Jugador {
   id: string;
@@ -36,7 +37,12 @@ interface GolesPartido {
 }
 
 function ResultBadge({ match }: { match: Match }) {
-  if (match.estado !== "finalizado" || !match.resultado) return null;
+  if (match.estado !== "finalizado") return null;
+
+  const gf = Number(match.goles_equipo ?? 0);
+  const ga = Number(match.goles_rival ?? 0);
+
+  const outcome = gf > ga ? "victoria" : gf < ga ? "derrota" : "empate";
 
   const config = {
     victoria: {
@@ -57,9 +63,9 @@ function ResultBadge({ match }: { match: Match }) {
       border: "border-amber-500/30",
       label: "Empate",
     },
-  };
+  } as const;
 
-  const c = config[match.resultado];
+  const c = config[outcome];
 
   return (
     <div className="flex flex-col items-end gap-1.5">
@@ -74,11 +80,12 @@ function ResultBadge({ match }: { match: Match }) {
         {c.label}
       </span>
       <span className={cn("text-2xl font-black tabular-nums tracking-tight", c.text)}>
-        {match.goles_equipo} - {match.goles_rival}
+        {gf} - {ga}
       </span>
     </div>
   );
 }
+
 
 function StatusBadge({ match }: { match: Match }) {
   if (match.estado === "finalizado") return null;
@@ -301,12 +308,17 @@ function MatchCard({
   };
 
   const matchGoleadores = goleadores.filter((g) => g.partido_id === match.id);
+  const gf = Number(match.goles_equipo ?? 0);
+  const ga = Number(match.goles_rival ?? 0);
+  const outcome = match.estado === "finalizado"
+    ? (gf > ga ? "victoria" : gf < ga ? "derrota" : "empate")
+    : null;
 
   const dotColor =
     match.estado === "finalizado"
-      ? match.resultado === "victoria"
+      ? outcome === "victoria"
         ? "border-emerald-500 bg-emerald-500"
-        : match.resultado === "derrota"
+        : outcome === "derrota"
         ? "border-red-500 bg-red-500"
         : "border-amber-500 bg-amber-500"
       : match.estado === "en_vivo"
@@ -315,14 +327,15 @@ function MatchCard({
 
   const cardBorder =
     match.estado === "finalizado"
-      ? match.resultado === "victoria"
+      ? outcome === "victoria"
         ? "border-emerald-500/30 ring-1 ring-emerald-500/10"
-        : match.resultado === "derrota"
+        : outcome === "derrota"
         ? "border-red-500/30 ring-1 ring-red-500/10"
         : "border-amber-500/30 ring-1 ring-amber-500/10"
       : match.estado === "en_vivo"
       ? "border-red-500/40 ring-1 ring-red-500/20"
       : "border-accent/40 ring-1 ring-accent/20";
+
 
   return (
     <>
@@ -436,6 +449,12 @@ export function MatchesSection() {
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
   const [goleadores, setGoleadores] = useState<GolesPartido[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const getOutcome = (m: Match) => {
+    const gf = Number(m.goles_equipo ?? 0);
+    const ga = Number(m.goles_rival ?? 0);
+    return gf > ga ? "victoria" : gf < ga ? "derrota" : "empate";
+  };
 
   useEffect(() => {
     checkAdminStatus();
