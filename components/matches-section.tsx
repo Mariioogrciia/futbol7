@@ -1,22 +1,50 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   CalendarDays,
   Clock,
   MapPin,
   Trophy,
-  ChevronRight,
   Home,
   Plane,
   Shield,
+  Edit,
+  User,
 } from "lucide-react";
-import { matches, type Match } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+
+interface Match {
+  id: number;
+  equipo_id: string;
+  rival: string;
+  fecha: string;
+  lokasion: string;
+  estado: 'programado' | 'en_vivo' | 'finalizado';
+  goles_equipo: number;
+  goles_rival: number;
+  resultado: 'victoria' | 'derrota' | 'empate' | null;
+}
+
+interface Jugador {
+  id: number;
+  nombre: string;
+  posicion: string;
+  dorsal?: number;
+}
+
+interface GolesPartido {
+  id: number;
+  partido_id: number;
+  jugador_id: number;
+  nombre: string;
+  goles: number;
+}
 
 function ResultBadge({ match }: { match: Match }) {
-  if (match.status !== "Jugado" || !match.result) return null;
+  if (match.estado !== "finalizado" || !match.resultado) return null;
 
   const config = {
     victoria: {
@@ -39,7 +67,7 @@ function ResultBadge({ match }: { match: Match }) {
     },
   };
 
-  const c = config[match.result];
+  const c = config[match.resultado];
 
   return (
     <div className="flex flex-col items-end gap-1.5">
@@ -54,22 +82,22 @@ function ResultBadge({ match }: { match: Match }) {
         {c.label}
       </span>
       <span className={cn("text-2xl font-black tabular-nums tracking-tight", c.text)}>
-        {match.goalsFor} - {match.goalsAgainst}
+        {match.goles_equipo} - {match.goles_rival}
       </span>
     </div>
   );
 }
 
 function StatusBadge({ match }: { match: Match }) {
-  if (match.status === "Jugado") return null;
+  if (match.estado === "finalizado") return null;
 
-  if (match.status === "Proximo") {
+  if (match.estado === "en_vivo") {
     return (
       <div className="flex flex-col items-end gap-1">
-        <div className="inline-flex items-center rounded-full bg-accent/10 border border-accent/30 px-3 py-1">
-          <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-xs font-bold text-accent uppercase tracking-wider">
-            Proximo
+        <div className="inline-flex items-center rounded-full bg-red-500/10 border border-red-500/30 px-3 py-1">
+          <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
+            En Vivo
           </span>
         </div>
       </div>
@@ -78,13 +106,207 @@ function StatusBadge({ match }: { match: Match }) {
 
   return (
     <span className="rounded-full bg-muted border border-border px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-      Pendiente
+      Próximo
     </span>
   );
 }
 
-function MatchCard({ match, index }: { match: Match; index: number }) {
+function EditMatchModal({
+  match,
+  isOpen,
+  onClose,
+  jugadores,
+}: {
+  match: Match;
+  isOpen: boolean;
+  onClose: () => void;
+  jugadores: Jugador[];
+}) {
+  const [golesEquipo, setGolesEquipo] = useState(match.goles_equipo || 0);
+  const [golesRival, setGolesRival] = useState(match.goles_rival || 0);
+  const [goleadores, setGoleadores] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleGoleadorChange = (playerId: number, goals: number) => {
+    setGoleadores((prev) => {
+      const existing = prev.find((g) => g.id === playerId);
+      if (goals > 0) {
+        const player = jugadores.find((p) => p.id === playerId);
+        if (existing) {
+          return prev.map((g) => (g.id === playerId ? { ...g, goles: goals } : g));
+        } else {
+          return [
+            ...prev,
+            {
+              id: playerId,
+              nombre: player?.nombre || "",
+              posicion: player?.posicion || "",
+              dorsal: player?.dorsal,
+              goles: goals,
+            },
+          ];
+        }
+      } else {
+        return prev.filter((g) => g.id !== playerId);
+      }
+    });
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("Sesión expirada");
+        return;
+      }
+
+      const res = await fetch("/api/admin/update-match", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          matchId: match.id,
+          golesEquipo,
+          golesRival,
+          goleadores,
+        }),
+      });
+
+      if (!res.ok) {
+        alert("Error al actualizar");
+        return;
+      }
+
+      alert("Partido actualizado");
+      onClose();
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      alert("Error de red");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">
+              Editar Resultado: {match.rival}
+            </h2>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Goles Impersed Cubiertas FC
+                </label>
+                <input
+                  type="number"
+                  value={golesEquipo}
+                  onChange={(e) => setGolesEquipo(Number(e.target.value))}
+                  className="w-full p-2 border rounded text-lg font-bold text-center"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Goles {match.rival}
+                </label>
+                <input
+                  type="number"
+                  value={golesRival}
+                  onChange={(e) => setGolesRival(Number(e.target.value))}
+                  className="w-full p-2 border rounded text-lg font-bold text-center"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Goleadores
+              </h3>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {jugadores.map((player) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center gap-3 p-2 rounded border hover:bg-gray-50"
+                  >
+                    <input
+                      type="number"
+                      placeholder="0"
+                      min="0"
+                      className="w-16 p-1 border rounded text-center"
+                      onChange={(e) =>
+                        handleGoleadorChange(player.id, Number(e.target.value))
+                      }
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold">{player.nombre}</div>
+                      <div className="text-xs text-gray-500">
+                        {player.posicion} #{player.dorsal}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? "Guardando..." : "Guardar"}
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                Cancelar
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function MatchCard({
+  match,
+  index,
+  isAdmin,
+  jugadores,
+  goleadores,
+}: {
+  match: Match;
+  index: number;
+  isAdmin: boolean;
+  jugadores: Jugador[];
+  goleadores: GolesPartido[];
+}) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -95,126 +317,256 @@ function MatchCard({ match, index }: { match: Match; index: number }) {
     setTilt({ x: y * -6, y: x * 6 });
   };
 
+  const matchGoleadores = goleadores.filter((g) => g.partido_id === match.id);
+
   const dotColor =
-    match.status === "Jugado"
-      ? match.result === "victoria"
+    match.estado === "finalizado"
+      ? match.resultado === "victoria"
         ? "border-emerald-500 bg-emerald-500"
-        : match.result === "derrota"
+        : match.resultado === "derrota"
         ? "border-red-500 bg-red-500"
         : "border-amber-500 bg-amber-500"
-      : match.status === "Proximo"
-      ? "border-accent bg-accent shadow-md shadow-accent/30"
-      : "border-border bg-card group-hover:border-accent";
+      : match.estado === "en_vivo"
+      ? "border-red-500 bg-red-500 shadow-md shadow-red-500/30"
+      : "border-accent bg-accent shadow-md shadow-accent/30";
 
   const cardBorder =
-    match.status === "Jugado"
-      ? match.result === "victoria"
+    match.estado === "finalizado"
+      ? match.resultado === "victoria"
         ? "border-emerald-500/30 ring-1 ring-emerald-500/10"
-        : match.result === "derrota"
+        : match.resultado === "derrota"
         ? "border-red-500/30 ring-1 ring-red-500/10"
         : "border-amber-500/30 ring-1 ring-amber-500/10"
-      : match.status === "Proximo"
-      ? "border-accent/40 ring-1 ring-accent/20"
-      : "border-border hover:border-primary/30";
+      : match.estado === "en_vivo"
+      ? "border-red-500/40 ring-1 ring-red-500/20"
+      : "border-accent/40 ring-1 ring-accent/20";
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.08 }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-      style={{
-        transform: `perspective(800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-        transition: "transform 0.15s ease-out",
-      }}
-      className="group relative"
-    >
-      {/* Timeline dot */}
-      <div className="absolute -left-[41px] top-8 hidden lg:block">
+    <>
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: index * 0.08 }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+        style={{
+          transform: `perspective(800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+          transition: "transform 0.15s ease-out",
+        }}
+        className="group relative"
+      >
+        <div className="absolute -left-[41px] top-8 hidden lg:block">
+          <div
+            className={cn(
+              "h-4 w-4 rounded-full border-2 transition-colors duration-300",
+              dotColor
+            )}
+          />
+        </div>
+
         <div
           className={cn(
-            "h-4 w-4 rounded-full border-2 transition-colors duration-300",
-            dotColor
+            "overflow-hidden rounded-xl border bg-card p-5 shadow-sm transition-all duration-300 hover:shadow-xl sm:p-6",
+            cardBorder
           )}
-        />
-      </div>
-
-      <div
-        className={cn(
-          "overflow-hidden rounded-xl border bg-card p-5 shadow-sm transition-all duration-300 hover:shadow-xl sm:p-6",
-          cardBorder
-        )}
-      >
-        {/* Jornada header */}
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-accent" />
-            <span className="text-xs font-bold text-accent uppercase tracking-wider">
-              Jornada {match.jornada}
-            </span>
-            <span className="text-xs text-muted-foreground">{"/"}</span>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-                match.isHome
-                  ? "bg-accent/10 text-accent"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              {match.isHome ? (
-                <Home className="h-3 w-3" />
-              ) : (
-                <Plane className="h-3 w-3" />
-              )}
-              {match.isHome ? "Local" : "Visitante"}
-            </span>
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-accent" />
+              <span className="text-xs font-bold text-accent uppercase tracking-wider">
+                {match.fecha}
+              </span>
+            </div>
+            <StatusBadge match={match} />
           </div>
-          <StatusBadge match={match} />
-        </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h3 className="text-lg font-bold text-card-foreground sm:text-xl">
-              {match.isHome ? "Impersed Cubiertas FC" : match.rival}
-              <span className="mx-2 text-muted-foreground font-normal">vs</span>
-              {match.isHome ? match.rival : "Impersed Cubiertas FC"}
-            </h3>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <CalendarDays className="h-3.5 w-3.5 text-accent" />
-                {match.date}
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-bold text-card-foreground sm:text-xl">
+                Impersed Cubiertas FC
+                <span className="mx-2 text-muted-foreground font-normal">vs</span>
+                {match.rival}
+              </h3>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5 text-accent" />
+                  {new Date(match.fecha).toLocaleTimeString("es-ES", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-accent" />
+                  <span className="truncate">{match.lokasion}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Clock className="h-3.5 w-3.5 text-accent" />
-                {match.time}
-              </div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 text-accent" />
-                <span className="truncate">{match.location}</span>
-              </div>
+
+              {matchGoleadores.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-border/30">
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">
+                    Goleadores:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {matchGoleadores.map((g) => (
+                      <span
+                        key={g.id}
+                        className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-1 text-xs font-semibold text-accent"
+                      >
+                        {g.nombre} ({g.goles})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col items-end gap-2">
+              <ResultBadge match={match} />
+              {isAdmin && match.estado === "en_vivo" && (
+                <button
+                  onClick={() => setEditModalOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-full bg-accent/10 border border-accent/30 px-3 py-1 text-xs font-bold text-accent uppercase tracking-wider hover:bg-accent/20"
+                >
+                  <Edit className="h-3 w-3" />
+                  Editar
+                </button>
+              )}
             </div>
           </div>
-
-          <ResultBadge match={match} />
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+
+      <EditMatchModal
+        match={match}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        jugadores={jugadores}
+      />
+    </>
   );
 }
 
 export function MatchesSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [jugadores, setJugadores] = useState<Jugador[]>([]);
+  const [goleadores, setGoleadores] = useState<GolesPartido[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const played = matches.filter((m) => m.status === "Jugado");
-  const wins = played.filter((m) => m.result === "victoria").length;
-  const losses = played.filter((m) => m.result === "derrota").length;
-  const draws = played.filter((m) => m.result === "empate").length;
-  const gf = played.reduce((sum, m) => sum + (m.goalsFor ?? 0), 0);
-  const ga = played.reduce((sum, m) => sum + (m.goalsAgainst ?? 0), 0);
+  useEffect(() => {
+    checkAdminStatus();
+    fetchData();
+  }, []);
+
+  async function checkAdminStatus() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: userData } = await supabase
+        .from("usuarios")
+        .select("rol")
+        .eq("id", session.user.id)
+        .single();
+
+      if (userData?.rol === "admin") {
+        setIsAdmin(true);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function fetchData() {
+    try {
+      // Traer partidos donde formato = 'copa'
+      const { data: matchesData, error: matchesError } = await supabase
+        .from("partidos")
+        .select("*")
+        .eq("formato", "copa")
+        .order("fecha", { ascending: true });
+
+      if (matchesError) throw matchesError;
+
+      const formattedMatches: Match[] = (matchesData || []).map((m: any) => ({
+        id: m.id,
+        equipo_id: m.equipo_id,
+        rival: m.rival,
+        fecha: m.fecha,
+        lokasion: m.lokasion,
+        estado: m.estado as any,
+        goles_equipo: m.goles_equipo || 0,
+        goles_rival: m.goles_rival || 0,
+        resultado: m.resultado as any || null,
+      }));
+
+      setMatches(formattedMatches);
+
+      // Traer jugadores desde Supabase
+      const { data: playersData, error: playersError } = await supabase
+        .from("jugadores")
+        .select("*");
+
+      if (!playersError && playersData) {
+        setJugadores(
+          playersData.map((p: any) => ({
+            id: p.id,
+            nombre: p.nombre,
+            posicion: p.posicion,
+            dorsal: p.dorsal,
+          }))
+        );
+      }
+
+      // Traer goleadores de Supabase
+      const { data: scorersData, error: scorersError } = await supabase
+        .from("goleadores_partido")
+        .select("*");
+
+      if (!scorersError && scorersData) {
+        setGoleadores(scorersData || []);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // Fallback: usar datos estáticos
+      const { matches: staticMatches, players } = await import("@/lib/data");
+      
+      const formattedMatches: Match[] = staticMatches.map((m: any) => ({
+        id: m.id,
+        equipo_id: "futbol7",
+        rival: m.rival,
+        fecha: m.date,
+        lokasion: m.location,
+        estado: m.status === "Jugado" ? "finalizado" : m.status === "Proximo" ? "en_vivo" : "programado",
+        goles_equipo: m.goalsFor || 0,
+        goles_rival: m.goalsAgainst || 0,
+        resultado: m.result as any || null,
+      }));
+
+      setMatches(formattedMatches);
+      setJugadores(
+        players.map((p: any) => ({
+          id: p.id,
+          nombre: p.name,
+          posicion: p.position,
+          dorsal: p.number,
+        }))
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const played = matches.filter((m) => m.estado === "finalizado");
+  const wins = played.filter((m) => m.resultado === "victoria").length;
+  const losses = played.filter((m) => m.resultado === "derrota").length;
+  const draws = played.filter((m) => m.resultado === "empate").length;
+  const gf = played.reduce((sum, m) => sum + (m.goles_equipo || 0), 0);
+  const ga = played.reduce((sum, m) => sum + (m.goles_rival || 0), 0);
 
   return (
     <section id="partidos" className="bg-secondary py-24 lg:py-32" ref={ref}>
@@ -235,7 +587,7 @@ export function MatchesSection() {
             Calendario de Copa
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Todos los partidos de Impersed Cubiertas FC en la Copa de Futbol 7, Grupo F.
+            Todos los partidos de Impersed Cubiertas FC en la Copa de Futbol 7.
           </p>
         </motion.div>
 
@@ -249,7 +601,9 @@ export function MatchesSection() {
           >
             <div className="flex items-center gap-2 rounded-lg bg-card border border-border px-4 py-2">
               <span className="text-sm text-muted-foreground">PJ</span>
-              <span className="text-lg font-bold text-card-foreground">{played.length}</span>
+              <span className="text-lg font-bold text-card-foreground">
+                {played.length}
+              </span>
             </div>
             <div className="flex items-center gap-2 rounded-lg bg-card border border-emerald-500/20 px-4 py-2">
               <span className="text-sm text-emerald-400">V</span>
@@ -276,9 +630,26 @@ export function MatchesSection() {
         <div className="relative mt-12 lg:ml-8">
           <div className="absolute left-0 top-0 hidden h-full w-px bg-border lg:block" />
           <div className="grid gap-5 lg:pl-10">
-            {matches.map((match, i) => (
-              <MatchCard key={match.id} match={match} index={i} />
-            ))}
+            {loading ? (
+              <div className="text-center text-muted-foreground">
+                Cargando partidos...
+              </div>
+            ) : matches.length === 0 ? (
+              <div className="text-center text-muted-foreground">
+                No hay partidos disponibles.
+              </div>
+            ) : (
+              matches.map((match, i) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  index={i}
+                  isAdmin={isAdmin}
+                  jugadores={jugadores}
+                  goleadores={goleadores}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>

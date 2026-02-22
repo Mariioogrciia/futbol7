@@ -1,83 +1,114 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminPanel() {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
-  const [partidos, setPartidos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const t = localStorage.getItem("admin_token");
-    if (!t) {
-      router.push("/admin/login");
+    const userStr = localStorage.getItem("user");
+    if (!userStr) {
+      router.push("/login");
       return;
     }
-    setToken(t);
-    fetchPartidos(t);
-  }, []);
 
-  async function fetchPartidos(token: string) {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/partidos", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setPartidos(data);
-      } else {
-        setError(data.message || "Error al cargar partidos");
-      }
-    } catch {
-      setError("Error de red");
-    } finally {
-      setLoading(false);
+    const userData = JSON.parse(userStr);
+    if (userData.rol !== "admin") {
+      router.push("/login");
+      return;
     }
-  }
 
-  if (!token) return null;
+    setUser(userData);
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
+  };
+
+  if (!user)
+    return (
+      <div className="p-4 text-center">Cargando...</div>
+    );
 
   return (
-    <div className="min-h-screen bg-secondary flex flex-col items-center py-12">
-      <div className="bg-background shadow-lg rounded-xl p-8 w-full max-w-3xl flex flex-col gap-6 border border-primary">
-        <h2 className="text-3xl font-bold text-primary text-center mb-4">Panel de Administración</h2>
-        {loading ? (
-          <div className="text-center text-lg">Cargando partidos...</div>
-        ) : error ? (
-          <div className="text-red-500 text-center font-semibold">{error}</div>
-        ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b">Fecha</th>
-                <th className="py-2 px-4 border-b">Rival</th>
-                <th className="py-2 px-4 border-b">Resultado</th>
-                <th className="py-2 px-4 border-b">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {partidos.map((p: any) => (
-                <tr key={p.id} className="hover:bg-secondary/50">
-                  <td className="py-2 px-4 border-b">{p.fecha}</td>
-                  <td className="py-2 px-4 border-b">{p.rival}</td>
-                  <td className="py-2 px-4 border-b">{p.resultado}</td>
-                  <td className="py-2 px-4 border-b">
-                    <button
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold hover:bg-primary/90"
-                      onClick={() => router.push(`/admin/partido/${p.id}`)}
-                    >
-                      Editar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+    <div className="min-h-screen bg-gray-900 text-white">
+      <nav className="bg-gray-800 p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">⚽ Panel Administrativo</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Sección de Resultados */}
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">📊 Editar Resultados</h2>
+            <p className="text-gray-400 mb-4">
+              Aquí podrás actualizar los resultados de los partidos en tiempo real.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+              Ir a Resultados
+            </button>
+          </div>
+
+          {/* Sección de Goleadores */}
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">⚽ Gestionar Goleadores</h2>
+            <p className="text-gray-400 mb-4">
+              Registra los goles de los jugadores en cada partido.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+              Ir a Goleadores
+            </button>
+          </div>
+
+          {/* Sección de Usuarios */}
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">👥 Gestionar Usuarios</h2>
+            <p className="text-gray-400 mb-4">
+              Crea y administra usuarios admin, equipos y externos.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+              Ir a Usuarios
+            </button>
+          </div>
+
+          {/* Sección de Estadísticas */}
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">📈 Estadísticas</h2>
+            <p className="text-gray-400 mb-4">
+              Visualiza estadísticas generales de la liga.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+              Ver Estadísticas
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-8 bg-gray-800 p-6 rounded-lg">
+          <h2 className="text-xl font-bold mb-4">Información de la Sesión</h2>
+          <p>
+            <strong>Usuario:</strong> {user.nombre}
+          </p>
+          <p>
+            <strong>Email:</strong> {user.email}
+          </p>
+          <p>
+            <strong>Rol:</strong> {user.rol}
+          </p>
+        </div>
       </div>
     </div>
   );
 }
+
