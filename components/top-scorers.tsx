@@ -28,38 +28,22 @@ export function TopScorersSection() {
   async function fetchTopScorers() {
     try {
       const { data, error } = await supabase
-        .from('goleadores_partido')
+        .from('jugadores')
         .select('*')
         .order('goles', { ascending: false });
 
       if (error) throw error;
 
-      // Agrupar por jugador y calcular totales
-      const grouped = new Map<number, TopScorer>();
-      
-      data?.forEach((record: any) => {
-        const key = record.jugador_id;
-        if (!grouped.has(key)) {
-          grouped.set(key, {
-            jugador_id: key,
-            nombre: record.nombre,
-            posicion: record.posicion,
-            dorsal: record.dorsal,
-            total_goles: 0,
-            partidos: 0,
-          });
-        }
-        const scorer = grouped.get(key)!;
-        scorer.total_goles += record.goles;
-        scorer.partidos += 1;
-      });
+      const scorers: TopScorer[] = (data || []).map((jugador: any) => ({
+        jugador_id: jugador.id,
+        nombre: jugador.nombre,
+        posicion: jugador.posicion,
+        dorsal: jugador.dorsal,
+        total_goles: jugador.goles || 0,
+        partidos: jugador.partidos || 0, // Si tienes un campo de partidos jugados, si no puedes poner 0 o calcularlo aparte
+      }));
 
-      // Convertir a array y ordenar
-      const sortedScorers = Array.from(grouped.values()).sort(
-        (a, b) => b.total_goles - a.total_goles
-      );
-
-      setScorers(sortedScorers);
+      setScorers(scorers);
     } catch (error) {
       console.error('Error fetching scorers:', error);
     } finally {
