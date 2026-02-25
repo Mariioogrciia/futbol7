@@ -1,7 +1,7 @@
 {
+  "/admin/page": "app/admin/page.js",
   "/api/matches/route": "app/api/matches/route.js",
   "/api/players/route": "app/api/players/route.js",
   "/login/page": "app/login/page.js",
-  "/page": "app/page.js",
-  "/registro/page": "app/registro/page.js"
+  "/page": "app/page.js"
 }

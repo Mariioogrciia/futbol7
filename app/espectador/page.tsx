@@ -2,30 +2,40 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+
 
 export default function EspectadorPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      router.push('/login');
-      return;
-    }
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push("/login");
+        return;
+      }
 
-    const userData = JSON.parse(userStr);
-    if (userData.rol !== 'externo') {
-      router.push('/login');
-      return;
-    }
+      const { data: userData } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
 
-    setUser(userData);
+      if (!userData || userData.rol !== 'externo') {
+        router.push("/login");
+        return;
+      }
+
+      setUser({ ...userData, email: session.user.email });
+    };
+
+    checkAuth();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     router.push('/login');
   };
 

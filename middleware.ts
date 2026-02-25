@@ -2,16 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
-  const pathname = request.nextUrl.pathname;
-  // Solo proteger rutas administrativas y de usuario
-  const protectedPrefixes = ['/admin', '/dashboard'];
-
-  if (protectedPrefixes.some(p => pathname.startsWith(p))) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
+  // Client-side authentication is handled inside the pages using Supabase auth
 
   return NextResponse.next();
 }

@@ -213,7 +213,7 @@ function EditMatchModal({
           >
             <h2 className="text-xl font-bold mb-4">Editar Resultado: {match.rival}</h2>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-medium mb-1">Goles Impersed</label>
                 <input
