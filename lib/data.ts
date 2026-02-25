@@ -49,8 +49,10 @@ export const players: Player[] = [
   { id: 8, name: "Hugo Hernández", position: "Medio", number: 10, description: "Velocidad electrica (para chuparla) y el capitán (vive en un edit).", avatar: "/images/Hugo.jpeg" },
   { id: 9, name: "Marcos Rivera", position: "Medio", number: 11, description: "Jueo de pies a la orden del día (solo viene con la novia).", avatar: "/images/Markitos.jpeg" },
   { id: 10, name: "Alberto Suárez", position: "Medio", number: 26, description: "Ni se quien es (no ha venido).", avatar: "/images/suarez.jpeg" },
-  { id: 11, name: "David Sastre", position: "Delantero", number: 88, description: "Ejemplo a bajos rasos de fernando llorente (está cansado antes de entrar).", avatar: "/images/Sastre.jpeg" },
+  { id: 11, name: "David Sastre", position: "Delantero", number: 88, description: "Ejemplo a bajos rasgos de fernando llorente (está cansado antes de entrar).", avatar: "/images/Sastre.jpeg" },
   { id: 12, name: "Rodrigo Casado", position: "Delantero", number: 33, description: "El presionador del equipo (no da pie con bola).", avatar: "/images/Roch.jpeg" },
+  { id: 13, name: "Mario García", position: "Delantero", number: 21, description: "Claro ejemplo de que no hay que jugar en el futbol 7 (lesión en 2 partidos).", avatar: "/images/lesion.jpg" },
+
 ];
 
 export const staff: StaffMember[] = [

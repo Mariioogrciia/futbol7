@@ -3,7 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Image from "next/image";
-import { players, staff, type Position } from "@/lib/data";
+import { useTeamData } from "@/components/providers/team-provider";
+import { staff, players as staticPlayers, type Position } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { X, ZoomIn } from "lucide-react";
 
@@ -85,7 +86,7 @@ function PlayerCard({
   index,
   onPhotoClick,
 }: {
-  player: (typeof players)[0];
+  player: any;
   index: number;
   onPhotoClick: (src: string, alt: string) => void;
 }) {
@@ -125,8 +126,8 @@ function PlayerCard({
           aria-label={`Ampliar foto de ${player.name}`}
         >
           <Image
-            src={player.avatar}
-            alt={player.name}
+            src={player.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.nombre)}&background=0D8ABC&color=fff&size=200`}
+            alt={player.nombre}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-110"
             sizes="96px"
@@ -138,19 +139,19 @@ function PlayerCard({
 
         {/* Number badge */}
         <div className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-          {player.number}
+          {player.dorsal || "-"}
         </div>
 
         <h3 className="text-lg font-bold text-card-foreground">
-          {player.name}
+          {player.nombre}
         </h3>
 
         <span className="mt-1 inline-flex rounded-full bg-accent/10 px-3 py-0.5 text-xs font-semibold text-accent">
-          {player.position}
+          {player.posicion}
         </span>
 
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          {player.description}
+          {player.descripcion || "Jugador de Impersed Cubiertas FC"}
         </p>
       </div>
     </motion.div>
@@ -166,11 +167,36 @@ export function TeamSection() {
   } | null>(null);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
+  const { jugadores: players, loading } = useTeamData();
+
+  // Mapear los jugadores obtenidos del contexto `players` con los `staticPlayers` basándonos en el `nombre`
+  const playersWithAvatars = players.map(player => {
+    // Función para quitar acentos y pasar a minúsculas
+    const normalize = (str?: string) =>
+      (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+    const playerName = normalize(player.nombre);
+
+    // Buscar coincidencia flexible de nombre ignorando acentos y mayúsculas
+    const match = staticPlayers.find(sp => {
+      const spName = normalize(sp.name);
+      const nameParts = playerName.split(' ');
+
+      return spName === playerName ||
+        (spName.includes(nameParts[0]) && (nameParts.length > 1 ? spName.includes(nameParts[1]) : true));
+    });
+
+    return {
+      ...player,
+      avatar: match?.avatar || null,
+      descripcion: match?.description || null
+    };
+  });
 
   const filtered =
     active === "Todos"
-      ? players
-      : players.filter((p) => p.position === active);
+      ? playersWithAvatars
+      : playersWithAvatars.filter((p) => p.posicion === active);
 
   const openLightbox = useCallback((src: string, alt: string) => {
     setLightbox({ src, alt });
@@ -214,14 +240,20 @@ export function TeamSection() {
 
           {/* Player grid */}
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {filtered.map((player, i) => (
-              <PlayerCard
-                key={player.id}
-                player={player}
-                index={i}
-                onPhotoClick={openLightbox}
-              />
-            ))}
+            {loading ? (
+              <div className="col-span-full text-center text-muted-foreground">Cargando jugadores...</div>
+            ) : filtered.length === 0 ? (
+              <div className="col-span-full text-center text-muted-foreground">No hay jugadores disponibles.</div>
+            ) : (
+              filtered.map((player, i) => (
+                <PlayerCard
+                  key={player.id}
+                  player={player}
+                  index={i}
+                  onPhotoClick={openLightbox}
+                />
+              ))
+            )}
           </div>
 
           {/* Cuerpo Tecnico */}

@@ -1,7 +1,11 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
+import { useTeamData } from "@/components/providers/team-provider";
+import { supabase } from "@/lib/supabase";
+
+const EQUIPO_ID = "7ec6e1c6-9704-496c-ae72-a590817b9568"; // <-- tu equipo_id
 import {
   Trophy,
   Target,
@@ -79,46 +83,50 @@ export function StatsSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
+  const { stats, topGoleadores } = useTeamData();
+
+  const topScorerInfo = topGoleadores && topGoleadores.length > 0 ? topGoleadores[0] : { nombre: 'Nadie', goles_totales: 0 };
+
   const statCards = [
     {
       icon: Trophy,
       label: "Partidos jugados",
-      value: stats.played,
+      value: stats.partidosJugados,
       accent: "text-accent",
       bg: "bg-accent/10",
     },
     {
       icon: TrendingUp,
       label: "Victorias",
-      value: stats.won,
+      value: stats.victorias,
       accent: "text-accent",
       bg: "bg-accent/10",
     },
     {
       icon: Minus,
       label: "Empates",
-      value: stats.drawn,
+      value: stats.empates,
       accent: "text-muted-foreground",
       bg: "bg-muted",
     },
     {
       icon: X,
       label: "Derrotas",
-      value: stats.lost,
+      value: stats.derrotas,
       accent: "text-muted-foreground",
       bg: "bg-muted",
     },
     {
       icon: Target,
       label: "Goles a favor",
-      value: stats.goalsFor,
+      value: stats.golesFavor,
       accent: "text-accent",
       bg: "bg-accent/10",
     },
     {
       icon: Shield,
       label: "Goles en contra",
-      value: stats.goalsAgainst,
+      value: stats.golesContra,
       accent: "text-muted-foreground",
       bg: "bg-muted",
     },
@@ -134,10 +142,10 @@ export function StatsSection() {
           className="text-center"
         >
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            Estadisticas
+            Estadísticas
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Numeros que hablan por si solos esta temporada.
+            Números que hablan por sí solos esta temporada.
           </p>
         </motion.div>
 
@@ -185,36 +193,36 @@ export function StatsSection() {
             <div className="flex flex-col gap-5">
               <StatBar
                 label="Victorias"
-                value={stats.won}
-                max={stats.played}
+                value={stats.victorias}
+                max={Math.max(stats.partidosJugados, 1)}
                 color="bg-accent"
                 inView={isInView}
               />
               <StatBar
                 label="Empates"
-                value={stats.drawn}
-                max={stats.played}
+                value={stats.empates}
+                max={Math.max(stats.partidosJugados, 1)}
                 color="bg-muted-foreground/40"
                 inView={isInView}
               />
               <StatBar
                 label="Derrotas"
-                value={stats.lost}
-                max={stats.played}
+                value={stats.derrotas}
+                max={Math.max(stats.partidosJugados, 1)}
                 color="bg-muted-foreground/20"
                 inView={isInView}
               />
               <StatBar
                 label="Goles a favor"
-                value={stats.goalsFor}
-                max={70}
+                value={stats.golesFavor}
+                max={Math.max(stats.golesFavor, stats.golesContra, 10)}
                 color="bg-accent"
                 inView={isInView}
               />
               <StatBar
                 label="Goles en contra"
-                value={stats.goalsAgainst}
-                max={70}
+                value={stats.golesContra}
+                max={Math.max(stats.golesFavor, stats.golesContra, 10)}
                 color="bg-primary/40"
                 inView={isInView}
               />
@@ -231,13 +239,13 @@ export function StatsSection() {
               <Star className="h-8 w-8 text-accent" />
             </div>
             <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/60">
-              Maximo goleador
+              Máximo goleador
             </p>
             <p className="mt-2 text-2xl font-bold text-primary-foreground">
-              {stats.topScorer}
+              {topScorerInfo.nombre}
             </p>
             <p className="mt-1 text-5xl font-bold text-accent">
-              <AnimatedCounter target={stats.topScorerGoals} inView={isInView} />
+              <AnimatedCounter target={topScorerInfo.goles_totales} inView={isInView} />
             </p>
             <p className="mt-1 text-sm text-primary-foreground/60">
               goles esta temporada

@@ -5,6 +5,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Clock, MapPin, Trophy, Shield, Edit, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { useTeamData } from "@/components/providers/team-provider";
 
 const EQUIPO_ID = "7ec6e1c6-9704-496c-ae72-a590817b9568"; // <-- pon aquí tu equipo_id
 
@@ -13,11 +14,12 @@ interface Match {
   equipo_id: string;
   rival: string;
   fecha: string;
-  lokasion: string;
   estado: "programado" | "en_vivo" | "finalizado";
   goles_equipo: number;
   goles_rival: number;
   resultado: string | null; // marcador "2-4"
+  estadio: string;
+  formato: "liga" | "copa";
 }
 
 
@@ -319,22 +321,22 @@ function MatchCard({
       ? outcome === "victoria"
         ? "border-emerald-500 bg-emerald-500"
         : outcome === "derrota"
-        ? "border-red-500 bg-red-500"
-        : "border-amber-500 bg-amber-500"
+          ? "border-red-500 bg-red-500"
+          : "border-amber-500 bg-amber-500"
       : match.estado === "en_vivo"
-      ? "border-red-500 bg-red-500 shadow-md shadow-red-500/30"
-      : "border-accent bg-accent shadow-md shadow-accent/30";
+        ? "border-red-500 bg-red-500 shadow-md shadow-red-500/30"
+        : "border-accent bg-accent shadow-md shadow-accent/30";
 
   const cardBorder =
     match.estado === "finalizado"
       ? outcome === "victoria"
         ? "border-emerald-500/30 ring-1 ring-emerald-500/10"
         : outcome === "derrota"
-        ? "border-red-500/30 ring-1 ring-red-500/10"
-        : "border-amber-500/30 ring-1 ring-amber-500/10"
+          ? "border-red-500/30 ring-1 ring-red-500/10"
+          : "border-amber-500/30 ring-1 ring-amber-500/10"
       : match.estado === "en_vivo"
-      ? "border-red-500/40 ring-1 ring-red-500/20"
-      : "border-accent/40 ring-1 ring-accent/20";
+        ? "border-red-500/40 ring-1 ring-red-500/20"
+        : "border-accent/40 ring-1 ring-accent/20";
 
 
   return (
@@ -393,7 +395,7 @@ function MatchCard({
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5 text-accent" />
-                  <span className="truncate">{match.lokasion}</span>
+                  <span className="truncate">Estadio: {match.estadio}</span>
                 </div>
               </div>
 
@@ -446,6 +448,7 @@ export function MatchesSection() {
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [activeFormat, setActiveFormat] = useState<"liga" | "copa">("liga");
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
   const [goleadores, setGoleadores] = useState<GolesPartido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -482,8 +485,8 @@ export function MatchesSection() {
 
   async function fetchData() {
     try {
-      const res = await fetch(`/api/copa?equipo_id=${EQUIPO_ID}`);
-      if (!res.ok) throw new Error("Error API /api/copa");
+      const res = await fetch(`/api/matches?equipo_id=${EQUIPO_ID}`);
+      if (!res.ok) throw new Error("Error API /api/matches");
       const json = await res.json();
 
       const formattedMatches: Match[] = (json.partidos || []).map((m: any) => ({
@@ -496,6 +499,8 @@ export function MatchesSection() {
         goles_equipo: m.goles_equipo || 0,
         goles_rival: m.goles_rival || 0,
         resultado: m.resultado || null,
+        formato: m.formato || "liga",
+        estadio: m.estadio || "FUTBOL 7 D CASA GRANDE",
       }));
 
       setMatches(formattedMatches);
@@ -526,10 +531,11 @@ export function MatchesSection() {
     }
   }
 
-  const played = matches.filter((m) => m.estado === "finalizado");
-  const wins = played.filter((m) => m.resultado === "victoria").length;
-  const losses = played.filter((m) => m.resultado === "derrota").length;
-  const draws = played.filter((m) => m.resultado === "empate").length;
+  const filteredMatches = matches.filter((m) => m.formato === activeFormat);
+  const played = filteredMatches.filter((m) => m.estado === "finalizado");
+  const wins = played.filter((m) => Number(m.goles_equipo) > Number(m.goles_rival)).length;
+  const losses = played.filter((m) => Number(m.goles_equipo) < Number(m.goles_rival)).length;
+  const draws = played.filter((m) => Number(m.goles_equipo) == Number(m.goles_rival)).length;
   const gf = played.reduce((sum, m) => sum + (m.goles_equipo || 0), 0);
   const ga = played.reduce((sum, m) => sum + (m.goles_rival || 0), 0);
 
@@ -544,14 +550,41 @@ export function MatchesSection() {
         >
           <div className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full bg-accent/10 border border-accent/20 px-4 py-1.5">
             <Trophy className="h-4 w-4 text-accent" />
-            <span className="text-sm font-semibold text-accent">Copa Futbol 7</span>
+            <span className="text-sm font-semibold text-accent">
+              {activeFormat === "liga" ? "Liga Futbol 7" : "Copa Futbol 7"}
+            </span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl text-balance">
-            Calendario de Copa
+            Calendario de {activeFormat === "liga" ? "Liga" : "Copa"}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Todos los partidos de Impersed Cubiertas FC en la Copa de Futbol 7.
+            Todos los partidos de Impersed Cubiertas FC en la {activeFormat === "liga" ? "Liga" : "Copa"} de Futbol 7.
           </p>
+
+          <div className="mx-auto mt-8 flex max-w-xs rounded-lg bg-muted p-1">
+            <button
+              onClick={() => setActiveFormat("liga")}
+              className={cn(
+                "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                activeFormat === "liga"
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+              )}
+            >
+              Liga
+            </button>
+            <button
+              onClick={() => setActiveFormat("copa")}
+              className={cn(
+                "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                activeFormat === "copa"
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+              )}
+            >
+              Copa
+            </button>
+          </div>
         </motion.div>
 
         {played.length > 0 && (
@@ -591,10 +624,10 @@ export function MatchesSection() {
           <div className="grid gap-5 lg:pl-10">
             {loading ? (
               <div className="text-center text-muted-foreground">Cargando partidos...</div>
-            ) : matches.length === 0 ? (
+            ) : filteredMatches.length === 0 ? (
               <div className="text-center text-muted-foreground">No hay partidos disponibles.</div>
             ) : (
-              matches.map((match, i) => (
+              filteredMatches.map((match, i) => (
                 <MatchCard
                   key={match.id}
                   match={match}

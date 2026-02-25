@@ -1,16 +1,22 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, Users } from "lucide-react";
+import { useTeamData } from "@/components/providers/team-provider";
 
-const quickStats = [
-  { label: "Partidos ganados", value: "5" },
-  { label: "Goles esta temporada", value: "48" },
-  { label: "Jugadores", value: "13" },
-  { label: "Temporadas", value: "1" },
-];
+const EQUIPO_ID = "7ec6e1c6-9704-496c-ae72-a590817b9568";
 
 export function Hero() {
+  const { stats, jugadores } = useTeamData();
+
+  const quickStats = [
+    { label: "Partidos jugados", value: stats.partidosJugados.toString() },
+    { label: "Victorias", value: stats.victorias.toString() },
+    { label: "Goles esta temporada", value: stats.golesFavor.toString() },
+    { label: "Jugadores", value: jugadores.length.toString() },
+  ];
+
   return (
     <section
       id="inicio"

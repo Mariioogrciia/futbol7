@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 export async function POST(request: NextRequest) {
   try {
     const { matchId, golesEquipo, golesRival, goleadores } = await request.json();
-    
+
     if (!matchId) {
       return NextResponse.json({ error: 'matchId requerido' }, { status: 400 });
     }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       console.error('Error deleting previous scorers:', deleteError);
     }
 
-    // Insertar nuevos goleadores
+    // Insertar nuevos goleadores y actualizar totales de jugadores
     if (goleadores && Array.isArray(goleadores) && goleadores.length > 0) {
       const scorersToInsert = goleadores
         .filter((g: any) => g.goles > 0)
@@ -70,13 +70,33 @@ export async function POST(request: NextRequest) {
         }));
 
       if (scorersToInsert.length > 0) {
+        // 1. Insertar en la tabla relacional de goleadores del partido
         const { error: insertError } = await supabaseAdmin
           .from('goleadores_partido')
           .insert(scorersToInsert);
 
         if (insertError) {
           console.error('Error inserting scorers:', insertError);
-          // No fallar la request, solo loggear
+        } else {
+          // 2. Por cada jugador que metió gol, actualizar su récord total en 'jugadores'
+          // Nota: Como no tenemos una función RPC incrementar, lo hacemos leyendo primero y actualizando.
+          for (const scorer of scorersToInsert) {
+            const { data: playerData } = await supabaseAdmin
+              .from('jugadores')
+              .select('goles, partidos')
+              .eq('id', scorer.jugador_id)
+              .single();
+
+            if (playerData) {
+              await supabaseAdmin
+                .from('jugadores')
+                .update({
+                  goles: (playerData.goles || 0) + scorer.goles,
+                  partidos: (playerData.partidos || 0) + 1 // asumiendo 1 partido más jugado
+                })
+                .eq('id', scorer.jugador_id);
+            }
+          }
         }
       }
     }

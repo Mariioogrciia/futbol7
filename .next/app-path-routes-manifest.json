@@ -1,0 +1,18 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/admin/update-match/route": "/api/admin/update-match",
+  "/api/auth/login/route": "/api/auth/login",
+  "/api/auth/registro/route": "/api/auth/registro",
+  "/api/auth/verify/route": "/api/auth/verify",
+  "/api/health/route": "/api/health",
+  "/api/matches/route": "/api/matches",
+  "/api/partidos/route": "/api/partidos",
+  "/api/team/route": "/api/team",
+  "/api/players/route": "/api/players",
+  "/admin/page": "/admin",
+  "/login/page": "/login",
+  "/espectador/page": "/espectador",
+  "/page": "/",
+  "/dashboard/page": "/dashboard",
+  "/registro/page": "/registro"
+}

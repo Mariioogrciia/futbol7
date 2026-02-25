@@ -19,6 +19,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+import { TeamProvider } from "@/components/providers/team-provider";
+
 export default function RootLayout({
   children,
 }: {
@@ -26,7 +28,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={inter.variable}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <TeamProvider>
+          {children}
+        </TeamProvider>
+      </body>
     </html>
   );
 }

@@ -1,16 +1,17 @@
 "use client";
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
-import { stats } from "@/lib/data";
+import { useTeamData } from "@/components/providers/team-provider";
 
 const COLORS = ["#22c55e", "#ef4444", "#fbbf24"];
 
-const data = [
-  { name: "Victorias", value: stats.won },
-  { name: "Derrotas", value: stats.lost },
-  { name: "Empates", value: stats.drawn },
-];
-
 export default function StatsChart() {
+  const { stats } = useTeamData();
+
+  const data = [
+    { name: "Victorias", value: stats.victorias },
+    { name: "Derrotas", value: stats.derrotas },
+    { name: "Empates", value: stats.empates },
+  ];
   return (
     <div className="w-full max-w-md mx-auto bg-background rounded-xl shadow-lg p-6 border border-primary">
       <h3 className="text-xl font-bold text-center mb-4 text-primary">Resumen de la temporada</h3>

@@ -52,9 +52,9 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
         return;
       }
 
+      // Redirigir al dashboard
       onClose();
-      // Recargar página para mostrar controles admin
-      window.location.reload();
+      router.push('/admin');
     } catch (err) {
       setError('Error de conexión');
     } finally {
@@ -131,6 +131,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -192,8 +193,7 @@ export function Header() {
             </div>
           </a>
 
-          {/* Desktop Nav */}
-          <nav className="hidden items-center gap-1 lg:flex">
+          <div className="hidden items-center gap-1 lg:flex">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -204,12 +204,20 @@ export function Header() {
               </a>
             ))}
             {isAdmin ? (
-              <button
-                onClick={handleLogout}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary"
-              >
-                Logout Admin
-              </button>
+              <>
+                <button
+                  onClick={() => router.push('/admin')}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-1"
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <button
                 onClick={() => setLoginModalOpen(true)}
@@ -219,7 +227,7 @@ export function Header() {
                 Admin
               </button>
             )}
-          </nav>
+          </div>
 
           {/* Mobile Toggle */}
           <button
@@ -252,12 +260,23 @@ export function Header() {
                   </a>
                 ))}
                 {isAdmin ? (
-                  <button
-                    onClick={handleLogout}
-                    className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left"
-                  >
-                    Logout Admin
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        router.push('/admin');
+                      }}
+                      className="rounded-md px-3 py-3 text-base font-medium text-primary transition-colors hover:text-primary/80 hover:bg-secondary text-left flex items-center gap-2"
+                    >
+                      Dashboard Admin
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left"
+                    >
+                      Logout
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={() => {

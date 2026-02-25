@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { Goal, Trophy, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import { useTeamData } from "@/components/providers/team-provider";
 
 interface TopScorer {
   jugador_id: number;
@@ -18,38 +18,7 @@ interface TopScorer {
 export function TopScorersSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
-  const [scorers, setScorers] = useState<TopScorer[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchTopScorers();
-  }, []);
-
-  async function fetchTopScorers() {
-    try {
-      const { data, error } = await supabase
-        .from('jugadores')
-        .select('*')
-        .order('goles', { ascending: false });
-
-      if (error) throw error;
-
-      const scorers: TopScorer[] = (data || []).map((jugador: any) => ({
-        jugador_id: jugador.id,
-        nombre: jugador.nombre,
-        posicion: jugador.posicion,
-        dorsal: jugador.dorsal,
-        total_goles: jugador.goles || 0,
-        partidos: jugador.partidos || 0, // Si tienes un campo de partidos jugados, si no puedes poner 0 o calcularlo aparte
-      }));
-
-      setScorers(scorers);
-    } catch (error) {
-      console.error('Error fetching scorers:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { topGoleadores: scorers, loading } = useTeamData();
 
   const getMedalIcon = (position: number) => {
     switch (position) {
@@ -111,14 +80,12 @@ export function TopScorersSection() {
                     <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Posición</th>
                     <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Dorsal</th>
                     <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Goles</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Partidos</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Media</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {scorers.map((scorer, index) => (
+                  {scorers.map((scorer: any, index: number) => (
                     <motion.tr
-                      key={scorer.jugador_id}
+                      key={scorer.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={isInView ? { opacity: 1, y: 0 } : {}}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -152,17 +119,7 @@ export function TopScorersSection() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span className="text-lg font-bold text-accent">
-                          {scorer.total_goles}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-sm text-muted-foreground">
-                          {scorer.partidos}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-sm font-semibold text-foreground">
-                          {(scorer.total_goles / scorer.partidos).toFixed(2)}
+                          {scorer.goles_totales}
                         </span>
                       </td>
                     </motion.tr>
