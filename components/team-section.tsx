@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useTeamData } from "@/components/providers/team-provider";
 import { staff, players as staticPlayers, type Position } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -121,12 +122,12 @@ function PlayerCard({
       <div className="flex flex-col items-center text-center">
         {/* Avatar with zoom */}
         <button
-          onClick={() => onPhotoClick(player.avatar, player.name)}
+          onClick={() => onPhotoClick(player.foto_url || player.avatar, player.nombre)}
           className="relative mb-4 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-2 border-border transition-colors duration-300 group-hover:border-accent"
-          aria-label={`Ampliar foto de ${player.name}`}
+          aria-label={`Ampliar foto de ${player.nombre}`}
         >
           <Image
-            src={player.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.nombre)}&background=0D8ABC&color=fff&size=200`}
+            src={player.foto_url || player.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.nombre)}&background=0D8ABC&color=fff&size=200`}
             alt={player.nombre}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-110"
@@ -150,9 +151,16 @@ function PlayerCard({
           {player.posicion}
         </span>
 
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground mb-4">
           {player.descripcion || "Jugador de Impersed Cubiertas FC"}
         </p>
+
+        <Link
+          href={`/jugador/${player.id}`}
+          className="mt-auto inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent"
+        >
+          Ver Perfil
+        </Link>
       </div>
     </motion.div>
   );

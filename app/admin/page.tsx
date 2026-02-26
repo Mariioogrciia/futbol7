@@ -39,6 +39,7 @@ export default function AdminPanel() {
   const [golesEquipo, setGolesEquipo] = useState<number>(0);
   const [golesRival, setGolesRival] = useState<number>(0);
   const [scorerCounts, setScorerCounts] = useState<Record<string, number>>({});
+  const [isLiveLoading, setIsLiveLoading] = useState(false);
 
   // Submit State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -111,9 +112,9 @@ export default function AdminPanel() {
   const handleMatchSelect = (matchId: string) => {
     setSelectedMatch(matchId);
 
-    // Auto-fill existing data if it's already played
+    // Auto-fill existing data if it's already played or live
     const m = matches.find((x) => x.id === matchId);
-    if (m && m.estado === "finalizado") {
+    if (m && (m.estado === "finalizado" || m.estado === "en_juego")) {
       setGolesEquipo(m.goles_equipo || 0);
       setGolesRival(m.goles_rival || 0);
     } else {
@@ -166,6 +167,43 @@ export default function AdminPanel() {
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleLiveAction = async (action: "en_juego" | "finalizado" | "update") => {
+    if (!selectedMatch) return;
+    setIsLiveLoading(true);
+
+    const match = matches.find(m => m.id === selectedMatch);
+    if (!match) return;
+
+    let nextState = match.estado;
+    if (action === "en_juego") nextState = "en_juego";
+    if (action === "finalizado") nextState = "finalizado";
+
+    try {
+      const res = await fetch("/api/admin/live-score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matchId: selectedMatch,
+          golesEquipo,
+          golesRival,
+          estado: nextState
+        })
+      });
+
+      if (res.ok) {
+        showToast(action === "update" ? "Marcador sincronizado en directo" : `Partido ${action === "en_juego" ? "EN DIRECTO" : "FINALIZADO"}`, "success");
+        setMatches(matches.map(m => m.id === selectedMatch ? { ...m, estado: nextState, goles_equipo: golesEquipo, goles_rival: golesRival } : m));
+      } else {
+        const data = await res.json();
+        showToast(data.error || "Error al actualizar marcador en vivo", "error");
+      }
+    } catch (e: any) {
+      showToast(e.message || "Error al conectar", "error");
+    } finally {
+      setIsLiveLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -259,7 +297,9 @@ export default function AdminPanel() {
     }
   };
 
-  if (!user) return <div className="min-h-screen bg-gray-900 flex items-center justify-center"><Loader2 className="animate-spin text-primary h-8 w-8" /></div>;
+  const selectedMatchData = matches.find(m => m.id === selectedMatch);
+
+  if (!user) return <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex items-center justify-center"><Loader2 className="animate-spin text-primary h-8 w-8" /></div>;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-gray-100 font-sans selection:bg-primary/30 transition-colors duration-300">
@@ -356,7 +396,7 @@ export default function AdminPanel() {
                       <option value="" disabled>-- Elige un partido a gestionar --</option>
                       {matches.map((m) => (
                         <option key={m.id} value={m.id}>
-                          {m.estado === "finalizado" ? "🏁" : "⏳"} vs {m.rival} ({new Date(m.fecha).toLocaleDateString()})
+                          {m.estado === "finalizado" ? "🏁" : m.estado === "en_juego" ? "🔴 (EN VIVO)" : "⏳"} vs {m.rival} ({new Date(m.fecha).toLocaleDateString()})
                         </option>
                       ))}
                     </select>
@@ -476,7 +516,7 @@ export default function AdminPanel() {
                     </button>
                   </div>
                 </div>
-              ) : selectedMatch ? (
+              ) : selectedMatchData ? (
                 activeTab === "resultados" ? (
                   <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-slate-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-xl h-full flex flex-col relative overflow-hidden transition-colors duration-300">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-emerald-400 to-transparent" />
@@ -484,18 +524,62 @@ export default function AdminPanel() {
                     <div className="flex justify-between items-center mb-6 border-b border-slate-200 dark:border-gray-800/60 pb-5">
                       <div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                          <span>⚽</span> Goleadores del Partido
+                          {selectedMatchData.estado === "programado" ? "⏳ Partido Programado" : selectedMatchData.estado === "en_juego" ? "🔴 Control en Vivo" : "⚽ Goleadores del Partido"}
                         </h3>
-                        <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">Asigna quién marcó nuestros <strong className="text-primary text-base">{golesEquipo}</strong> goles.</p>
+                        {selectedMatchData.estado !== "programado" && (
+                          <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
+                            {selectedMatchData.estado === "en_juego" ? "Sincroniza los goles que anotes en el marcador de la izquierda al instante." : <>Asigna quién marcó nuestros <strong className="text-primary text-base">{golesEquipo}</strong> goles.</>}
+                          </p>
+                        )}
                       </div>
 
-                      {/* Badge */}
-                      <div className={`px-4 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold transition-colors shadow-sm ${golesEquipo === 0 ? "bg-slate-100 dark:bg-gray-800/50 text-slate-500 dark:text-gray-400 border border-slate-200 dark:border-gray-700/50" : missingScorers === 0 ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 shadow-[0_0_10px_rgba(20,184,106,0.3)]" : "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.3)]"}`}>
-                        {golesEquipo === 0 ? "⏳ Esperando goles..." : missingScorers === 0 ? "✅ ¡Completado!" : `⚠️ Faltan ${missingScorers}`}
-                      </div>
+                      {/* Badge / Call to Action */}
+                      {selectedMatchData.estado === "programado" ? (
+                        <button
+                          onClick={() => handleLiveAction("en_juego")}
+                          disabled={isLiveLoading}
+                          className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl font-bold shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all animate-pulse hover:animate-none flex items-center gap-2"
+                        >
+                          {isLiveLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>🔴 GO LIVE</>}
+                        </button>
+                      ) : selectedMatchData.estado === "en_juego" ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleLiveAction("update")}
+                            disabled={isLiveLoading}
+                            className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 px-4 py-2 rounded-xl font-bold transition-all text-sm flex items-center gap-2"
+                          >
+                            {isLiveLoading ? "Sincronizando..." : "🔄 Sincronizar Info"}
+                          </button>
+                          <button
+                            onClick={() => handleLiveAction("finalizado")}
+                            disabled={isLiveLoading}
+                            className="bg-slate-800 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-xl font-bold transition-colors dark:hover:bg-white text-sm"
+                          >
+                            Finalizar Partido
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={`px-4 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold transition-colors shadow-sm ${golesEquipo === 0 ? "bg-slate-100 dark:bg-gray-800/50 text-slate-500 dark:text-gray-400 border border-slate-200 dark:border-gray-700/50" : missingScorers === 0 ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 shadow-[0_0_10px_rgba(20,184,106,0.3)]" : "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.3)]"}`}>
+                          {golesEquipo === 0 ? "⏳ Esperando goles..." : missingScorers === 0 ? "✅ ¡Completado!" : `⚠️ Faltan ${missingScorers}`}
+                        </div>
+                      )}
                     </div>
 
-                    {golesEquipo === 0 ? (
+                    {selectedMatchData.estado === "programado" ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50 dark:bg-gray-950/50 rounded-2xl border border-dashed border-slate-300 dark:border-gray-800/60">
+                        <span className="text-5xl mb-4 opacity-50 dark:opacity-80">⏱️</span>
+                        <p className="text-slate-800 dark:text-gray-300 font-bold text-lg">Partido listo para comenzar.</p>
+                        <p className="text-slate-500 dark:text-gray-500 mt-2 font-medium">Inicia el modo 'Live' para mostrar un widget con el resultado a todos los usuarios en tiempo real.</p>
+                      </div>
+                    ) : selectedMatchData.estado === "en_juego" ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-red-500/5 dark:bg-red-500/10 rounded-2xl border border-red-500/20 shadow-inner overflow-hidden relative">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-red-500/5 to-transparent pointer-events-none" />
+                        <span className="text-5xl mb-4 animate-pulse drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">🔴</span>
+                        <p className="text-slate-800 dark:text-gray-200 font-extrabold text-2xl tracking-tight">TRANSMITIENDO EN VIVO</p>
+                        <p className="text-slate-600 dark:text-gray-400 mt-2 font-medium max-w-sm">Los cambios en el marcador izquierdo se reflejan inmediatamente a todos los visitantes cuando pulsas Sincronizar.</p>
+                      </div>
+                    ) : golesEquipo === 0 ? (
                       <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50 dark:bg-gray-950/50 rounded-2xl border border-dashed border-slate-300 dark:border-gray-800/60">
                         <span className="text-5xl mb-4 opacity-50 dark:opacity-80">⚽</span>
                         <p className="text-slate-800 dark:text-gray-300 font-bold text-lg">Aún no hay goles de nuestro equipo.</p>
@@ -538,19 +622,21 @@ export default function AdminPanel() {
                       </div>
                     )}
 
-                    <div className="mt-auto pt-6 border-t border-gray-800/60">
-                      <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitting || missingScorers !== 0}
-                        className="w-full flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 px-6 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-[0.98] text-lg"
-                      >
-                        {isSubmitting ? (
-                          <><Loader2 className="h-6 w-6 animate-spin" /> Guardando...</>
-                        ) : (
-                          <><Save className="h-6 w-6" /> Guardar Resultado del Partido</>
-                        )}
-                      </button>
-                    </div>
+                    {selectedMatchData.estado === "finalizado" && (
+                      <div className="mt-auto pt-6 border-t border-gray-800/60">
+                        <button
+                          onClick={handleSubmit}
+                          disabled={isSubmitting || missingScorers !== 0}
+                          className="w-full flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 px-6 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-[0.98] text-lg"
+                        >
+                          {isSubmitting ? (
+                            <><Loader2 className="h-6 w-6 animate-spin" /> Guardando...</>
+                          ) : (
+                            <><Save className="h-6 w-6" /> Guardar Resultado Final</>
+                          )}
+                        </button>
+                      </div>
+                    )}
 
                   </div>
                 ) : (

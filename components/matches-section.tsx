@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Clock, MapPin, Trophy, Shield, Edit, User } from "lucide-react";
+import { Clock, MapPin, Trophy, Shield, Edit, User, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useTeamData } from "@/components/providers/team-provider";
@@ -109,6 +109,102 @@ function StatusBadge({ match }: { match: Match }) {
     <span className="rounded-full bg-muted border border-border px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
       Próximo
     </span>
+  );
+}
+
+function Countdown({ dateStr }: { dateStr: string }) {
+  const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const target = new Date(dateStr).getTime();
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        clearInterval(interval);
+        setTimeLeft({ d: 0, h: 0, m: 0, s: 0 });
+        return;
+      }
+
+      setTimeLeft({
+        d: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        h: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        m: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        s: Math.floor((diff % (1000 * 60)) / 1000)
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [dateStr]);
+
+  return (
+    <div className="flex gap-2 sm:gap-4 mb-2">
+      {Object.entries(timeLeft).map(([unit, value]) => (
+        <div key={unit} className="flex flex-col items-center">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-background rounded-lg text-lg sm:text-xl font-bold text-foreground shadow-inner">
+            {value.toString().padStart(2, '0')}
+          </div>
+          <span className="text-[10px] sm:text-xs uppercase text-muted-foreground mt-1.5 font-bold">{unit === 'd' ? 'Días' : unit === 'h' ? 'Hrs' : unit === 'm' ? 'Min' : 'Seg'}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function NextMatchCard({ match }: { match: Match }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="bg-accent/10 border border-accent/30 rounded-3xl p-6 sm:p-8 mb-16 shadow-[0_0_40px_rgba(20,184,106,0.1)] relative overflow-hidden group"
+    >
+      <div className="absolute -top-10 -right-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
+        <Trophy className="w-64 h-64 text-accent" />
+      </div>
+
+      <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-8 relative z-10 w-full">
+        <div className="flex-1 text-center lg:text-left w-full">
+          <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider mb-6 shadow-md">
+            <span className="w-2 h-2 rounded-full bg-accent-foreground animate-pulse" />
+            Siguiente Partido
+          </div>
+
+          <h3 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
+            Impersed FC <span className="text-muted-foreground mx-2 text-2xl font-normal relative -top-1 shrink-0">vs</span> <span className="text-primary-foreground">{match.rival}</span>
+          </h3>
+
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-6 mt-6 text-muted-foreground font-medium">
+            <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-lg border border-border">
+              <CalendarDays className="h-4 w-4 text-accent" />
+              {new Date(match.fecha).toLocaleDateString("es-ES", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+            <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-lg border border-border">
+              <Clock className="h-4 w-4 text-accent" />
+              {new Date(match.fecha).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+            </div>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.estadio)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-lg border border-border hover:border-accent hover:text-accent transition-colors"
+            >
+              <MapPin className="h-4 w-4 text-accent" />
+              <span className="truncate max-w-[200px] sm:max-w-none">{match.estadio}</span>
+            </a>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-accent/20 shadow-xl shrink-0 w-full sm:w-auto">
+          <h4 className="text-sm font-bold text-accent uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Clock className="h-4 w-4" /> Empieza en
+          </h4>
+          <Countdown dateStr={match.fecha} />
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -395,7 +491,14 @@ function MatchCard({
                 </div>
                 <div className="flex items-start gap-1.5 text-sm text-muted-foreground min-w-0">
                   <MapPin className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" />
-                  <span className="line-clamp-2">Estadio: {match.estadio}</span>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.estadio)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="line-clamp-2 hover:text-accent hover:underline transition-color"
+                  >
+                    Estadio: {match.estadio}
+                  </a>
                 </div>
               </div>
 
@@ -449,6 +552,7 @@ export function MatchesSection() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [activeFormat, setActiveFormat] = useState<"liga" | "copa">("liga");
+  const [activeFilter, setActiveFilter] = useState<"todos" | "proximos" | "jugados">("todos");
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
   const [goleadores, setGoleadores] = useState<GolesPartido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -531,8 +635,17 @@ export function MatchesSection() {
     }
   }
 
-  const filteredMatches = matches.filter((m) => m.formato === activeFormat);
-  const played = filteredMatches.filter((m) => m.estado === "finalizado");
+  const matchesByFormat = matches.filter((m) => m.formato === activeFormat);
+  const nextMatch = matchesByFormat.find((m) => m.estado === "programado");
+
+  const filteredMatches = matchesByFormat.filter((m) => {
+    if (activeFilter === "todos") return true;
+    if (activeFilter === "proximos") return m.estado === "programado";
+    if (activeFilter === "jugados") return m.estado === "finalizado";
+    return true;
+  });
+
+  const played = matchesByFormat.filter((m) => m.estado === "finalizado");
   const wins = played.filter((m) => Number(m.goles_equipo) > Number(m.goles_rival)).length;
   const losses = played.filter((m) => Number(m.goles_equipo) < Number(m.goles_rival)).length;
   const draws = played.filter((m) => Number(m.goles_equipo) == Number(m.goles_rival)).length;
@@ -619,7 +732,30 @@ export function MatchesSection() {
           </motion.div>
         )}
 
-        <div className="relative mt-12 lg:ml-8">
+        <div className="mt-8 flex justify-center mb-8">
+          <div className="inline-flex rounded-lg bg-background p-1 border border-border">
+            {(["todos", "proximos", "jugados"] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={cn(
+                  "rounded-md px-4 py-2 text-sm font-medium capitalize transition-all",
+                  activeFilter === filter
+                    ? "bg-primary text-primary-foreground shadow"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {nextMatch && activeFilter !== "jugados" && (
+          <NextMatchCard match={nextMatch} />
+        )}
+
+        <div className="relative mt-8 lg:ml-8">
           <div className="absolute left-0 top-0 hidden h-full w-px bg-border lg:block" />
           <div className="grid gap-5 lg:pl-10">
             {loading ? (

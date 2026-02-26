@@ -1,20 +1,20 @@
 {
   "/api/admin/convocatorias/route": "/api/admin/convocatorias",
+  "/_not-found/page": "/_not-found",
   "/api/admin/update-match/route": "/api/admin/update-match",
   "/api/auth/login/route": "/api/auth/login",
-  "/api/partidos/route": "/api/partidos",
-  "/api/matches/route": "/api/matches",
-  "/api/auth/registro/route": "/api/auth/registro",
-  "/_not-found/page": "/_not-found",
   "/api/auth/verify/route": "/api/auth/verify",
+  "/api/auth/registro/route": "/api/auth/registro",
   "/api/health/route": "/api/health",
+  "/api/matches/route": "/api/matches",
   "/api/team/route": "/api/team",
+  "/api/partidos/route": "/api/partidos",
   "/api/players/route": "/api/players",
   "/admin/page": "/admin",
-  "/espectador/page": "/espectador",
   "/dashboard/page": "/dashboard",
+  "/jugador/page": "/jugador",
   "/page": "/",
-  "/registro/page": "/registro",
+  "/espectador/page": "/espectador",
   "/login/page": "/login",
-  "/jugador/page": "/jugador"
+  "/registro/page": "/registro"
 }

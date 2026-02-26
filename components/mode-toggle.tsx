@@ -5,11 +5,11 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function ModeToggle() {
-    const { theme, setTheme } = useTheme();
+    const { resolvedTheme, setTheme } = useTheme();
 
     return (
         <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="relative flex items-center justify-center p-2 rounded-full bg-secondary hover:bg-muted text-foreground transition-colors overflow-hidden"
             title="Alternar Modo Oscuro/Claro"
         >

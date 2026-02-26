@@ -21,6 +21,7 @@ export const viewport: Viewport = {
 
 import { TeamProvider } from "@/components/providers/team-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -33,6 +34,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <TeamProvider>
             {children}
+            <Toaster position="bottom-right" richColors />
           </TeamProvider>
         </ThemeProvider>
       </body>

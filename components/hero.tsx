@@ -56,16 +56,16 @@ export function Hero() {
               </span>
             </div>
 
-            <h1 className="text-balance text-4xl font-bold leading-tight tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
+            <h1 className="text-balance text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] sm:text-5xl lg:text-6xl xl:text-7xl">
               La pasion por el{" "}
               <span className="relative">
                 futbol
-                <span className="absolute -bottom-1 left-0 h-1 w-full rounded-full bg-accent/60" />
+                <span className="absolute -bottom-1 left-0 h-1 w-full rounded-full bg-accent/60 drop-shadow-md" />
               </span>{" "}
               nos une
             </h1>
 
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-primary-foreground/70">
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/90 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] font-medium">
               Somos Impersed Cubiertas FC, no ganamos ni a las canicas pero como se dice la intención
               es lo que cuenta, le ponemos ganas que no es poco. Conoce aquí a los valientes que componen
               el equipo así como los resultados y próximos partidos.

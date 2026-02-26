@@ -43,9 +43,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$them
 ;
 ;
 function ModeToggle() {
-    const { theme, setTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useTheme"])();
+    const { resolvedTheme, setTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useTheme"])();
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-        onClick: ()=>setTheme(theme === "dark" ? "light" : "dark"),
+        onClick: ()=>setTheme(resolvedTheme === "dark" ? "light" : "dark"),
         className: "relative flex items-center justify-center p-2 rounded-full bg-secondary hover:bg-muted text-foreground transition-colors overflow-hidden",
         title: "Alternar Modo Oscuro/Claro",
         children: [
@@ -162,9 +162,9 @@ function LoginModal({ isOpen, onClose }) {
             }
             onClose();
             if (userData.rol === 'admin') {
-                router.push('/admin');
+                window.open('/admin', '_blank');
             } else if (userData.rol === 'equipo') {
-                router.push('/jugador');
+                window.open('/jugador', '_blank');
             } else {
                 // Fallback or other roles
                 setError('No autorizado para esta plataforma.');
@@ -433,7 +433,7 @@ function Header() {
                                     userRole === 'admin' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                onClick: ()=>router.push('/admin'),
+                                                onClick: ()=>window.open('/admin', '_blank'),
                                                 className: "rounded-md px-3 py-2 text-sm font-medium text-emerald-500 transition-colors duration-200 hover:text-emerald-400 hover:bg-secondary flex items-center gap-1",
                                                 children: "Admin"
                                             }, void 0, false, {
@@ -455,7 +455,7 @@ function Header() {
                                     userRole === 'equipo' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                onClick: ()=>router.push('/jugador'),
+                                                onClick: ()=>window.open('/jugador', '_blank'),
                                                 className: "rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-1",
                                                 children: "Mi Portal"
                                             }, void 0, false, {
@@ -578,7 +578,7 @@ function Header() {
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 onClick: ()=>{
                                                     setMobileOpen(false);
-                                                    router.push('/admin');
+                                                    window.open('/admin', '_blank');
                                                 },
                                                 className: "rounded-md px-3 py-3 text-base font-medium text-emerald-500 transition-colors hover:text-emerald-400 hover:bg-secondary text-left flex items-center gap-2",
                                                 children: "Admin"
@@ -603,7 +603,7 @@ function Header() {
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 onClick: ()=>{
                                                     setMobileOpen(false);
-                                                    router.push('/jugador');
+                                                    window.open('/jugador', '_blank');
                                                 },
                                                 className: "rounded-md px-3 py-3 text-base font-medium text-primary transition-colors hover:text-primary/80 hover:bg-secondary text-left flex items-center gap-2",
                                                 children: "Portal Jugador"
