@@ -46,58 +46,85 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Error al actualizar partido' }, { status: 500 });
     }
 
-    // Eliminar goleadores anteriores del partido (si existen)
-    const { error: deleteError } = await supabaseAdmin
+    // 1. Obtener goleadores anteriores de este partido para calcular el Delta
+    const { data: previousScorers } = await supabaseAdmin
+      .from('goleadores_partido')
+      .select('jugador_id, goles')
+      .eq('partido_id', matchId);
+
+    const previousGoalsMap = new Map<string, number>();
+    if (previousScorers) {
+      for (const scorer of previousScorers) {
+        previousGoalsMap.set(scorer.jugador_id, scorer.goles);
+      }
+    }
+
+    // AHORA Eliminar TODOS los goleadores anteriores del partido en la base de datos relacional
+    await supabaseAdmin
       .from('goleadores_partido')
       .delete()
       .eq('partido_id', matchId);
 
-    if (deleteError) {
-      console.error('Error deleting previous scorers:', deleteError);
+    // Mapa de goles NUEVOS dictados por el formulario
+    const newGoalsMap = new Map<string, number>();
+    const scorersToInsert: any[] = [];
+
+    if (goleadores && Array.isArray(goleadores)) {
+      for (const g of goleadores) {
+        if (g.goles > 0) {
+          newGoalsMap.set(g.id, g.goles);
+          scorersToInsert.push({
+            partido_id: matchId,
+            jugador_id: g.id,
+            nombre: g.nombre,
+            posicion: g.posicion,
+            dorsal: g.dorsal,
+            goles: g.goles,
+          });
+        }
+      }
     }
 
-    // Insertar nuevos goleadores y actualizar totales de jugadores
-    if (goleadores && Array.isArray(goleadores) && goleadores.length > 0) {
-      const scorersToInsert = goleadores
-        .filter((g: any) => g.goles > 0)
-        .map((g: any) => ({
-          partido_id: matchId,
-          jugador_id: g.id,
-          nombre: g.nombre,
-          posicion: g.posicion,
-          dorsal: g.dorsal,
-          goles: g.goles,
-        }));
+    // 2. Calcular los DELTAS (diferencia matemática = nuevos - viejos)
+    const playerDeltas = new Map<string, number>();
 
-      if (scorersToInsert.length > 0) {
-        // 1. Insertar en la tabla relacional de goleadores del partido
-        const { error: insertError } = await supabaseAdmin
-          .from('goleadores_partido')
-          .insert(scorersToInsert);
+    // Primero arrastramos a formato negativo todo lo que tenían antes (para quitarles los goles)
+    for (const [playerId, oldGoals] of previousGoalsMap.entries()) {
+      playerDeltas.set(playerId, -oldGoals);
+    }
 
-        if (insertError) {
-          console.error('Error inserting scorers:', insertError);
-        } else {
-          // 2. Por cada jugador que metió gol, actualizar su récord total en 'jugadores'
-          // Nota: Como no tenemos una función RPC incrementar, lo hacemos leyendo primero y actualizando.
-          for (const scorer of scorersToInsert) {
-            const { data: playerData } = await supabaseAdmin
-              .from('jugadores')
-              .select('goles, partidos')
-              .eq('id', scorer.jugador_id)
-              .single();
+    // Luego le sumamos lo nuevo (balance)
+    for (const [playerId, newGoals] of newGoalsMap.entries()) {
+      const currentDelta = playerDeltas.get(playerId) || 0;
+      playerDeltas.set(playerId, currentDelta + newGoals);
+    }
 
-            if (playerData) {
-              await supabaseAdmin
-                .from('jugadores')
-                .update({
-                  goles: (playerData.goles || 0) + scorer.goles,
-                  partidos: (playerData.partidos || 0) + 1 // asumiendo 1 partido más jugado
-                })
-                .eq('id', scorer.jugador_id);
-            }
-          }
-        }
+    // 3. Insertar los nuevos registros validados
+    if (scorersToInsert.length > 0) {
+      await supabaseAdmin
+        .from('goleadores_partido')
+        .insert(scorersToInsert);
+    }
+
+    // 4. Actualizar la tabla general de Jugadores sumando/restando el Delta matemáticamente
+    for (const [playerId, delta] of playerDeltas.entries()) {
+      if (delta === 0) continue;
+
+      const { data: playerData } = await supabaseAdmin
+        .from('jugadores')
+        .select('goles')
+        .eq('id', playerId)
+        .single();
+
+      if (playerData) {
+        const nuevoTotal = Math.max(0, (playerData.goles || 0) + delta);
+
+        await supabaseAdmin
+          .from('jugadores')
+          .update({
+            goles: nuevoTotal
+          })
+          .eq('id', playerId);
       }
     }
 

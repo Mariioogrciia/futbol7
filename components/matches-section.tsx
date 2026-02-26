@@ -377,25 +377,25 @@ function MatchCard({
             <StatusBadge match={match} />
           </div>
 
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-bold text-card-foreground sm:text-xl">
-                Impersed Cubiertas FC
-                <span className="mx-2 text-muted-foreground font-normal">vs</span>
-                {match.rival}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="min-w-0 flex-1 w-full">
+              <h3 className="text-lg font-bold text-card-foreground sm:text-xl flex flex-wrap items-center gap-x-2 leading-tight">
+                <span>Impersed Cubiertas FC</span>
+                <span className="text-muted-foreground font-normal text-base shrink-0">vs</span>
+                <span className="break-words">{match.rival}</span>
               </h3>
 
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
                   <Clock className="h-3.5 w-3.5 text-accent" />
                   {new Date(match.fecha).toLocaleTimeString("es-ES", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5 text-accent" />
-                  <span className="truncate">Estadio: {match.estadio}</span>
+                <div className="flex items-start gap-1.5 text-sm text-muted-foreground min-w-0">
+                  <MapPin className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" />
+                  <span className="line-clamp-2">Estadio: {match.estadio}</span>
                 </div>
               </div>
 
@@ -416,7 +416,7 @@ function MatchCard({
               )}
             </div>
 
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto mt-2 sm:mt-0 gap-2">
               <ResultBadge match={match} />
               {isAdmin && match.estado === "en_vivo" && (
                 <button

@@ -75,11 +75,11 @@ export function TopScorersSection() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">#</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Jugador</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Posición</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Dorsal</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Goles</th>
+                    <th className="text-left py-2 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-muted-foreground w-12">#</th>
+                    <th className="text-left py-2 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-muted-foreground">Jugador</th>
+                    <th className="hidden sm:table-cell text-left py-2 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-muted-foreground">Posición</th>
+                    <th className="text-center py-2 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-muted-foreground w-16 sm:w-20">Dorsal</th>
+                    <th className="text-center py-2 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-muted-foreground w-16 sm:w-20">Goles</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -94,31 +94,31 @@ export function TopScorersSection() {
                         index < 3 && "bg-accent/5"
                       )}
                     >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
+                      <td className="py-2 px-2 sm:px-4">
+                        <div className="flex items-center gap-1 sm:gap-2">
                           {getMedalIcon(index)}
-                          <span className="text-sm font-semibold text-foreground">
+                          <span className="text-xs sm:text-sm font-semibold text-foreground">
                             {index + 1}
                           </span>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm font-semibold text-foreground">
+                      <td className="py-2 px-2 sm:px-4">
+                        <span className="text-xs sm:text-sm font-semibold text-foreground truncate max-w-[120px] sm:max-w-[200px] block">
                           {scorer.nombre}
                         </span>
                       </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm text-muted-foreground">
+                      <td className="hidden sm:table-cell py-2 px-2 sm:px-4">
+                        <span className="text-xs sm:text-sm text-muted-foreground">
                           {scorer.posicion}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-accent/10 text-xs font-bold text-accent">
+                      <td className="py-2 px-2 sm:px-4 text-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-accent/10 text-[10px] sm:text-xs font-bold text-accent">
                           {scorer.dorsal || '-'}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-lg font-bold text-accent">
+                      <td className="py-2 px-2 sm:px-4 text-center">
+                        <span className="text-base sm:text-lg font-bold text-accent">
                           {scorer.goles_totales}
                         </span>
                       </td>

@@ -28,6 +28,30 @@
 
     --radius: 0.75rem;
   }
+
+  .dark {
+    /* Deep dark space background */
+    --background: 160 80% 6%;
+    --foreground: 0 0% 100%;
+
+    --primary: 160 80% 10%;        /* Keeps the dark green but inverted feeling */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 160 30% 15%;      
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 90 65% 50%;          /* Lime green accent remains */
+    --accent-foreground: 160 80% 8%;
+
+    --muted: 160 20% 15%;
+    --muted-foreground: 160 10% 60%;
+
+    --card: 160 80% 8%;
+    --card-foreground: 0 0% 100%;
+
+    --border: 160 30% 15%;
+    --ring: 90 65% 50%;
+  }
 }
 
 @layer base {

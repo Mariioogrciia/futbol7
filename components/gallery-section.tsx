@@ -1,10 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { X, Maximize2, ChevronDown, ChevronUp } from "lucide-react";
-import { galleryImages } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
+
+interface SubGalleryImage {
+  id: number;
+  src: string;
+  alt: string;
+  overlay: string;
+}
 
 export function GallerySection() {
   const ref = useRef(null);
@@ -12,9 +19,46 @@ export function GallerySection() {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGalleryCollapsed, setIsGalleryCollapsed] = useState(false);
-  
+  const [images, setImages] = useState<SubGalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const IMAGES_PER_LOAD = 5;
-  const displayedImages = isExpanded ? galleryImages : galleryImages.slice(0, IMAGES_PER_LOAD);
+  const displayedImages = isExpanded ? images : images.slice(0, IMAGES_PER_LOAD);
+
+  useEffect(() => {
+    async function loadGallery() {
+      try {
+        const { data, error } = await supabase.storage.from("galeria").list("", {
+          limit: 1000,
+          offset: 0,
+        });
+        if (error) throw error;
+
+        // Filtrar archivos basura y mapear a nuestra interfaz
+        const validFiles = data.filter((file) => file.name !== ".emptyFolderPlaceholder" && !file.name.startsWith("."));
+
+        const galleryData: SubGalleryImage[] = validFiles.map((file, idx) => {
+          const { data: pubData } = supabase.storage.from("galeria").getPublicUrl(file.name);
+          return {
+            id: idx + 1,
+            src: pubData.publicUrl,
+            alt: `Foto galería ${idx + 1}`,
+            overlay: "",
+          };
+        });
+
+        setImages(galleryData);
+      } catch (err) {
+        console.error("Error cargando galería:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (isInView) {
+      loadGallery();
+    }
+  }, [isInView]);
 
   return (
     <section id="galeria" className="bg-secondary py-24 lg:py-32" ref={ref}>
@@ -57,70 +101,78 @@ export function GallerySection() {
               transition={{ duration: 0.3 }}
               className="mt-12"
             >
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {displayedImages.map((img, i) => (
-                  <motion.div
-                    key={img.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: i * 0.08 }}
-                    className="group relative cursor-pointer overflow-hidden rounded-xl"
-                    onClick={() => setLightbox(img.id)}
-                  >
-                    <div className="aspect-[4/3] relative">
-                      <Image
-                        src={img.src}
-                        alt={img.alt}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                    </div>
+              {loading ? (
+                <div className="flex justify-center items-center py-20 text-muted-foreground">
+                  Cargando galería...
+                </div>
+              ) : images.length === 0 ? (
+                <div className="flex justify-center items-center py-20 text-muted-foreground">
+                  No hay fotos en la galería actualmente.
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {displayedImages.map((img, i) => (
+                      <motion.div
+                        key={img.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: i * 0.08 }}
+                        className="group relative cursor-pointer overflow-hidden rounded-xl"
+                        onClick={() => setLightbox(img.id)}
+                      >
+                        <div className="aspect-[4/3] relative">
+                          <img
+                            src={img.src}
+                            alt={img.alt}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        </div>
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-primary/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      <Maximize2 className="mb-2 h-8 w-8 text-primary-foreground" />
-                      <p className="text-sm font-semibold text-primary-foreground">
-                        {img.overlay}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-primary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                          <Maximize2 className="h-8 w-8 text-primary-foreground drop-shadow-md" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
 
-              {/* Load more button */}
-              {!isExpanded && galleryImages.length > IMAGES_PER_LOAD && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 }}
-                  className="mt-8 flex justify-center"
-                >
-                  <button
-                    onClick={() => setIsExpanded(true)}
-                    className="rounded-lg bg-primary px-8 py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
-                  >
-                    Ver más ({galleryImages.length - IMAGES_PER_LOAD} fotos más)
-                  </button>
-                </motion.div>
-              )}
+                  {/* Load more button */}
+                  {!isExpanded && images.length > IMAGES_PER_LOAD && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.3 }}
+                      className="mt-8 flex justify-center"
+                    >
+                      <button
+                        onClick={() => setIsExpanded(true)}
+                        className="rounded-lg bg-primary px-8 py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+                      >
+                        Ver más ({images.length - IMAGES_PER_LOAD} fotos más)
+                      </button>
+                    </motion.div>
+                  )}
 
-              {/* Collapse button when expanded */}
-              {isExpanded && galleryImages.length > IMAGES_PER_LOAD && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 }}
-                  className="mt-8 flex justify-center"
-                >
-                  <button
-                    onClick={() => setIsExpanded(false)}
-                    className="rounded-lg bg-secondary px-8 py-3 font-semibold text-foreground transition-all hover:bg-secondary/80 active:scale-95 border border-primary"
-                  >
-                    Ver menos
-                  </button>
-                </motion.div>
+                  {/* Collapse button when expanded */}
+                  {isExpanded && images.length > IMAGES_PER_LOAD && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.3 }}
+                      className="mt-8 flex justify-center"
+                    >
+                      <button
+                        onClick={() => setIsExpanded(false)}
+                        className="rounded-lg bg-secondary px-8 py-3 font-semibold text-foreground transition-all hover:bg-secondary/80 active:scale-95 border border-primary"
+                      >
+                        Ver menos
+                      </button>
+                    </motion.div>
+                  )}
+                </>
               )}
             </motion.div>
           )}
@@ -146,14 +198,12 @@ export function GallerySection() {
               onClick={(e) => e.stopPropagation()}
             >
               {(() => {
-                const img = galleryImages.find((g) => g.id === lightbox);
+                const img = images.find((g) => g.id === lightbox);
                 if (!img) return null;
                 return (
-                  <Image
+                  <img
                     src={img.src}
                     alt={img.alt}
-                    width={1200}
-                    height={900}
                     className="h-auto max-h-[85vh] w-auto object-contain"
                   />
                 );

@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const navLinks = [
   { label: "Inicio", href: "#inicio" },
   { label: "Equipo", href: "#equipo" },
   { label: "Partidos", href: "#partidos" },
+  { label: "Goleadores", href: "#goleadores" },
   { label: "Estadisticas", href: "#estadisticas" },
   { label: "Galeria", href: "#galeria" },
 ];
@@ -46,15 +48,24 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
         .eq('id', data.user.id)
         .single();
 
-      if (dbError || !userData || userData.rol !== 'admin') {
+      if (dbError || !userData) {
         setError('No autorizado');
         await supabase.auth.signOut();
         return;
       }
 
-      // Redirigir al dashboard
       onClose();
-      router.push('/admin');
+
+      if (userData.rol === 'admin') {
+        router.push('/admin');
+      } else if (userData.rol === 'equipo') {
+        router.push('/jugador');
+      } else {
+        // Fallback or other roles
+        setError('No autorizado para esta plataforma.');
+        await supabase.auth.signOut();
+        return;
+      }
     } catch (err) {
       setError('Error de conexión');
     } finally {
@@ -76,44 +87,44 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-xl max-w-md w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4">Login Admin</h2>
+            <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Acceso a la Plantilla</h2>
             <form onSubmit={handleLogin}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Email</label>
+                <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Password</label>
+                <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all"
                   required
                 />
               </div>
-              {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-              <div className="flex gap-2">
+              {error && <p className="text-red-500 text-sm mb-4 font-medium">{error}</p>}
+              <div className="flex gap-3 mt-6">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 bg-primary text-primary-foreground font-bold py-3 px-4 rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50"
                 >
                   {loading ? 'Cargando...' : 'Iniciar Sesión'}
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border rounded hover:bg-gray-100"
+                  className="px-6 py-3 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-medium"
                 >
                   Cancelar
                 </button>
@@ -130,7 +141,10 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Auth state
+  const [userRole, setUserRole] = useState<'admin' | 'equipo' | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -138,10 +152,10 @@ export function Header() {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
 
-    checkAdminStatus();
+    checkAuthStatus();
   }, []);
 
-  async function checkAdminStatus() {
+  async function checkAuthStatus() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -152,8 +166,8 @@ export function Header() {
         .eq('id', session.user.id)
         .single();
 
-      if (userData?.rol === 'admin') {
-        setIsAdmin(true);
+      if (userData?.rol === 'admin' || userData?.rol === 'equipo') {
+        setUserRole(userData.rol);
       }
     } catch (e) {
       console.error(e);
@@ -162,7 +176,7 @@ export function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setIsAdmin(false);
+    setUserRole(null);
     window.location.reload();
   };
 
@@ -203,40 +217,61 @@ export function Header() {
                 {link.label}
               </a>
             ))}
-            {isAdmin ? (
+            {userRole === 'admin' && (
               <>
                 <button
                   onClick={() => router.push('/admin')}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-1"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-emerald-500 transition-colors duration-200 hover:text-emerald-400 hover:bg-secondary flex items-center gap-1"
                 >
-                  Dashboard
+                  Admin
                 </button>
                 <button
                   onClick={handleLogout}
                   className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary"
                 >
-                  Logout
+                  Salir
                 </button>
               </>
-            ) : (
+            )}
+            {userRole === 'equipo' && (
+              <>
+                <button
+                  onClick={() => router.push('/jugador')}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-1"
+                >
+                  Mi Portal
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary"
+                >
+                  Salir
+                </button>
+              </>
+            )}
+            {!userRole && (
               <button
                 onClick={() => setLoginModalOpen(true)}
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary flex items-center gap-1"
               >
                 <User className="h-4 w-4" />
-                Admin
+                Acceso
               </button>
             )}
+            <ModeToggle />
           </div>
 
-          {/* Mobile Toggle */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="rounded-md p-2 text-foreground lg:hidden hover:bg-secondary"
-            aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            <ModeToggle />
+            {/* Mobile Toggle */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="rounded-md p-2 text-foreground hover:bg-secondary"
+              aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
+            >
+              {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -259,25 +294,45 @@ export function Header() {
                     {link.label}
                   </a>
                 ))}
-                {isAdmin ? (
+                {userRole === 'admin' && (
                   <>
                     <button
                       onClick={() => {
                         setMobileOpen(false);
                         router.push('/admin');
                       }}
-                      className="rounded-md px-3 py-3 text-base font-medium text-primary transition-colors hover:text-primary/80 hover:bg-secondary text-left flex items-center gap-2"
+                      className="rounded-md px-3 py-3 text-base font-medium text-emerald-500 transition-colors hover:text-emerald-400 hover:bg-secondary text-left flex items-center gap-2"
                     >
-                      Dashboard Admin
+                      Admin
                     </button>
                     <button
                       onClick={handleLogout}
                       className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left"
                     >
-                      Logout
+                      Salir
                     </button>
                   </>
-                ) : (
+                )}
+                {userRole === 'equipo' && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        router.push('/jugador');
+                      }}
+                      className="rounded-md px-3 py-3 text-base font-medium text-primary transition-colors hover:text-primary/80 hover:bg-secondary text-left flex items-center gap-2"
+                    >
+                      Portal Jugador
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left"
+                    >
+                      Salir
+                    </button>
+                  </>
+                )}
+                {!userRole && (
                   <button
                     onClick={() => {
                       setMobileOpen(false);
@@ -286,7 +341,7 @@ export function Header() {
                     className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left flex items-center gap-2"
                   >
                     <User className="h-4 w-4" />
-                    Admin
+                    Acceso
                   </button>
                 )}
               </nav>

@@ -38,20 +38,20 @@ export function StandingsSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-12 overflow-x-auto"
+          className="mt-12 w-full"
         >
-          <div className="min-w-[700px]">
+          <div className="w-full">
             {/* Table header */}
-            <div className="grid grid-cols-[40px_1fr_40px_40px_40px_40px_48px_48px_48px_52px] items-center gap-1 rounded-t-xl bg-primary px-4 py-3 text-xs font-bold uppercase tracking-wider text-primary-foreground sm:text-sm">
-              <span className="text-center">Pos</span>
+            <div className="grid grid-cols-[30px_1fr_30px_40px] md:grid-cols-[40px_1fr_40px_40px_40px_40px_48px_48px_48px_52px] items-center gap-1 sm:gap-2 rounded-t-xl bg-primary px-2 sm:px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-primary-foreground sm:text-sm">
+              <span className="text-center">#</span>
               <span>Equipo</span>
               <span className="text-center">PJ</span>
-              <span className="text-center">G</span>
-              <span className="text-center">E</span>
-              <span className="text-center">P</span>
-              <span className="text-center">GF</span>
-              <span className="text-center">GC</span>
-              <span className="text-center">DG</span>
+              <span className="hidden md:block text-center">G</span>
+              <span className="hidden md:block text-center">E</span>
+              <span className="hidden md:block text-center">P</span>
+              <span className="hidden md:block text-center">GF</span>
+              <span className="hidden md:block text-center">GC</span>
+              <span className="hidden md:block text-center">DG</span>
               <span className="text-center">Pts</span>
             </div>
 
@@ -67,34 +67,34 @@ export function StandingsSection() {
                   animate={isInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.3, delay: 0.3 + i * 0.04 }}
                   className={cn(
-                    "grid grid-cols-[40px_1fr_40px_40px_40px_40px_48px_48px_48px_52px] items-center gap-1 border-b border-border px-4 py-3 text-sm transition-colors duration-200",
+                    "grid grid-cols-[30px_1fr_30px_40px] md:grid-cols-[40px_1fr_40px_40px_40px_40px_48px_48px_48px_52px] items-center gap-1 sm:gap-2 border-b border-border px-2 sm:px-4 py-3 text-xs sm:text-sm transition-colors duration-200",
                     isImpersed
                       ? "bg-accent/10 font-bold"
                       : i % 2 === 0
-                      ? "bg-card"
-                      : "bg-secondary/50",
+                        ? "bg-card"
+                        : "bg-secondary/50",
                     "hover:bg-accent/5"
                   )}
                 >
                   {/* Position */}
                   <span
                     className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold",
+                      "flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-[10px] sm:text-xs font-bold mx-auto",
                       entry.pos <= 3
                         ? "bg-accent/20 text-accent"
                         : entry.pos >= 13
-                        ? "bg-red-500/15 text-red-500"
-                        : "bg-muted text-muted-foreground"
+                          ? "bg-red-500/15 text-red-500"
+                          : "bg-muted text-muted-foreground"
                     )}
                   >
                     {entry.pos}
                   </span>
 
                   {/* Team name */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                     <span
                       className={cn(
-                        "truncate text-card-foreground",
+                        "truncate text-card-foreground text-xs sm:text-sm",
                         isImpersed && "text-accent font-extrabold"
                       )}
                     >
@@ -102,49 +102,49 @@ export function StandingsSection() {
                     </span>
                     {entry.sanction && (
                       <span
-                        className="inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-500"
+                        className="inline-flex items-center gap-1 rounded bg-amber-500/10 px-1 py-0.5 text-[9px] sm:text-[10px] text-amber-500 shrink-0"
                         title={entry.sanction}
                       >
-                        <AlertTriangle className="h-3 w-3" />
+                        <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                         <span className="hidden sm:inline">S</span>
                       </span>
                     )}
                   </div>
 
                   {/* Stats */}
-                  <span className="text-center text-muted-foreground">
+                  <span className="text-center text-muted-foreground font-medium">
                     {entry.played}
                   </span>
-                  <span className="text-center text-emerald-600">
+                  <span className="hidden md:block text-center text-emerald-600">
                     {entry.won}
                   </span>
-                  <span className="text-center text-amber-600">
+                  <span className="hidden md:block text-center text-amber-600">
                     {entry.drawn}
                   </span>
-                  <span className="text-center text-red-500">
+                  <span className="hidden md:block text-center text-red-500">
                     {entry.lost}
                   </span>
-                  <span className="text-center text-card-foreground">
+                  <span className="hidden md:block text-center text-card-foreground">
                     {entry.gf}
                   </span>
-                  <span className="text-center text-card-foreground">
+                  <span className="hidden md:block text-center text-card-foreground">
                     {entry.gc}
                   </span>
                   <span
                     className={cn(
-                      "text-center font-medium",
+                      "hidden md:block text-center font-medium",
                       dg > 0
                         ? "text-emerald-600"
                         : dg < 0
-                        ? "text-red-500"
-                        : "text-muted-foreground"
+                          ? "text-red-500"
+                          : "text-muted-foreground"
                     )}
                   >
                     {dg > 0 ? `+${dg}` : dg}
                   </span>
                   <span
                     className={cn(
-                      "text-center font-bold",
+                      "text-center font-bold text-sm sm:text-base",
                       isImpersed ? "text-accent" : "text-card-foreground"
                     )}
                   >

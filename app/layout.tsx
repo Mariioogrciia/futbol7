@@ -20,6 +20,7 @@ export const viewport: Viewport = {
 };
 
 import { TeamProvider } from "@/components/providers/team-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function RootLayout({
   children,
@@ -27,11 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={inter.variable}>
-      <body className="font-sans antialiased">
-        <TeamProvider>
-          {children}
-        </TeamProvider>
+    <html lang="es" className={inter.variable} suppressHydrationWarning>
+      <body className="font-sans antialiased overflow-x-hidden w-full max-w-[100vw]">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <TeamProvider>
+            {children}
+          </TeamProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
