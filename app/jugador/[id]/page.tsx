@@ -6,7 +6,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { EditableAvatar } from "@/components/editable-avatar";
 
 interface PageProps {
-    params: { id: string } | Promise<{ id: string }>;
+    params: Promise<{ id: string }>;
 }
 
 // Genera estadísticas aleatorias pero consistentes basadas en el ID del jugador

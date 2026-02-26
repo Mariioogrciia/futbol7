@@ -1,5 +1,23 @@
 {
+  "/api/admin/convocatorias/route": "app/api/admin/convocatorias/route.js",
+  "/api/admin/live-score/route": "app/api/admin/live-score/route.js",
+  "/api/admin/update-match/route": "app/api/admin/update-match/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/auth/registro/route": "app/api/auth/registro/route.js",
   "/api/matches/route": "app/api/matches/route.js",
+  "/api/auth/verify/route": "app/api/auth/verify/route.js",
+  "/api/players/avatar/route": "app/api/players/avatar/route.js",
+  "/api/team/route": "app/api/team/route.js",
+  "/api/partidos/route": "app/api/partidos/route.js",
+  "/api/health/route": "app/api/health/route.js",
   "/api/players/route": "app/api/players/route.js",
-  "/page": "app/page.js"
+  "/admin/page": "app/admin/page.js",
+  "/jugador/[id]/page": "app/jugador/[id]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/espectador/page": "app/espectador/page.js",
+  "/login/page": "app/login/page.js",
+  "/jugador/page": "app/jugador/page.js",
+  "/page": "app/page.js",
+  "/registro/page": "app/registro/page.js"
 }
