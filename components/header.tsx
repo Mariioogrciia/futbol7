@@ -57,9 +57,9 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
       onClose();
 
       if (userData.rol === 'admin') {
-        window.open('/admin', '_blank');
+        router.push('/admin');
       } else if (userData.rol === 'equipo') {
-        window.open('/jugador', '_blank');
+        router.push('/jugador');
       } else {
         // Fallback or other roles
         setError('No autorizado para esta plataforma.');
@@ -220,7 +220,7 @@ export function Header() {
             {userRole === 'admin' && (
               <>
                 <button
-                  onClick={() => window.open('/admin', '_blank')}
+                  onClick={() => router.push('/admin')}
                   className="rounded-md px-3 py-2 text-sm font-medium text-emerald-500 transition-colors duration-200 hover:text-emerald-400 hover:bg-secondary flex items-center gap-1"
                 >
                   Admin
@@ -236,7 +236,7 @@ export function Header() {
             {userRole === 'equipo' && (
               <>
                 <button
-                  onClick={() => window.open('/jugador', '_blank')}
+                  onClick={() => router.push('/jugador')}
                   className="rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-1"
                 >
                   Mi Portal
@@ -299,7 +299,7 @@ export function Header() {
                     <button
                       onClick={() => {
                         setMobileOpen(false);
-                        window.open('/admin', '_blank');
+                        router.push('/admin');
                       }}
                       className="rounded-md px-3 py-3 text-base font-medium text-emerald-500 transition-colors hover:text-emerald-400 hover:bg-secondary text-left flex items-center gap-2"
                     >
@@ -318,7 +318,7 @@ export function Header() {
                     <button
                       onClick={() => {
                         setMobileOpen(false);
-                        window.open('/jugador', '_blank');
+                        router.push('/jugador');
                       }}
                       className="rounded-md px-3 py-3 text-base font-medium text-primary transition-colors hover:text-primary/80 hover:bg-secondary text-left flex items-center gap-2"
                     >
