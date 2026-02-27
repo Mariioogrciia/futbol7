@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Todos los campos son requeridos' }, { status: 400 });
     }
 
-    if (!['admin', 'equipo', 'externo'].includes(rol)) {
+    if (!['admin', 'equipo', 'espectador'].includes(rol)) {
       return NextResponse.json({ error: 'Rol inválido' }, { status: 400 });
     }
 
@@ -24,13 +24,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
-    // Insertar en tabla usuarios (server/admin)
+    // El trigger on_auth_user_created insertará el usuario automáticamente, 
+    // pero vamos a actualizar el rol explícito y el nombre por si el trigger asume valores por defecto.
     const { error: dbError } = await supabaseAdmin
       .from('usuarios')
-      .insert({ id: authData.user?.id, email, nombre, rol });
+      .update({ nombre, rol })
+      .eq('id', authData.user?.id);
 
     if (dbError) {
-      return NextResponse.json({ error: 'Error creando usuario' }, { status: 500 });
+      console.error('Error actualizando usuario post-trigger:', dbError);
     }
 
     return NextResponse.json(

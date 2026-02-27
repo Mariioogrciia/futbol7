@@ -38,7 +38,7 @@ export default function LoginPage() {
         return;
       }
 
-      if (userData.rol === 'admin' || userData.rol === 'equipo' || userData.rol === 'externo') {
+      if (userData.rol === 'admin' || userData.rol === 'equipo' || userData.rol === 'espectador') {
         router.push('/');
       } else {
         router.push('/');
@@ -132,15 +132,15 @@ export default function LoginPage() {
           <ul className="space-y-1 text-xs">
             <li><strong>Admin:</strong> admin@futbol7.com / admin123</li>
             <li><strong>Equipo:</strong> equipo@futbol7.com / equipo123</li>
-            <li><strong>Externo:</strong> externo@futbol7.com / externo123</li>
+            <li><strong>Espectador:</strong> espectador@futbol7.com / espectador123</li>
           </ul>
         </div>
 
         <p className="text-center mt-6 text-gray-600 text-sm">
           ¿No tienes cuenta?{' '}
-          <Link href="/registro" className="text-blue-600 hover:underline font-semibold">
+          <a href="/" onClick={() => setTimeout(() => window.dispatchEvent(new CustomEvent('openRegisterModal')), 500)} className="text-blue-600 hover:underline font-semibold">
             Registrarse
-          </Link>
+          </a>
         </p>
       </div>
     </div>

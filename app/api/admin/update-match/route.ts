@@ -128,6 +128,60 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 5. AUTOMATED PREDICTION SCORING (La Porra)
+    // Fetch all predictions for this match
+    const { data: predictions, error: predsError } = await supabaseAdmin
+      .from('predicciones')
+      .select('id, goles_local, goles_visitante, primer_goleador_id')
+      .eq('partido_id', matchId);
+
+    if (!predsError && predictions) {
+      const predictionUpdates = [];
+
+      for (const pred of predictions) {
+        let puntos = 0;
+
+        // Condition 1: Exact Score (+5 points)
+        if (pred.goles_local === golesEquipo && pred.goles_visitante === golesRival) {
+          puntos += 5;
+        }
+        // Condition 2: Correct Match Outcome (+3 points)
+        else {
+          let predResultado: 'victoria' | 'derrota' | 'empate';
+          if (pred.goles_local > pred.goles_visitante) predResultado = 'victoria';
+          else if (pred.goles_local < pred.goles_visitante) predResultado = 'derrota';
+          else predResultado = 'empate';
+
+          if (predResultado === resultado) {
+            puntos += 3;
+          }
+        }
+
+        // Condition 3: Correct Goalscorer (+2 points)
+        if (pred.primer_goleador_id && newGoalsMap.has(pred.primer_goleador_id)) {
+          puntos += 2;
+        }
+
+        // Update the prediction with the calculated points
+        predictionUpdates.push({
+          id: pred.id,
+          puntos: puntos,
+          updated_at: new Date().toISOString()
+        });
+      }
+
+      // Upsert the prediction points in bulk
+      if (predictionUpdates.length > 0) {
+        const { error: updatePredsError } = await supabaseAdmin
+          .from('predicciones')
+          .upsert(predictionUpdates);
+
+        if (updatePredsError) {
+          console.error("Error distributing prediction points:", updatePredsError);
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (error: any) {
     console.error('Error updating match', error.message);

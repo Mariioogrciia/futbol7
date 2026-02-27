@@ -9,7 +9,7 @@ export default function RegistroPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nombre, setNombre] = useState('');
-  const [rol, setRol] = useState<'equipo' | 'externo'>('externo');
+  const [rol, setRol] = useState<'equipo' | 'espectador'>('espectador');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -113,10 +113,10 @@ export default function RegistroPage() {
             </label>
             <select
               value={rol}
-              onChange={(e) => setRol(e.target.value as 'equipo' | 'externo')}
+              onChange={(e) => setRol(e.target.value as 'equipo' | 'espectador')}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
-              <option value="externo">Espectador</option>
+              <option value="espectador">Espectador</option>
               <option value="equipo">Equipo</option>
             </select>
           </div>

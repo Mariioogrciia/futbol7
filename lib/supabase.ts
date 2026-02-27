@@ -11,7 +11,7 @@ export interface Usuario {
   id: string
   email: string
   nombre: string
-  rol: 'admin' | 'equipo' | 'externo'
+  rol: 'admin' | 'equipo' | 'espectador'
   equipo_id?: string
   created_at: string
 }

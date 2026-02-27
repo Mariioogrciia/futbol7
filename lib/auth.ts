@@ -5,7 +5,7 @@ const SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura';
 export interface TokenPayload {
   userId: string;
   email: string;
-  rol: 'admin' | 'equipo' | 'externo';
+  rol: 'admin' | 'equipo' | 'espectador';
 }
 
 export function createToken(payload: TokenPayload) {

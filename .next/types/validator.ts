@@ -110,6 +110,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/porra/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/porra">> = Specific
+  const handler = {} as typeof import("../../app/porra/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/registro/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/registro">> = Specific
@@ -222,6 +231,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/players/stats">> = Specific
   const handler = {} as typeof import("../../app/api/players/stats/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/porra/leaderboard/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/porra/leaderboard">> = Specific
+  const handler = {} as typeof import("../../app/api/porra/leaderboard/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/porra/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/porra">> = Specific
+  const handler = {} as typeof import("../../app/api/porra/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

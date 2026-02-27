@@ -19,12 +19,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navLinks = [
-  { label: "Inicio", href: "#inicio" },
-  { label: "Equipo", href: "#equipo" },
-  { label: "Partidos", href: "#partidos" },
-  { label: "Goleadores", href: "#goleadores" },
-  { label: "Estadisticas", href: "#estadisticas" },
-  { label: "Galeria", href: "#galeria" },
+  { label: "Inicio", href: "/#inicio" },
+  { label: "Equipo", href: "/#equipo" },
+  { label: "Partidos", href: "/#partidos" },
+  { label: "Goleadores", href: "/#goleadores" },
+  { label: "Estadisticas", href: "/#estadisticas" },
+  { label: "Galeria", href: "/#galeria" },
+  { label: "El Oráculo 🔮", href: "/porra" },
 ];
 
 function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -57,7 +58,7 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
         .eq('id', data.user.id)
         .single();
 
-      if (dbError || !userData) {
+      if (dbError || !userData || !['admin', 'equipo', 'espectador'].includes(userData.rol)) {
         setError('No autorizado');
         await supabase.auth.signOut();
         return;
@@ -129,6 +130,172 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
                   Cancelar
                 </button>
               </div>
+
+              <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800 pt-4">
+                ¿No tienes cuenta?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    window.dispatchEvent(new CustomEvent('openRegisterModal'));
+                  }}
+                  className="text-emerald-500 font-semibold hover:underline transition-colors"
+                >
+                  Crear cuenta de espectador
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function RegisterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch('/api/auth/registro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, nombre, rol: 'espectador' }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Error en registro');
+        return;
+      }
+
+      setSuccess('¡Cuenta creada! Revisa tu email o inicia sesión ahora.');
+      // Auto-close and open login after a delay
+      setTimeout(() => {
+        onClose();
+        window.dispatchEvent(new CustomEvent('openLoginModal'));
+      }, 3000);
+    } catch (err) {
+      setError('Error de conexión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-3xl shadow-2xl max-w-md w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
+                Únete al Equipo
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400">
+                Crea tu cuenta para participar en El Oráculo y más.
+              </p>
+            </div>
+
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">Nombre o Alias</label>
+                <input
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className="w-full p-3.5 border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium placeholder:text-slate-400"
+                  placeholder="Ej: Paco_Futbol7"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-3.5 border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium placeholder:text-slate-400"
+                  placeholder="tu@email.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">Contraseña</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-3.5 border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium"
+                  placeholder="••••••••"
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              {error && (
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 bg-red-50 dark:bg-red-500/10 p-3 rounded-lg text-sm font-medium border border-red-200 dark:border-red-500/20">
+                  {error}
+                </motion.p>
+              )}
+              {success && (
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-lg text-sm font-medium border border-emerald-200 dark:border-emerald-500/20">
+                  {success}
+                </motion.p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || !!success}
+                className="w-full bg-emerald-600 text-white font-bold py-4 px-4 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 mt-4 shadow-lg shadow-emerald-500/20"
+              >
+                {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+              </button>
+
+              <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800 pt-6">
+                ¿Ya tienes cuenta?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    window.dispatchEvent(new CustomEvent('openLoginModal'));
+                  }}
+                  className="text-emerald-500 font-semibold hover:underline transition-colors"
+                >
+                  Inicia sesión aquí
+                </button>
+              </div>
             </form>
           </motion.div>
         </motion.div>
@@ -141,6 +308,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
   // Auth state
   const [user, setUser] = useState<any>(null);
@@ -163,9 +331,18 @@ export function Header() {
       }
     });
 
+    // Custom event listeners for modals
+    const handleOpenRegister = () => setRegisterModalOpen(true);
+    const handleOpenLogin = () => setLoginModalOpen(true);
+
+    window.addEventListener('openRegisterModal', handleOpenRegister);
+    window.addEventListener('openLoginModal', handleOpenLogin);
+
     return () => {
       window.removeEventListener("scroll", onScroll);
       subscription.unsubscribe();
+      window.removeEventListener('openRegisterModal', handleOpenRegister);
+      window.removeEventListener('openLoginModal', handleOpenLogin);
     };
   }, []);
 
@@ -180,7 +357,7 @@ export function Header() {
         .eq('id', session.user.id)
         .single();
 
-      if (userData?.rol === 'admin' || userData?.rol === 'equipo') {
+      if (userData?.rol === 'admin' || userData?.rol === 'equipo' || userData?.rol === 'espectador') {
         setUser(userData);
       }
     } catch (e) {
@@ -246,7 +423,7 @@ export function Header() {
                     <DropdownMenuItem onClick={() => window.open('/admin', '_blank')} className="cursor-pointer font-medium text-emerald-500">
                       Panel Admin
                     </DropdownMenuItem>
-                  ) : (
+                  ) : user.rol === 'equipo' ? (
                     <>
                       {user.jugador_id && (
                         <DropdownMenuItem onClick={() => window.open(`/jugador/${user.jugador_id}`, '_blank')} className="cursor-pointer">
@@ -256,7 +433,15 @@ export function Header() {
                       <DropdownMenuItem onClick={() => window.open('/jugador', '_blank')} className="cursor-pointer">
                         Asistencia
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => window.location.href = '/porra'} className="cursor-pointer font-bold text-fuchsia-500">
+                        El Oráculo 🔮
+                      </DropdownMenuItem>
                     </>
+                  ) : (
+                    <DropdownMenuItem onClick={() => window.location.href = '/porra'} className="cursor-pointer font-bold text-fuchsia-500">
+                      El Oráculo 🔮
+                    </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500 focus:text-red-500">
@@ -351,6 +536,34 @@ export function Header() {
                       Asistencia
                     </button>
                     <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        window.location.href = '/porra';
+                      }}
+                      className="rounded-md px-3 py-3 text-base font-bold text-fuchsia-500 transition-colors hover:text-fuchsia-400 hover:bg-secondary text-left flex items-center gap-2"
+                    >
+                      El Oráculo 🔮
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left"
+                    >
+                      Salir
+                    </button>
+                  </>
+                )}
+                {user?.rol === 'espectador' && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        window.location.href = '/porra';
+                      }}
+                      className="rounded-md px-3 py-3 text-base font-bold text-fuchsia-500 transition-colors hover:text-fuchsia-400 hover:bg-secondary text-left flex items-center gap-2"
+                    >
+                      El Oráculo 🔮
+                    </button>
+                    <button
                       onClick={handleLogout}
                       className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left"
                     >
@@ -377,6 +590,7 @@ export function Header() {
       </header>
 
       <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
+      <RegisterModal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} />
     </>
   );
 }
