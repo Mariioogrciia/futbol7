@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, Users } from "lucide-react";
 import { useTeamData } from "@/components/providers/team-provider";
+import { Termometro } from "@/components/termometro";
 
 const EQUIPO_ID = "7ec6e1c6-9704-496c-ae72-a590817b9568";
 
@@ -70,6 +71,8 @@ export function Hero() {
               es lo que cuenta, le ponemos ganas que no es poco. Conoce aquí a los valientes que componen
               el equipo así como los resultados y próximos partidos.
             </p>
+
+            <Termometro />
 
             <div className="mt-8 flex flex-wrap gap-4">
               <a
