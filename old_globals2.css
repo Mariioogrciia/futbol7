@@ -1,0 +1,60 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* White background, dark green primary */
+    --background: 0 0% 100%;
+    --foreground: 160 80% 8%;
+
+    --primary: 160 80% 10%;        /* #022B1F deep green */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 10% 95%;      /* light off-white */
+    --secondary-foreground: 160 80% 10%;
+
+    --accent: 90 65% 50%;          /* lime green accent */
+    --accent-foreground: 160 80% 8%;
+
+    --muted: 150 10% 93%;
+    --muted-foreground: 160 10% 40%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 80% 8%;
+
+    --border: 150 10% 88%;
+    --ring: 90 65% 50%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--secondary));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent));
+}

@@ -40,11 +40,11 @@ export default function LoginPage() {
 
       // Redirigir según rol
       if (userData.rol === 'admin') {
-        router.push('/admin');
+        window.open('/admin', '_blank');
       } else if (userData.rol === 'equipo') {
-        router.push('/dashboard');
+        window.open('/jugador', '_blank');
       } else {
-        router.push('/espectador');
+        window.open('/espectador', '_blank');
       }
     } catch (err) {
       console.error('Error redirigiendo:', err);

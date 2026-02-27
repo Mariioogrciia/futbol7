@@ -57,9 +57,9 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
       onClose();
 
       if (userData.rol === 'admin') {
-        router.push('/admin');
+        window.open('/admin', '_blank');
       } else if (userData.rol === 'equipo') {
-        router.push('/jugador');
+        window.open('/jugador', '_blank');
       } else {
         // Fallback or other roles
         setError('No autorizado para esta plataforma.');
