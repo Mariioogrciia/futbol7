@@ -38,13 +38,10 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirigir según rol
-      if (userData.rol === 'admin') {
-        window.open('/admin', '_blank');
-      } else if (userData.rol === 'equipo') {
-        window.open('/jugador', '_blank');
+      if (userData.rol === 'admin' || userData.rol === 'equipo' || userData.rol === 'externo') {
+        router.push('/');
       } else {
-        window.open('/espectador', '_blank');
+        router.push('/');
       }
     } catch (err) {
       console.error('Error redirigiendo:', err);

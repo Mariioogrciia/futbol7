@@ -27,18 +27,22 @@ export function EditableAvatar({ jugadorId, currentFotoUrl, jugadorNombre }: Edi
 
     useEffect(() => {
         // Check if the current user has permission to edit this avatar
-        // Rule: Admin OR if the user's email matches the player's info (we'll simplify to just admin for now or any logged in user as per request "los jugadores autenticados")
         const checkAuth = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                // For this request: "Permitir a los jugadores autenticados subir y actualizar su foto"
-                // Ideally we check if session.user.email == jugador.email but we don't have email in jugadores yet.
-                // Or if they are admin. We'll allow any authenticated user for now since it's a private app.
-                setCanEdit(true);
+                const { data: userData } = await supabase
+                    .from('usuarios')
+                    .select('rol, jugador_id')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (userData?.rol === 'admin' || userData?.jugador_id === jugadorId) {
+                    setCanEdit(true);
+                }
             }
         };
         checkAuth();
-    }, []);
+    }, [jugadorId]);
 
     const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {

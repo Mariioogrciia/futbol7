@@ -9,6 +9,15 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const navLinks = [
   { label: "Inicio", href: "#inicio" },
   { label: "Equipo", href: "#equipo" },
@@ -55,17 +64,8 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
       }
 
       onClose();
+      // Ya no redirigimos aquí. La cabecera se actualizará automáticamente.
 
-      if (userData.rol === 'admin') {
-        window.open('/admin', '_blank');
-      } else if (userData.rol === 'equipo') {
-        window.open('/jugador', '_blank');
-      } else {
-        // Fallback or other roles
-        setError('No autorizado para esta plataforma.');
-        await supabase.auth.signOut();
-        return;
-      }
     } catch (err) {
       setError('Error de conexión');
     } finally {
@@ -143,16 +143,30 @@ export function Header() {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   // Auth state
-  const [userRole, setUserRole] = useState<'admin' | 'equipo' | null>(null);
+  const [user, setUser] = useState<any>(null);
 
   const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
 
+    // Initial check
     checkAuthStatus();
+
+    // Listen to Auth Changes to auto-update header when login modal closes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        checkAuthStatus();
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function checkAuthStatus() {
@@ -162,12 +176,12 @@ export function Header() {
 
       const { data: userData } = await supabase
         .from('usuarios')
-        .select('rol')
+        .select('*')
         .eq('id', session.user.id)
         .single();
 
       if (userData?.rol === 'admin' || userData?.rol === 'equipo') {
-        setUserRole(userData.rol);
+        setUser(userData);
       }
     } catch (e) {
       console.error(e);
@@ -176,7 +190,7 @@ export function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUserRole(null);
+    setUser(null);
     window.location.reload();
   };
 
@@ -217,39 +231,40 @@ export function Header() {
                 {link.label}
               </a>
             ))}
-            {userRole === 'admin' && (
-              <>
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-emerald-500 transition-colors duration-200 hover:text-emerald-400 hover:bg-secondary flex items-center gap-1"
-                >
-                  Admin
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary"
-                >
-                  Salir
-                </button>
-              </>
-            )}
-            {userRole === 'equipo' && (
-              <>
-                <button
-                  onClick={() => router.push('/jugador')}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-1"
-                >
-                  Mi Portal
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary"
-                >
-                  Salir
-                </button>
-              </>
-            )}
-            {!userRole && (
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="rounded-md px-4 py-2 text-sm font-bold text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-2 border border-primary/20 bg-primary/10">
+                    <User className="h-4 w-4" />
+                    {user.nombre || (user.rol === 'admin' ? 'Admin' : 'Jugador')}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {user.rol === 'admin' ? (
+                    <DropdownMenuItem onClick={() => window.open('/admin', '_blank')} className="cursor-pointer font-medium text-emerald-500">
+                      Panel Admin
+                    </DropdownMenuItem>
+                  ) : (
+                    <>
+                      {user.jugador_id && (
+                        <DropdownMenuItem onClick={() => window.open(`/jugador/${user.jugador_id}`, '_blank')} className="cursor-pointer">
+                          Ver Perfil
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem onClick={() => window.open('/jugador', '_blank')} className="cursor-pointer">
+                        Asistencia
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500 focus:text-red-500">
+                    Cerrar sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
               <button
                 onClick={() => setLoginModalOpen(true)}
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary flex items-center gap-1"
@@ -294,12 +309,12 @@ export function Header() {
                     {link.label}
                   </a>
                 ))}
-                {userRole === 'admin' && (
+                {user?.rol === 'admin' && (
                   <>
                     <button
                       onClick={() => {
                         setMobileOpen(false);
-                        router.push('/admin');
+                        window.open('/admin', '_blank');
                       }}
                       className="rounded-md px-3 py-3 text-base font-medium text-emerald-500 transition-colors hover:text-emerald-400 hover:bg-secondary text-left flex items-center gap-2"
                     >
@@ -313,16 +328,27 @@ export function Header() {
                     </button>
                   </>
                 )}
-                {userRole === 'equipo' && (
+                {user?.rol === 'equipo' && (
                   <>
+                    {user.jugador_id && (
+                      <button
+                        onClick={() => {
+                          setMobileOpen(false);
+                          window.open(`/jugador/${user.jugador_id}`, '_blank');
+                        }}
+                        className="rounded-md px-3 py-3 text-base font-medium text-primary transition-colors hover:text-primary/80 hover:bg-secondary text-left flex items-center gap-2"
+                      >
+                        Ver Perfil
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setMobileOpen(false);
-                        router.push('/jugador');
+                        window.open('/jugador', '_blank');
                       }}
                       className="rounded-md px-3 py-3 text-base font-medium text-primary transition-colors hover:text-primary/80 hover:bg-secondary text-left flex items-center gap-2"
                     >
-                      Portal Jugador
+                      Asistencia
                     </button>
                     <button
                       onClick={handleLogout}
@@ -332,7 +358,7 @@ export function Header() {
                     </button>
                   </>
                 )}
-                {!userRole && (
+                {!user && (
                   <button
                     onClick={() => {
                       setMobileOpen(false);

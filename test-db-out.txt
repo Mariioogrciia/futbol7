@@ -1,0 +1,111 @@
+Checking DB...
+AUTH_USERS_START
+[
+  {
+    "id": "543cc226-c937-428b-86db-d57973b9cddb",
+    "email": "nakdgg07@gmail.com"
+  },
+  {
+    "id": "d920836a-4233-44bd-b518-1bd26cad12bf",
+    "email": "markos2.rl31@gmail.com"
+  },
+  {
+    "id": "b5c84320-84ee-4d13-a1cc-b34600bb3ccd",
+    "email": "adriimoreno34@gmail.com"
+  },
+  {
+    "id": "d3266d3f-9658-4606-b797-c784d1bed9bc",
+    "email": "miguelsiciliatorio@gmail.com"
+  },
+  {
+    "id": "881be2ff-166c-473c-8a91-8d33bd40d43f",
+    "email": "plantilla@impersed.com"
+  },
+  {
+    "id": "097b2782-274e-4e3d-acb3-fdd268d026e1",
+    "email": "mario.meca2005@gmail.com"
+  },
+  {
+    "id": "1da27b40-504a-4c79-924e-7463095c06d3",
+    "email": "externo@futbol7.com"
+  },
+  {
+    "id": "ac6a5a78-ba18-499f-8ce0-839e625f39c3",
+    "email": "equipo@futbol7.com"
+  },
+  {
+    "id": "01ddd9b8-8f3a-41c7-96b4-456d9d6565c1",
+    "email": "admin@futbol7.com"
+  }
+]
+AUTH_USERS_END
+USUARIOS_TABLE_START
+[
+  {
+    "id": "097b2782-274e-4e3d-acb3-fdd268d026e1",
+    "email": "mario.meca2005@gmail.com",
+    "nombre": "Admin",
+    "rol": "admin",
+    "equipo_id": null,
+    "created_at": "2026-02-22T12:04:08.281045+00:00",
+    "updated_at": "2026-02-22T12:04:08.281045+00:00",
+    "activo": true,
+    "jugador_id": null
+  },
+  {
+    "id": "881be2ff-166c-473c-8a91-8d33bd40d43f",
+    "email": "plantilla@impersed.com",
+    "nombre": "Plantilla Impersed",
+    "rol": "equipo",
+    "equipo_id": null,
+    "created_at": "2026-02-26T20:41:54.36328+00:00",
+    "updated_at": "2026-02-26T20:41:54.36328+00:00",
+    "activo": true,
+    "jugador_id": null
+  },
+  {
+    "id": "6725e855-2991-421a-b3f5-b97208bdfba6",
+    "email": "miguelsiciliatorio@gmail.com",
+    "nombre": "Miguel Sicilia",
+    "rol": "equipo",
+    "equipo_id": "7ec6e1c6-9704-496c-ae72-a590817b9568",
+    "created_at": "2026-02-27T12:41:03.715389+00:00",
+    "updated_at": "2026-02-27T12:41:03.715389+00:00",
+    "activo": true,
+    "jugador_id": "8128dbb9-5a43-4ffd-accc-b643f511b04c"
+  },
+  {
+    "id": "2fc6f00f-47af-4bbe-9544-25d2ceef2299",
+    "email": "Adriimoreno34@gmail.com",
+    "nombre": "Adrian Moreno",
+    "rol": "equipo",
+    "equipo_id": "7ec6e1c6-9704-496c-ae72-a590817b9568",
+    "created_at": "2026-02-27T12:41:38.774694+00:00",
+    "updated_at": "2026-02-27T12:41:38.774694+00:00",
+    "activo": true,
+    "jugador_id": "f16fa5a8-3631-4fb8-b45c-3aba28ff5c0a"
+  },
+  {
+    "id": "4330f926-0058-4190-814b-03d7092556af",
+    "email": "markos2.rl31@gmail.com",
+    "nombre": "Marcos Rivera",
+    "rol": "equipo",
+    "equipo_id": "7ec6e1c6-9704-496c-ae72-a590817b9568",
+    "created_at": "2026-02-27T12:42:13.585801+00:00",
+    "updated_at": "2026-02-27T12:42:13.585801+00:00",
+    "activo": true,
+    "jugador_id": "f8e0c3b1-3dcd-4e92-a9b0-6b886b786c89"
+  },
+  {
+    "id": "e3d5da41-1cf1-4956-bda4-16cfe2dab7c1",
+    "email": "nakdgg07@gmail.com",
+    "nombre": "David Garcia",
+    "rol": "equipo",
+    "equipo_id": "7ec6e1c6-9704-496c-ae72-a590817b9568",
+    "created_at": "2026-02-27T12:42:46.764757+00:00",
+    "updated_at": "2026-02-27T12:42:46.764757+00:00",
+    "activo": true,
+    "jugador_id": "3999415f-111e-4d94-918f-42f77570ba9e"
+  }
+]
+USUARIOS_TABLE_END
