@@ -55,11 +55,6 @@ export default function OraculoPage() {
     // Swipe Card State
     const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
     const x = useMotionValue(0);
-    const backgroundColors = useTransform(
-        x,
-        [-200, 0, 200],
-        ['rgba(220, 38, 38, 0.4)', 'rgba(2, 6, 23, 1)', 'rgba(5, 150, 105, 0.4)'] // Red for Rival, Dark Slate for center, Green for Impersed
-    );
     const rotate = useTransform(x, [-200, 200], [-10, 10]);
     const opacityRight = useTransform(x, [0, 100], [0, 1]);
     const opacityLeft = useTransform(x, [0, -100], [0, 1]);
@@ -186,19 +181,19 @@ export default function OraculoPage() {
     };
 
     return (
-        <motion.main
-            style={{ backgroundColor: backgroundColors }}
-            className="min-h-screen text-slate-100 flex flex-col font-sans transition-colors duration-200"
-        >
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200 relative overflow-hidden">
+            <motion.div style={{ opacity: opacityLeft }} className="absolute inset-0 bg-red-500/20 pointer-events-none z-0" />
+            <motion.div style={{ opacity: opacityRight }} className="absolute inset-0 bg-emerald-500/20 pointer-events-none z-0" />
+
             <Header />
 
-            <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-24 lg:px-8 space-y-12">
+            <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-24 lg:px-8 space-y-12 relative z-10">
                 <div className="text-center space-y-4">
-                    <h1 className="text-5xl md:text-7xl font-black italic uppercase text-white tracking-tighter drop-shadow-[0_0_15px_rgba(236,72,153,0.5)] flex items-center justify-center gap-3 font-mono">
-                        <Trophy className="h-12 w-12 text-fuchsia-500" />
+                    <h1 className="text-5xl md:text-7xl font-black italic uppercase text-slate-900 dark:text-white tracking-tighter drop-shadow-[0_0_15px_rgba(236,72,153,0.5)] flex items-center justify-center gap-3 font-mono">
+                        <Trophy className="h-12 w-12 text-fuchsia-600 dark:text-fuchsia-500" />
                         El Oráculo del Vestuario
                     </h1>
-                    <p className="text-xl text-slate-400 max-w-2xl mx-auto font-medium">
+                    <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium">
                         ¿Cuántos goles nos van a caer hoy? Desliza, elige el resultado y demuestra tu nivel de Hooligan.
                     </p>
                 </div>
@@ -234,27 +229,27 @@ export default function OraculoPage() {
                                                 }
                                             }}
                                             whileTap={{ cursor: 'grabbing' }}
-                                            className="absolute w-full h-full bg-slate-900 border-2 border-slate-800 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6 cursor-grab"
+                                            className="absolute w-full h-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6 cursor-grab"
                                         >
                                             <div className="flex items-center justify-between w-full opacity-90">
                                                 <div className="text-center flex-1">
-                                                    <span className="font-black text-2xl block text-white uppercase tracking-wider font-mono drop-shadow-[0_0_8px_rgba(5,150,105,0.8)]">Impersed FC</span>
+                                                    <span className="font-black text-2xl block text-slate-900 dark:text-white uppercase tracking-wider font-mono drop-shadow-[0_0_8px_rgba(5,150,105,0.8)]">Impersed FC</span>
                                                 </div>
-                                                <span className="font-black text-3xl italic text-slate-500 px-4">VS</span>
+                                                <span className="font-black text-3xl italic text-slate-400 dark:text-slate-500 px-4">VS</span>
                                                 <div className="text-center flex-1">
-                                                    <span className="font-black text-2xl block text-white uppercase tracking-wider font-mono drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">{partido.rival}</span>
+                                                    <span className="font-black text-2xl block text-slate-900 dark:text-white uppercase tracking-wider font-mono drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">{partido.rival}</span>
                                                 </div>
                                             </div>
 
                                             {/* Flash text based on drag */}
                                             <div className="mt-8 text-center min-h-[4rem] flex flex-col items-center justify-center">
-                                                <motion.div style={{ opacity: opacityRight }} className="absolute text-emerald-400 font-extrabold text-3xl uppercase italic tracking-widest drop-shadow-[0_0_10px_rgba(5,150,105,1)]">
+                                                <motion.div style={{ opacity: opacityRight }} className="absolute text-emerald-600 dark:text-emerald-400 font-extrabold text-3xl uppercase italic tracking-widest drop-shadow-[0_0_10px_rgba(5,150,105,0.8)]">
                                                     ¡Fiel a la causa!
                                                 </motion.div>
-                                                <motion.div style={{ opacity: opacityLeft }} className="absolute text-red-500 font-extrabold text-3xl uppercase italic tracking-widest drop-shadow-[0_0_10px_rgba(220,38,38,1)]">
+                                                <motion.div style={{ opacity: opacityLeft }} className="absolute text-red-600 dark:text-red-500 font-extrabold text-3xl uppercase italic tracking-widest drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]">
                                                     ¡Traidor!
                                                 </motion.div>
-                                                <motion.div style={{ opacity: opacityCenter }} className="text-slate-400 font-medium text-sm flex items-center gap-2">
+                                                <motion.div style={{ opacity: opacityCenter }} className="text-slate-500 dark:text-slate-400 font-medium text-sm flex items-center gap-2">
                                                     <span className="animate-pulse">👈 Desliza para dictar sentencia 👉</span>
                                                 </motion.div>
                                             </div>
@@ -262,37 +257,37 @@ export default function OraculoPage() {
                                     </div>
 
                                     {/* Scrolling Wheels for Score */}
-                                    <div className="w-full bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl space-y-6">
+                                    <div className="w-full bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                                         <div className="text-center">
-                                            <h3 className="text-xl font-bold uppercase italic text-fuchsia-400 mb-6 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">¿Cuál será el resultado exacto?</h3>
+                                            <h3 className="text-xl font-bold uppercase italic text-fuchsia-600 dark:text-fuchsia-400 mb-6 drop-shadow-[0_0_5px_rgba(236,72,153,0.3)] dark:drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">¿Cuál será el resultado exacto?</h3>
                                         </div>
 
                                         <div className="flex justify-center items-center gap-8">
                                             {/* Local Goal Safe Dial */}
-                                            <div className="flex flex-col items-center bg-slate-950 px-4 py-2 rounded-2xl border border-slate-800">
+                                            <div className="flex flex-col items-center bg-slate-50 dark:bg-slate-950 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800">
                                                 <span className="text-xs font-bold text-slate-500 mb-2 uppercase">Impersed</span>
-                                                <button type="button" onClick={() => setGolesLocal((prev) => Math.max(0, Number(prev) + 1))} className="text-emerald-500 hover:text-emerald-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▲</button>
-                                                <div className="text-5xl font-black font-mono text-white py-2 w-16 text-center">{golesLocal === '' ? '0' : golesLocal}</div>
-                                                <button type="button" onClick={() => setGolesLocal((prev) => Math.max(0, Number(prev) - 1))} className="text-emerald-500 hover:text-emerald-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▼</button>
+                                                <button type="button" onClick={() => setGolesLocal((prev) => Math.max(0, Number(prev) + 1))} className="text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▲</button>
+                                                <div className="text-5xl font-black font-mono text-slate-900 dark:text-white py-2 w-16 text-center">{golesLocal === '' ? '0' : golesLocal}</div>
+                                                <button type="button" onClick={() => setGolesLocal((prev) => Math.max(0, Number(prev) - 1))} className="text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▼</button>
                                             </div>
 
-                                            <span className="text-3xl font-black text-slate-600">-</span>
+                                            <span className="text-3xl font-black text-slate-400 dark:text-slate-600">-</span>
 
                                             {/* Rival Goal Safe Dial */}
-                                            <div className="flex flex-col items-center bg-slate-950 px-4 py-2 rounded-2xl border border-slate-800">
+                                            <div className="flex flex-col items-center bg-slate-50 dark:bg-slate-950 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800">
                                                 <span className="text-xs font-bold text-slate-500 mb-2 uppercase">Rival</span>
-                                                <button type="button" onClick={() => setGolesVisitante((prev) => Math.max(0, Number(prev) + 1))} className="text-red-500 hover:text-red-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▲</button>
-                                                <div className="text-5xl font-black font-mono text-white py-2 w-16 text-center">{golesVisitante === '' ? '0' : golesVisitante}</div>
-                                                <button type="button" onClick={() => setGolesVisitante((prev) => Math.max(0, Number(prev) - 1))} className="text-red-500 hover:text-red-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▼</button>
+                                                <button type="button" onClick={() => setGolesVisitante((prev) => Math.max(0, Number(prev) + 1))} className="text-red-600 dark:text-red-500 hover:text-red-500 dark:hover:text-red-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▲</button>
+                                                <div className="text-5xl font-black font-mono text-slate-900 dark:text-white py-2 w-16 text-center">{golesVisitante === '' ? '0' : golesVisitante}</div>
+                                                <button type="button" onClick={() => setGolesVisitante((prev) => Math.max(0, Number(prev) - 1))} className="text-red-600 dark:text-red-500 hover:text-red-500 dark:hover:text-red-400 font-black text-xl p-2 cursor-pointer transition-transform active:scale-95">▼</button>
                                             </div>
                                         </div>
 
-                                        <div className="pt-4 border-t border-slate-800/50">
-                                            <label className="block text-center text-sm font-bold uppercase italic text-fuchsia-400 mb-3">Primer Goleador (Opcional)</label>
+                                        <div className="pt-4 border-t border-slate-200 dark:border-slate-800/50">
+                                            <label className="block text-center text-sm font-bold uppercase italic text-fuchsia-600 dark:text-fuchsia-400 mb-3">Primer Goleador (Opcional)</label>
                                             <select
                                                 value={primerGoleador}
                                                 onChange={(e) => setPrimerGoleador(e.target.value)}
-                                                className="w-full p-4 rounded-xl border border-slate-700 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition-shadow text-center font-bold"
+                                                className="w-full p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition-shadow text-center font-bold"
                                             >
                                                 <option value="">🔮 Selecciona a tu protegido</option>
                                                 {jugadores.map((j) => (
@@ -303,14 +298,14 @@ export default function OraculoPage() {
                                     </div>
 
                                     {message.text && (
-                                        <div className={`w-full p-4 rounded-xl flex items-center justify-center gap-2 ${message.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' : 'bg-red-500/20 text-red-400 border border-red-500/50'}`}>
+                                        <div className={`w-full p-4 rounded-xl flex items-center justify-center gap-2 ${message.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/50' : 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500/50'}`}>
                                             {message.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                                             <span className="font-bold text-sm tracking-wide">{message.text}</span>
                                         </div>
                                     )}
 
                                     {!session ? (
-                                        <button type="button" onClick={() => window.scrollTo(0, 0)} className="w-full bg-slate-800 text-slate-300 font-black uppercase tracking-widest py-5 rounded-2xl hover:bg-slate-700 transition-colors border-2 border-slate-700">
+                                        <button type="button" onClick={() => window.scrollTo(0, 0)} className="w-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-black uppercase tracking-widest py-5 rounded-2xl hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors border-2 border-slate-300 dark:border-slate-700">
                                             Inicia Sesión para Sellar Tu Destino
                                         </button>
                                     ) : (
@@ -330,20 +325,20 @@ export default function OraculoPage() {
 
                                 </form>
                             ) : (
-                                <div className="text-center p-12 bg-slate-900 rounded-3xl border border-slate-800">
-                                    <Skull className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                                    <p className="text-slate-400 font-bold uppercase tracking-wider">La bola de cristal está nublada.<br />No hay partidos próximos.</p>
+                                <div className="text-center p-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
+                                    <Skull className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
+                                    <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">La bola de cristal está nublada.<br />No hay partidos próximos.</p>
                                 </div>
                             )}
                         </div>
 
                         {/* RPG Ranking */}
-                        <div className="w-full mt-12 bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+                        <div className="w-full mt-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
                             {/* Decorative elements */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-600/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
 
-                            <h2 className="text-3xl font-black italic uppercase text-white mb-8 flex items-center justify-center gap-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] tracking-tight">
-                                <Zap className="w-8 h-8 text-yellow-400" />
+                            <h2 className="text-3xl font-black italic uppercase text-slate-900 dark:text-white mb-8 flex items-center justify-center gap-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] tracking-tight">
+                                <Zap className="w-8 h-8 text-yellow-500 dark:text-yellow-400" />
                                 Nivel de Hooligan
                             </h2>
 
@@ -366,27 +361,27 @@ export default function OraculoPage() {
                                             else if (pts > 0) { title = "Utillero"; rankColor = "text-sky-400"; barColor = "bg-sky-400"; }
 
                                             return (
-                                                <li key={user.id} className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50 transform transition-transform hover:scale-[1.02]">
+                                                <li key={user.id} className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/50 transform transition-transform hover:scale-[1.02]">
                                                     <div className="flex items-center justify-between mb-3">
                                                         <div className="flex items-center gap-3">
-                                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm bg-slate-800 text-slate-300 border ${index === 0 ? 'border-yellow-400 text-yellow-400' : 'border-slate-700'}`}>
+                                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border ${index === 0 ? 'border-yellow-500 text-yellow-600 dark:border-yellow-400 dark:text-yellow-400' : 'border-slate-300 dark:border-slate-700'}`}>
                                                                 {index + 1}
                                                             </span>
                                                             <div>
-                                                                <span className="font-bold text-white block">{user.nombre}</span>
+                                                                <span className="font-bold text-slate-900 dark:text-white block">{user.nombre}</span>
                                                                 <span className={`text-xs font-black italic tracking-widest uppercase ${rankColor}`}>
                                                                     Lvl. {Math.floor(pts / 5) + 1} - {title}
                                                                 </span>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
-                                                            <span className="text-2xl font-black text-white font-mono">{user.puntos}</span>
+                                                            <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{user.puntos}</span>
                                                             <span className="text-[10px] uppercase font-bold text-slate-500 block -mt-1 tracking-widest">Cred</span>
                                                         </div>
                                                     </div>
 
                                                     {/* HP Bar */}
-                                                    <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                                                    <div className="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-300 dark:border-slate-800">
                                                         <motion.div
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${hpPercentage}%` }}
@@ -400,7 +395,7 @@ export default function OraculoPage() {
                                     </ul>
                                 ) : (
                                     <div className="text-center p-12">
-                                        <Skull className="w-12 h-12 text-slate-700 mx-auto mb-4" />
+                                        <Skull className="w-12 h-12 text-slate-400 dark:text-slate-700 mx-auto mb-4" />
                                         <p className="text-slate-500 font-bold uppercase tracking-wider">El salón de la fama está vacío.</p>
                                     </div>
                                 )}
@@ -412,6 +407,6 @@ export default function OraculoPage() {
             </div>
 
             <Footer />
-        </motion.main>
+        </main>
     );
 }

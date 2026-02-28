@@ -34,8 +34,12 @@ export function GallerySection() {
         });
         if (error) throw error;
 
-        // Filtrar archivos basura y mapear a nuestra interfaz
-        const validFiles = data.filter((file) => file.name !== ".emptyFolderPlaceholder" && !file.name.startsWith("."));
+        // Filtrar archivos basura, carpetas (que no tienen id) y asegurarnos que sean imágenes
+        const validFiles = data.filter((file) =>
+          file.name !== ".emptyFolderPlaceholder" &&
+          !file.name.startsWith(".") &&
+          file.id != null
+        );
 
         const galleryData: SubGalleryImage[] = validFiles.map((file, idx) => {
           const { data: pubData } = supabase.storage.from("galeria").getPublicUrl(file.name);

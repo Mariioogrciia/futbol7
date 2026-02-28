@@ -14,7 +14,7 @@ export function Termometro() {
         );
     }
 
-    // Find last 5 finalized matches
+    // Find last 5 finalized matches (any format)
     const last5 = [...partidos]
         .filter((p) => p.estado === "finalizado")
         .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
