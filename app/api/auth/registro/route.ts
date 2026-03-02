@@ -24,15 +24,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
-    // El trigger on_auth_user_created insertará el usuario automáticamente, 
-    // pero vamos a actualizar el rol explícito y el nombre por si el trigger asume valores por defecto.
+    // Realizamos un upsert para asegurarnos de que el usuario se guarda
+    // explícitamente en la tabla 'usuarios' con su ID exacto de Supabase Auth
     const { error: dbError } = await supabaseAdmin
       .from('usuarios')
-      .update({ nombre, rol })
-      .eq('id', authData.user?.id);
+      .upsert({
+        id: authData.user?.id,
+        email: email,
+        nombre: nombre,
+        rol: rol
+      });
 
     if (dbError) {
-      console.error('Error actualizando usuario post-trigger:', dbError);
+      console.error('Error insertando/actualizando usuario post-registro:', dbError);
     }
 
     return NextResponse.json(

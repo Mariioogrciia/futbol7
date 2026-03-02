@@ -81,10 +81,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabase$2f$admin$2e$
 ;
 async function GET() {
     try {
-        const { data: leaderboard, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabase$2f$admin$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabaseAdmin"].from('predicciones').select(`
-                puntos,
-                usuario:usuarios(id, nombre)
-            `);
+        const { data: leaderboard, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabase$2f$admin$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabaseAdmin"].from('usuarios').select('id, nombre, saldo_cubiertaspoints').order('saldo_cubiertaspoints', {
+            ascending: false
+        }).limit(50);
         if (error) {
             console.error('Error fetching leaderboard:', error);
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -93,28 +92,15 @@ async function GET() {
                 status: 500
             });
         }
-        // Calcular puntos totales por usuario
-        const userPoints = new Map();
-        leaderboard.forEach((p)=>{
-            if (!p.usuario) return;
-            // Handle array or single object from PostgREST
-            const user = Array.isArray(p.usuario) ? p.usuario[0] : p.usuario;
-            if (!user) return;
-            const existing = userPoints.get(user.id) || {
-                id: user.id,
-                nombre: user.nombre,
-                puntos: 0
-            };
-            existing.puntos += p.puntos || 0;
-            userPoints.set(user.id, existing);
-        });
-        const ranking = Array.from(userPoints.values());
-        // Ordenar de mayor a menor y filtrar los que tienen 0 (opcional, dejamos todos para ver)
-        ranking.sort((a, b)=>b.puntos - a.puntos);
+        const ranking = (leaderboard || []).map((u)=>({
+                id: u.id,
+                nombre: u.nombre || 'Hooligan Anónimo',
+                puntos: u.saldo_cubiertaspoints || 0
+            }));
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: true,
-            ranking: ranking.slice(0, 50)
-        }); // Top 50
+            ranking
+        });
     } catch (err) {
         console.error('API Error Leaderboard:', err);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({

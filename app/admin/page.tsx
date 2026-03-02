@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, AlertCircle, CheckCircle2, ChevronDown, Trophy, Users, Loader2, CalendarHeart, ImagePlus, UploadCloud } from "lucide-react";
+import { Save, AlertCircle, CheckCircle2, ChevronDown, Trophy, Users, Loader2, CalendarHeart, ImagePlus, UploadCloud, CircleDollarSign } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -50,9 +50,13 @@ export default function AdminPanel() {
   const [loadingConvocatorias, setLoadingConvocatorias] = useState(false);
 
   // Gallery Upload State
-  const [activeTab, setActiveTab] = useState<"resultados" | "asistencia" | "galeria">("resultados");
+  const [activeTab, setActiveTab] = useState<"resultados" | "asistencia" | "galeria" | "apuestas">("resultados");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Apuestas State
+  const [apuestas, setApuestas] = useState<any[]>([]);
+  const [loadingApuestas, setLoadingApuestas] = useState(false);
 
   // Validation
   const totalScorersAssigned = Object.values(scorerCounts).reduce((a, b) => a + b, 0);
@@ -144,10 +148,28 @@ export default function AdminPanel() {
     }
   };
 
-  // Escuchar cambio de tab para re-cargar convocatorias
+  const fetchApuestas = async (matchId: string) => {
+    setLoadingApuestas(true);
+    try {
+      const res = await fetch(`/api/admin/apuestas?partido_id=${matchId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setApuestas(data.apuestas || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingApuestas(false);
+    }
+  };
+
+  // Escuchar cambio de tab para re-cargar convocatorias o apuestas
   useEffect(() => {
     if (activeTab === "asistencia" && selectedMatch) {
       fetchConvocatorias(selectedMatch);
+    }
+    if (activeTab === "apuestas" && selectedMatch) {
+      fetchApuestas(selectedMatch);
     }
   }, [activeTab]);
 
@@ -356,27 +378,34 @@ export default function AdminPanel() {
             <div className="lg:col-span-5 space-y-6">
 
               {/* TABS */}
-              <div className="flex flex-col sm:flex-row bg-white dark:bg-gray-900/60 p-1.5 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm transition-colors duration-300 gap-1 sm:gap-2">
+              <div className="flex flex-wrap bg-white dark:bg-gray-900/60 p-1.5 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm transition-colors duration-300 gap-2">
                 <button
                   onClick={() => setActiveTab("resultados")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "resultados" ? "bg-primary text-primary-foreground shadow-md" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/50"}`}
+                  className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "resultados" ? "bg-primary text-primary-foreground shadow-md" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/50"}`}
                 >
-                  <Trophy className="h-4 w-4" />
-                  Resultados
+                  <Trophy className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Resultados</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("asistencia")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "asistencia" ? "bg-blue-600 text-white shadow-md" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/50"}`}
+                  className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "asistencia" ? "bg-blue-600 text-white shadow-md" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/50"}`}
                 >
-                  <CalendarHeart className="h-4 w-4" />
-                  Asistencia
+                  <CalendarHeart className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Asistencia</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("galeria")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "galeria" ? "bg-purple-600 text-white shadow-md" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/50"}`}
+                  className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "galeria" ? "bg-purple-600 text-white shadow-md" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/50"}`}
                 >
-                  <ImagePlus className="h-4 w-4" />
-                  Galería
+                  <ImagePlus className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Galería</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("apuestas")}
+                  className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "apuestas" ? "bg-emerald-600 text-white shadow-md" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/50"}`}
+                >
+                  <CircleDollarSign className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Apuestas</span>
                 </button>
               </div>
 
@@ -639,7 +668,7 @@ export default function AdminPanel() {
                     )}
 
                   </div>
-                ) : (
+                ) : activeTab === "asistencia" ? (
                   <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-slate-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-xl relative overflow-hidden transition-colors duration-300">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-transparent" />
 
@@ -698,7 +727,43 @@ export default function AdminPanel() {
                       </div>
                     )}
                   </div>
-                )
+                ) : activeTab === "apuestas" ? (
+                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-slate-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-xl relative overflow-hidden transition-colors duration-300">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-transparent" />
+
+                    <div className="flex items-center gap-3 mb-6 border-b border-slate-200 dark:border-gray-800/60 pb-5">
+                      <CircleDollarSign className="text-emerald-500 h-6 w-6" />
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Registro de Apuestas</h3>
+                        <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">Apuestas realizadas por los jugadores para este partido.</p>
+                      </div>
+                    </div>
+
+                    {loadingApuestas ? (
+                      <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" /></div>
+                    ) : apuestas.length === 0 ? (
+                      <div className="py-12 text-center text-slate-500 dark:text-gray-500 font-medium">No hay ninguna apuesta registrada para este partido.</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {apuestas.map(bet => (
+                          <div key={bet.id} className="flex flex-col p-4 bg-slate-50 dark:bg-gray-950/50 rounded-2xl border border-slate-200 dark:border-gray-800/60 transition-all hover:bg-slate-100 dark:hover:bg-gray-900">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-bold text-slate-900 dark:text-gray-200 text-lg">{bet.usuario?.nombre || 'Hooligan'}</span>
+                              <span className={`px-3 py-1 text-xs font-bold rounded-full ${bet.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400' : bet.estado === 'ganada' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>
+                                {bet.estado.toUpperCase()}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-600 dark:text-gray-400 mb-2">{bet.opcion_label}</p>
+                            <div className="flex justify-between text-sm font-medium">
+                              <span className="text-slate-500 dark:text-gray-500">Apostado: <span className="text-emerald-600 dark:text-emerald-400">{bet.cantidad_apostada} CP</span> (Cuota: {bet.cuota})</span>
+                              <span className="text-slate-500 dark:text-gray-500">Retorno Potencial: <span className="text-emerald-600 dark:text-emerald-400">{bet.ganancia_potencial.toFixed(2)} CP</span></span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null
               ) : (
                 <div className="bg-gradient-to-br from-white to-slate-50 dark:from-gray-900 dark:to-gray-900/50 border border-slate-200 dark:border-gray-800/60 rounded-3xl p-6 h-full flex flex-col items-center justify-center text-center shadow-lg dark:shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden transition-colors duration-300">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />

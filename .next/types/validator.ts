@@ -128,6 +128,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/api/admin/apuestas/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/apuestas">> = Specific
+  const handler = {} as typeof import("../../app/api/admin/apuestas/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api/admin/convocatorias/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/convocatorias">> = Specific
@@ -150,6 +159,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/update-match">> = Specific
   const handler = {} as typeof import("../../app/api/admin/update-match/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/apuestas/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/apuestas">> = Specific
+  const handler = {} as typeof import("../../app/api/apuestas/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
