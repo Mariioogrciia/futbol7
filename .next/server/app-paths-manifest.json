@@ -1,9 +1,0 @@
-{
-  "/admin/page": "app/admin/page.js",
-  "/api/matches/route": "app/api/matches/route.js",
-  "/api/players/route": "app/api/players/route.js",
-  "/api/porra/leaderboard/route": "app/api/porra/leaderboard/route.js",
-  "/jugador/[id]/page": "app/jugador/[id]/page.js",
-  "/page": "app/page.js",
-  "/porra/page": "app/porra/page.js"
-}
