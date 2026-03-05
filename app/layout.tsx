@@ -22,6 +22,7 @@ export const viewport: Viewport = {
 import { TeamProvider } from "@/components/providers/team-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
+import { MisterChat } from "@/components/mister-chat";
 
 export default function RootLayout({
   children,
@@ -35,6 +36,7 @@ export default function RootLayout({
           <TeamProvider>
             {children}
             <Toaster position="bottom-right" richColors />
+            <MisterChat />
           </TeamProvider>
         </ThemeProvider>
       </body>
