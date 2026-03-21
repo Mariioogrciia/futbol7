@@ -107,57 +107,57 @@ export function LiveScoreWidget() {
                 initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -50, opacity: 0 }}
-                className="fixed top-20 inset-x-0 z-40 flex justify-center px-4 pointer-events-none"
+                className="fixed top-16 sm:top-20 inset-x-0 z-40 flex justify-center px-2 sm:px-4 pointer-events-none"
             >
-                <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] p-3 flex flex-col items-center relative overflow-hidden pointer-events-auto w-full max-w-[300px]">
+                <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] p-2 sm:p-3 flex flex-col items-center relative overflow-hidden pointer-events-auto w-full max-w-[260px] sm:max-w-[300px]">
 
                     {/* Background Glow based on Flash */}
                     <div className={`absolute inset-0 opacity-20 transition-colors duration-500 ${flash === 'equipo' ? 'bg-primary' : flash === 'rival' ? 'bg-red-500' : 'bg-transparent'}`} />
 
                     {/* Header */}
-                    <div className="flex items-center justify-center mb-2 relative z-10">
-                        <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.3)]">
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_5px_rgba(239,68,68,0.8)]" />
-                            <span className="text-[9px] font-bold text-red-400 uppercase tracking-wider leading-none">En Vivo</span>
+                    <div className="flex items-center justify-center mb-1.5 sm:mb-2 relative z-10">
+                        <div className="flex items-center gap-1 sm:gap-1.5 bg-red-500/10 border border-red-500/20 px-1.5 sm:px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.3)]">
+                            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_5px_rgba(239,68,68,0.8)]" />
+                            <span className="text-[8px] sm:text-[9px] font-bold text-red-400 uppercase tracking-wider leading-none">En Vivo</span>
                         </div>
                     </div>
 
                     {/* Scoreboard */}
-                    <div className="flex items-center justify-center w-full relative z-10 gap-3">
+                    <div className="flex items-center justify-center w-full relative z-10 gap-2 sm:gap-3">
 
                         {/* Us */}
-                        <div className="flex flex-col items-center w-16">
-                            <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center border border-slate-600 mb-1 shadow-inner">
-                                <span className="text-[10px] font-bold text-slate-200">IMP</span>
+                        <div className="flex flex-col items-center w-12 sm:w-16">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-slate-800 rounded-full flex items-center justify-center border border-slate-600 mb-0.5 sm:mb-1 shadow-inner">
+                                <span className="text-[8px] sm:text-[10px] font-bold text-slate-200">IMP</span>
                             </div>
-                            <span className="text-[9px] font-semibold text-slate-300">Nosotros</span>
+                            <span className="text-[8px] sm:text-[9px] font-semibold text-slate-300">Nosotros</span>
                         </div>
 
                         {/* Score Numbers */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
                             <div className="relative">
                                 {flash === 'equipo' && <span className="absolute -inset-2 bg-primary blur-md opacity-60 rounded-full animate-ping z-0" />}
-                                <span className={`text-2xl font-black relative z-10 transition-colors duration-300 ${flash === 'equipo' ? 'text-primary drop-shadow-[0_0_15px_rgba(20,184,106,1)]' : 'text-white drop-shadow-md'}`}>
+                                <span className={`text-xl sm:text-2xl font-black relative z-10 transition-colors duration-300 ${flash === 'equipo' ? 'text-primary drop-shadow-[0_0_15px_rgba(20,184,106,1)]' : 'text-white drop-shadow-md'}`}>
                                     {liveMatch.goles_equipo || 0}
                                 </span>
                             </div>
 
-                            <span className="text-base font-bold text-slate-500">-</span>
+                            <span className="text-sm sm:text-base font-bold text-slate-500">-</span>
 
                             <div className="relative">
                                 {flash === 'rival' && <span className="absolute -inset-2 bg-red-500 blur-md opacity-60 rounded-full animate-ping z-0" />}
-                                <span className={`text-2xl font-black relative z-10 transition-colors duration-300 ${flash === 'rival' ? 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,1)]' : 'text-white drop-shadow-md'}`}>
+                                <span className={`text-xl sm:text-2xl font-black relative z-10 transition-colors duration-300 ${flash === 'rival' ? 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,1)]' : 'text-white drop-shadow-md'}`}>
                                     {liveMatch.goles_rival || 0}
                                 </span>
                             </div>
                         </div>
 
                         {/* Rival */}
-                        <div className="flex flex-col items-center w-16">
-                            <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center border border-slate-600 mb-1 shadow-inner">
-                                <span className="text-[10px] font-bold text-slate-200">VS</span>
+                        <div className="flex flex-col items-center w-12 sm:w-16">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-slate-800 rounded-full flex items-center justify-center border border-slate-600 mb-0.5 sm:mb-1 shadow-inner">
+                                <span className="text-[8px] sm:text-[10px] font-bold text-slate-200">VS</span>
                             </div>
-                            <span className="text-[9px] font-semibold text-slate-300 truncate max-w-full text-center">{liveMatch.rival}</span>
+                            <span className="text-[8px] sm:text-[9px] font-semibold text-slate-300 truncate max-w-full text-center">{liveMatch.rival}</span>
                         </div>
 
                     </div>

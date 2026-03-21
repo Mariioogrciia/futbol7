@@ -35,16 +35,16 @@ export function StandingsSection() {
             <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border-subtle to-transparent" />
           </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-8">
             <div>
-              <h2 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
+              <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
                 Tabla de<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-300">
                   Posiciones
                 </span>
               </h2>
             </div>
-            <p className="text-text-secondary text-lg font-medium leading-relaxed lg:max-w-xs lg:text-right">
+            <p className="text-text-secondary text-sm sm:text-lg font-medium leading-relaxed lg:max-w-xs lg:text-right">
               Resultados y clasificación final de la temporada anterior.
             </p>
           </div>
@@ -56,9 +56,9 @@ export function StandingsSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="rounded-[1.5rem] border border-border-default bg-surface-card overflow-hidden overflow-x-auto shadow-elevated"
+          className="rounded-xl sm:rounded-[1.5rem] border border-border-default bg-surface-card overflow-hidden overflow-x-auto shadow-elevated -mx-4 sm:mx-0"
         >
-          <div className="min-w-[640px]">
+          <div className="min-w-[580px]">
             {/* Table Header */}
             <div className="grid grid-cols-[48px_1fr_40px_40px_40px_40px_48px_48px_48px_60px] px-6 py-4 border-b border-border-subtle bg-bg-secondary items-center">
               <span className="text-[10px] font-black tracking-[0.15em] uppercase text-text-muted text-center">#</span>
@@ -162,7 +162,7 @@ export function StandingsSection() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[10px] font-black tracking-[0.12em] uppercase text-slate-600"
+          className="mt-4 sm:mt-6 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-6 gap-y-2 sm:gap-y-3 text-[9px] sm:text-[10px] font-black tracking-[0.12em] uppercase text-slate-600"
         >
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500/30 border border-emerald-500/40" />

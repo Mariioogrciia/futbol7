@@ -35,9 +35,9 @@ export function MisterChat() {
     }, [messages]);
 
     return (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
             {isOpen ? (
-                <div className="bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl w-80 sm:w-96 overflow-hidden flex flex-col h-[500px] max-h-[85vh]">
+                <div className="bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl w-[calc(100vw-2rem)] sm:w-80 md:w-96 overflow-hidden flex flex-col h-[450px] sm:h-[500px] max-h-[80vh]">
                     {/* Header */}
                     <div className="bg-zinc-900 border-b border-zinc-800 p-4 font-bold text-zinc-100 flex justify-between items-center">
                         <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export function MisterChat() {
             ) : (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="bg-zinc-800 hover:bg-zinc-700 text-white p-4 rounded-full shadow-2xl transition-transform hover:scale-105 active:scale-95 flex items-center justify-center border border-zinc-700 group relative"
+                    className="bg-zinc-800 hover:bg-zinc-700 text-white p-3 sm:p-4 rounded-full shadow-2xl transition-transform hover:scale-105 active:scale-95 flex items-center justify-center border border-zinc-700 group relative"
                     aria-label="Hablar con el Míster"
                 >
                     {/* tooltip */}
@@ -141,7 +141,7 @@ export function MisterChat() {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="w-8 h-8 text-emerald-500 group-hover:text-emerald-400"
+                        className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500 group-hover:text-emerald-400"
                     >
                         <path d="M12 2v2" />
                         <path d="M6 8v4a6 6 0 0 0 12 0V8a6 6 0 0 0-12 0z" />

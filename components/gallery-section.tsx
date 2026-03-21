@@ -87,23 +87,23 @@ export function GallerySection() {
               <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border-subtle to-transparent max-w-12" />
             </div>
 
-            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-text-primary leading-[0.95]">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter text-text-primary leading-[0.95]">
               Galería de<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-300">
                 Momentos
               </span>
             </h2>
-            <p className="mt-4 text-text-secondary text-base lg:text-lg font-medium max-w-md">
+            <p className="mt-3 sm:mt-4 text-text-secondary text-sm sm:text-base lg:text-lg font-medium max-w-md">
               La historia de Impersed Cubiertas FC capturada fuera y dentro del campo.
             </p>
           </div>
 
           <button
             onClick={() => setIsGalleryCollapsed(!isGalleryCollapsed)}
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-border-subtle bg-bg-secondary backdrop-blur-md text-text-muted transition-all hover:bg-surface-card-hover hover:border-border-default hover:text-text-primary"
+            className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-border-subtle bg-bg-secondary backdrop-blur-md text-text-muted transition-all hover:bg-surface-card-hover hover:border-border-default hover:text-text-primary shrink-0"
             aria-label={isGalleryCollapsed ? "Expandir galería" : "Minimizar galería"}
           >
-            {isGalleryCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+            {isGalleryCollapsed ? <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" /> : <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
         </motion.div>
 
@@ -129,7 +129,7 @@ export function GallerySection() {
                 </div>
               ) : (
                 <>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3">
                     {displayedImages.map((img, i) => (
                       <motion.div
                         key={img.id}
@@ -137,7 +137,7 @@ export function GallerySection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5, delay: i * 0.05 }}
-                        className="group relative cursor-pointer overflow-hidden rounded-[1.5rem] border border-border-default bg-surface-card aspect-[4/3] shadow-elevated"
+                        className="group relative cursor-pointer overflow-hidden rounded-xl sm:rounded-[1.5rem] border border-border-default bg-surface-card aspect-[4/3] shadow-elevated"
                         onClick={() => setLightbox(img.id)}
                       >
                         <img

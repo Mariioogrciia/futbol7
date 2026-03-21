@@ -384,16 +384,16 @@ export function Header() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
           {/* Logo */}
           <a href="#inicio" className="flex items-center gap-2 group">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Image
                 src="/images/Escudo.png"
                 alt="Impersed Cubiertas FC"
                 width={40}
                 height={40}
-                className="rounded-full"
+                className="rounded-full w-8 h-8 sm:w-10 sm:h-10"
               />
-              <span className="text-xl font-bold tracking-tight text-foreground">
-                Impersed <span className="text-accent">Cubiertas FC</span>
+              <span className="text-sm sm:text-xl font-bold tracking-tight text-foreground">
+                <span className="hidden sm:inline">Impersed </span><span className="text-accent">Cubiertas FC</span>
               </span>
             </div>
           </a>

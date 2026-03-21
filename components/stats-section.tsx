@@ -53,15 +53,15 @@ function KpiCard({ icon: Icon, label, value, color, bg, delay, inView }: { icon:
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay }}
-      className="group relative overflow-hidden rounded-2xl border border-border-default bg-surface-card p-6 transition-all duration-400 hover:-translate-y-1 hover:border-border-default/80 shadow-elevated"
+      className="group relative overflow-hidden rounded-xl sm:rounded-2xl border border-border-default bg-surface-card p-3 sm:p-6 transition-all duration-400 hover:-translate-y-1 hover:border-border-default/80 shadow-elevated"
     >
-      <div className={cn("absolute top-4 right-4 h-10 w-10 flex items-center justify-center rounded-xl", bg)}>
-        <Icon className={cn("h-5 w-5", color)} />
+      <div className={cn("absolute top-2 right-2 sm:top-4 sm:right-4 h-7 w-7 sm:h-10 sm:w-10 flex items-center justify-center rounded-lg sm:rounded-xl", bg)}>
+        <Icon className={cn("h-3.5 w-3.5 sm:h-5 sm:w-5", color)} />
       </div>
-      <p className="text-4xl font-black text-text-primary tabular-nums leading-none mb-2">
+      <p className="text-2xl sm:text-4xl font-black text-text-primary tabular-nums leading-none mb-1 sm:mb-2">
         <AnimatedCounter target={value} inView={inView} />
       </p>
-      <p className="text-xs font-black uppercase tracking-[0.12em] text-text-muted">
+      <p className="text-[9px] sm:text-xs font-black uppercase tracking-[0.12em] text-text-muted">
         {label}
       </p>
     </motion.div>
@@ -113,16 +113,16 @@ export function StatsSection() {
             <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border-subtle to-transparent" />
           </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-8">
             <div>
-              <h2 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
+              <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
                 Estadísticas<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-300">
                   de Temporada
                 </span>
               </h2>
             </div>
-            <p className="text-text-secondary text-lg font-medium leading-relaxed lg:max-w-xs lg:text-right">
+            <p className="text-text-secondary text-sm sm:text-lg font-medium leading-relaxed lg:max-w-xs lg:text-right">
               Números que hablan por sí solos. La historia de una temporada en datos.
             </p>
           </div>
@@ -130,13 +130,13 @@ export function StatsSection() {
         </motion.div>
 
         {/* ── Chart + spotlight row ── */}
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px] mb-10">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1fr_320px] mb-8 sm:mb-10">
           {/* Chart */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="rounded-[1.5rem] border border-border-default bg-surface-card p-8 shadow-elevated"
+            className="rounded-xl sm:rounded-[1.5rem] border border-border-default bg-surface-card p-4 sm:p-8 shadow-elevated"
           >
             <p className="text-[10px] font-black tracking-[0.15em] uppercase text-text-muted mb-1">Distribución de resultados</p>
             <h3 className="text-xl font-black text-text-primary mb-6">Resumen de la Temporada</h3>
@@ -177,7 +177,7 @@ export function StatsSection() {
         </div>
 
         {/* ── KPI grid ── */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 mb-8 sm:mb-10">
           {kpis.map((kpi, i) => (
             <KpiCard key={kpi.label} {...kpi} delay={i * 0.07} inView={isInView} />
           ))}

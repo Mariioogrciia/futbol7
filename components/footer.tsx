@@ -31,13 +31,13 @@ export function Footer() {
       {/* Ambient footer glow */}
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-500/[0.03] to-transparent pointer-events-none" />
 
-      <div className="mx-auto max-w-7xl px-4 py-16 lg:px-8 relative z-10">
-        <div className="grid gap-12 lg:grid-cols-4 lg:gap-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-16 lg:px-8 relative z-10">
+        <div className="grid gap-8 sm:gap-12 grid-cols-2 lg:grid-cols-4 lg:gap-8">
 
           {/* ── Brand ── */}
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-start col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2">
-              <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/10 p-1 bg-white/5">
+              <div className="relative h-8 w-8 sm:h-10 sm:w-10 overflow-hidden rounded-lg sm:rounded-xl border border-white/10 p-1 bg-white/5">
                 <Image
                   src="/images/Escudo.png"
                   alt="Impersed Cubiertas FC"
@@ -45,11 +45,11 @@ export function Footer() {
                   className="object-contain p-1"
                 />
               </div>
-              <span className="text-lg font-black tracking-tighter text-white">
+              <span className="text-sm sm:text-lg font-black tracking-tighter text-white">
                 Impersed <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Cubiertas FC</span>
               </span>
             </div>
-            <p className="mt-4 max-w-xs text-sm font-medium leading-relaxed text-slate-500">
+            <p className="mt-3 sm:mt-4 max-w-xs text-xs sm:text-sm font-medium leading-relaxed text-slate-500">
               Un equipo unido por la pasión del fútbol 7. Compitiendo con corazón, garra y estilo desde 2025.
             </p>
           </div>
@@ -114,11 +114,11 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 border-t border-white/[0.04] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs font-medium text-slate-600">
+        <div className="mt-10 sm:mt-16 border-t border-white/[0.04] pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+          <p className="text-[10px] sm:text-xs font-medium text-slate-600 text-center sm:text-left">
             © {new Date().getFullYear()} Impersed Cubiertas FC. Todos los derechos reservados.
           </p>
-          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-slate-700">
+          <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-700">
             <span>Powered by</span>
             <span className="text-emerald-500/80">Antigravity AI</span>
           </div>

@@ -262,9 +262,9 @@ export function TeamSection() {
             </div>
 
             {/* Main title row */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-8">
               <div>
-                <h2 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
+                <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
                   La<br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-400 dark:to-emerald-300">
                     Plantilla
@@ -272,11 +272,11 @@ export function TeamSection() {
                 </h2>
               </div>
               <div className="lg:max-w-xs lg:text-right">
-                <p className="text-text-secondary text-lg font-medium leading-relaxed">
+                <p className="text-text-secondary text-sm sm:text-lg font-medium leading-relaxed">
                   Los jugadores que construyen cada victoria. Carácter, técnica y compromiso en cada convocatoria.
                 </p>
                 {!loading && (
-                  <p className="mt-3 text-sm font-black text-text-secondary opacity-60 uppercase tracking-[0.12em]">
+                  <p className="mt-2 sm:mt-3 text-xs sm:text-sm font-black text-text-secondary opacity-60 uppercase tracking-[0.12em]">
                     {playersWithAvatars.length} Futbolistas
                   </p>
                 )}
@@ -292,9 +292,9 @@ export function TeamSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mb-12"
+            className="mb-8 sm:mb-12 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0"
           >
-            <div className="inline-flex items-center gap-1 bg-surface-card/80 backdrop-blur-xl border border-border-subtle rounded-2xl p-1.5 shadow-soft">
+            <div className="inline-flex items-center gap-0.5 sm:gap-1 bg-surface-card/80 backdrop-blur-xl border border-border-subtle rounded-xl sm:rounded-2xl p-1 sm:p-1.5 shadow-soft">
               {positions.map((pos) => {
                 const isActive = active === pos;
                 return (
@@ -303,7 +303,7 @@ export function TeamSection() {
                     onClick={() => setActive(pos)}
                     data-active={isActive}
                     className={cn(
-                      "relative px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
+                      "relative px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap",
                       isActive
                         ? "bg-bg-secondary text-text-primary shadow-sm border border-border-subtle"
                         : "text-text-muted hover:text-text-primary",

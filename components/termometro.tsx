@@ -48,7 +48,7 @@ export function Termometro() {
             <span
                 key={match.id || i}
                 title={`${match.rival} (${gl}-${gr})`}
-                className={`flex h-8 w-8 items-center justify-center rounded-md border text-sm shadow-sm ${color}`}
+                className={`flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-md border text-xs sm:text-sm shadow-sm ${color}`}
             >
                 {result}
             </span>
@@ -78,15 +78,15 @@ export function Termometro() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-6 inline-flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-all hover:bg-white/8"
+            className="mt-4 sm:mt-6 inline-flex flex-col gap-1.5 sm:gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-4 backdrop-blur-sm transition-all hover:bg-white/8"
         >
-            <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/70">
+            <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-primary-foreground/70">
                     Racha:
                 </span>
-                <div className="flex gap-1.5">{formIcons}</div>
+                <div className="flex gap-1 sm:gap-1.5">{formIcons}</div>
             </div>
-            <p className={`text-sm italic font-black uppercase tracking-wide ${messageColor}`}>
+            <p className={`text-xs sm:text-sm italic font-black uppercase tracking-wide ${messageColor}`}>
                 {message}
             </p>
         </motion.div>

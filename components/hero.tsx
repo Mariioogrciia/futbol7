@@ -91,7 +91,7 @@ export function Hero() {
             />
 
             {/* ── Slide container ── */}
-            <div className="relative w-full max-w-7xl mx-auto px-10 lg:px-16 mt-24 z-10 flex-1 flex items-center">
+            <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-10 lg:px-16 mt-20 sm:mt-24 z-10 flex-1 flex items-center">
                 <AnimatePresence mode="wait">
                     {currentSlide === 0 ? (
                         /* ══════════════════════════════════════
@@ -111,7 +111,7 @@ export function Hero() {
                                     </div>
 
                                     {/* Headline */}
-                                    <h1 className="text-5xl font-black leading-[0.95] tracking-tighter text-white drop-shadow-2xl sm:text-6xl lg:text-7xl">
+                                    <h1 className="text-3xl font-black leading-[0.95] tracking-tighter text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl">
                                         La pasión por el{" "}
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400">
                                             fútbol
@@ -149,21 +149,21 @@ export function Hero() {
                                 </div>
 
                                 {/* Right: stats grid */}
-                                <div className="grid grid-cols-2 gap-3 lg:gap-4">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
                                     {quickStats.map((stat, i) => (
                                         <motion.div
                                             key={stat.label}
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
-                                            className="group relative rounded-2xl border border-white/8 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:bg-white/8 hover:border-white/15 overflow-hidden"
+                                            className="group relative rounded-xl sm:rounded-2xl border border-white/8 bg-white/5 p-3 sm:p-6 backdrop-blur-sm transition-all duration-300 hover:bg-white/8 hover:border-white/15 overflow-hidden"
                                         >
                                             {/* Left accent bar */}
-                                            <div className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full bg-accent/50 group-hover:bg-accent transition-colors duration-300" />
-                                            <p className="text-4xl font-black text-white tabular-nums lg:text-5xl">
+                                            <div className="absolute left-0 top-3 bottom-3 sm:top-4 sm:bottom-4 w-[2px] sm:w-[3px] rounded-r-full bg-accent/50 group-hover:bg-accent transition-colors duration-300" />
+                                            <p className="text-2xl sm:text-4xl font-black text-white tabular-nums lg:text-5xl">
                                                 {stat.value}
                                             </p>
-                                            <p className="mt-2 text-xs font-bold uppercase tracking-[0.1em] text-white/45">
+                                            <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.1em] text-white/45">
                                                 {stat.label}
                                             </p>
                                         </motion.div>
@@ -189,7 +189,7 @@ export function Hero() {
                                     </div>
 
                                     {/* Headline */}
-                                    <h2 className="text-5xl font-black leading-[0.95] tracking-tighter text-white sm:text-6xl lg:text-7xl">
+                                    <h2 className="text-3xl font-black leading-[0.95] tracking-tighter text-white sm:text-5xl md:text-6xl lg:text-7xl">
                                         La Piel de{" "}
                                         <span className={cn(
                                             "text-transparent bg-clip-text bg-gradient-to-r transition-all duration-700",
@@ -309,17 +309,17 @@ export function Hero() {
             {/* ── Arrow navigation ── */}
             <button
                 onClick={prevSlide}
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full border border-white/12 bg-white/5 text-white/50 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/25 hover:text-white hover:scale-110"
+                className="absolute left-1 sm:left-3 top-1/2 -translate-y-1/2 z-20 h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-white/12 bg-white/5 text-white/50 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/25 hover:text-white hover:scale-110"
                 aria-label="Anterior"
             >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
             <button
                 onClick={nextSlide}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full border border-white/12 bg-white/5 text-white/50 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/25 hover:text-white hover:scale-110"
+                className="absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 z-20 h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full border border-white/12 bg-white/5 text-white/50 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/25 hover:text-white hover:scale-110"
                 aria-label="Siguiente"
             >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
 
             {/* ── Slide indicators ── */}

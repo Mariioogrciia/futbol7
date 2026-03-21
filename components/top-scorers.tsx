@@ -50,47 +50,47 @@ function PodiumCard({ scorer, rank, index }: { scorer: any; rank: number; index:
       viewport={{ once: true }}
       transition={{ duration: 0.55, delay: index * 0.1 }}
       className={cn(
-        "relative flex flex-col items-center rounded-[1.5rem] border border-border-default bg-surface-card p-6 py-8 text-center transition-all duration-400 hover:-translate-y-1 shadow-soft",
+        "relative flex flex-col items-center rounded-xl sm:rounded-[1.5rem] border border-border-default bg-surface-card p-2 py-4 sm:p-6 sm:py-8 text-center transition-all duration-400 hover:-translate-y-1 shadow-soft",
         c.ring, c.glow, c.height
       )}
     >
       {/* Rank number — editorial large */}
-      <div className={cn("text-7xl font-black leading-none opacity-[0.05] absolute top-4 right-5 select-none", c.numColor)}>
+      <div className={cn("text-4xl sm:text-7xl font-black leading-none opacity-[0.05] absolute top-2 right-2 sm:top-4 sm:right-5 select-none", c.numColor)}>
         {rank}
       </div>
 
       {/* Medal label */}
-      <div className="mb-4">
-        <span className={cn("text-[9px] font-black tracking-[0.2em] uppercase", c.labelColor)}>
+      <div className="mb-2 sm:mb-4">
+        <span className={cn("text-[7px] sm:text-[9px] font-black tracking-[0.2em] uppercase", c.labelColor)}>
           {c.label}
         </span>
       </div>
 
       {/* Avatar */}
-      <PlayerAvatar name={scorer.nombre} size="lg" />
+      <PlayerAvatar name={scorer.nombre} size="md" />
 
       {/* Name */}
-      <h3 className="mt-4 text-base font-black text-text-primary tracking-tight leading-tight px-2">
+      <h3 className="mt-2 sm:mt-4 text-[10px] sm:text-base font-black text-text-primary tracking-tight leading-tight px-1 sm:px-2 line-clamp-2">
         {scorer.nombre}
       </h3>
 
       {/* Position */}
-      <div className="mt-2">
+      <div className="mt-1 sm:mt-2 hidden sm:block">
         <PositionBadge position={scorer.posicion} />
       </div>
 
       {/* Goals — the main number */}
-      <div className="mt-5">
-        <div className={cn("text-5xl font-black tabular-nums leading-none", c.numColor)}>
+      <div className="mt-2 sm:mt-5">
+        <div className={cn("text-2xl sm:text-5xl font-black tabular-nums leading-none", c.numColor)}>
           {scorer.goles_totales}
         </div>
-        <div className="text-[10px] font-black tracking-[0.15em] uppercase text-text-muted mt-1.5">
+        <div className="text-[7px] sm:text-[10px] font-black tracking-[0.15em] uppercase text-text-muted mt-1 sm:mt-1.5">
           Goles
         </div>
       </div>
 
       {/* Accent bar */}
-      <div className={cn("absolute bottom-0 left-8 right-8 h-[2px] rounded-full", c.barColor)} />
+      <div className={cn("absolute bottom-0 left-2 right-2 sm:left-8 sm:right-8 h-[2px] rounded-full", c.barColor)} />
     </motion.div>
   );
 }
@@ -129,9 +129,9 @@ export function TopScorersSection() {
             <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border-subtle to-transparent" />
           </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-8">
             <div>
-              <h2 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
+              <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
                 Tabla de<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400">
                   Goleadores
@@ -139,11 +139,11 @@ export function TopScorersSection() {
               </h2>
             </div>
             <div className="lg:max-w-xs lg:text-right">
-              <p className="text-text-secondary text-lg font-medium leading-relaxed">
+              <p className="text-text-secondary text-sm sm:text-lg font-medium leading-relaxed">
                 Los que meten el balón donde las arañas tejen sus redes. O lo intentan.
               </p>
               {!loading && (
-                <p className="mt-3 text-sm font-black text-slate-600 uppercase tracking-[0.12em]">
+                <p className="mt-2 sm:mt-3 text-xs sm:text-sm font-black text-slate-600 uppercase tracking-[0.12em]">
                   {scorers.length} Anotadores registrados
                 </p>
               )}
@@ -167,7 +167,7 @@ export function TopScorersSection() {
           <>
             {/* ── Top 3 Podium ── */}
             {top3.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8 sm:mb-12">
                 {top3.map((scorer: any, i: number) => (
                   <PodiumCard key={scorer.id} scorer={scorer} rank={i + 1} index={i} />
                 ))}

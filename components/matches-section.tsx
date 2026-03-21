@@ -58,13 +58,13 @@ function Countdown({ dateStr }: { dateStr: string }) {
 
   const labels: Record<string, string> = { d: "Días", h: "Horas", m: "Min", s: "Seg" };
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-1.5 sm:gap-3">
       {Object.entries(timeLeft).map(([unit, value]) => (
         <div key={unit} className="flex flex-col items-center">
-          <div className="w-[68px] h-[68px] flex items-center justify-center bg-bg-secondary backdrop-blur-sm rounded-2xl border border-border-subtle text-3xl font-black text-text-primary tabular-nums shadow-inner">
+          <div className="w-12 h-12 sm:w-[68px] sm:h-[68px] flex items-center justify-center bg-bg-secondary backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border-subtle text-xl sm:text-3xl font-black text-text-primary tabular-nums shadow-inner">
             {value.toString().padStart(2, "0")}
           </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-text-muted mt-2">{labels[unit]}</span>
+          <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] text-text-muted mt-1.5 sm:mt-2">{labels[unit]}</span>
         </div>
       ))}
     </div>
@@ -91,7 +91,7 @@ function NextMatchCard({ match }: { match: Match }) {
       {/* Top accent line */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-emerald-500 via-teal-400 to-transparent" />
 
-      <div className="relative z-10 p-8 sm:p-10 lg:p-14">
+      <div className="relative z-10 p-4 sm:p-8 lg:p-14">
         {/* Label */}
         <div className="flex items-center gap-3 mb-8">
           <span className="inline-flex items-center gap-2 text-xs font-black tracking-[0.15em] uppercase text-emerald-400 border border-emerald-500/30 px-5 py-2.5 rounded-full bg-emerald-500/10">
@@ -103,51 +103,51 @@ function NextMatchCard({ match }: { match: Match }) {
         <div className="grid lg:grid-cols-[1fr_auto] gap-10 items-center">
           {/* Teams */}
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mb-6 sm:mb-10">
               <div className="flex flex-col">
-                <span className="text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-2">Local</span>
-                <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">
+                <span className="text-[10px] sm:text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-1 sm:mb-2">Local</span>
+                <span className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">
                   Impersed<br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Cubiertas</span>
                 </span>
               </div>
               <div className="flex items-center justify-center">
-                <div className="flex flex-col items-center px-4">
-                  <span className="text-xl sm:text-2xl font-black text-text-muted/40 tracking-tight select-none">VS</span>
+                <div className="flex flex-col items-center px-2 sm:px-4">
+                  <span className="text-lg sm:text-2xl font-black text-text-muted/40 tracking-tight select-none">VS</span>
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-2">Rival</span>
-                <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">{match.rival}</span>
+                <span className="text-[10px] sm:text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-1 sm:mb-2">Rival</span>
+                <span className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">{match.rival}</span>
               </div>
             </div>
 
             {/* Meta info pills */}
-            <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2.5 bg-bg-secondary border border-border-subtle px-5 py-3.5 rounded-2xl">
-                <CalendarDays className="h-5 w-5 text-emerald-400 shrink-0" />
-                <span className="text-base font-bold text-text-primary capitalize">{dateStr}</span>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-2.5 bg-bg-secondary border border-border-subtle px-3 py-2 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-2xl">
+                <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 shrink-0" />
+                <span className="text-xs sm:text-base font-bold text-text-primary capitalize">{dateStr}</span>
               </div>
-              <div className="flex items-center gap-2.5 bg-bg-secondary border border-border-subtle px-5 py-3.5 rounded-2xl">
-                <Clock className="h-5 w-5 text-emerald-400 shrink-0" />
-                <span className="text-base font-bold text-text-primary">{timeStr}</span>
+              <div className="flex items-center gap-1.5 sm:gap-2.5 bg-bg-secondary border border-border-subtle px-3 py-2 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-2xl">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 shrink-0" />
+                <span className="text-xs sm:text-base font-bold text-text-primary">{timeStr}</span>
               </div>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.estadio)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2.5 bg-bg-secondary hover:bg-surface-card-hover border border-border-subtle hover:border-emerald-500/20 px-5 py-3.5 rounded-2xl transition-all duration-300 group/pin"
+                className="flex items-center gap-1.5 sm:gap-2.5 bg-bg-secondary hover:bg-surface-card-hover border border-border-subtle hover:border-emerald-500/20 px-3 py-2 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-2xl transition-all duration-300 group/pin"
               >
-                <MapPin className="h-5 w-5 text-emerald-400 shrink-0 group-hover/pin:scale-110 transition-transform" />
-                <span className="text-base font-bold text-text-primary group-hover:text-emerald-400 truncate max-w-[220px]">{match.estadio}</span>
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 shrink-0 group-hover/pin:scale-110 transition-transform" />
+                <span className="text-xs sm:text-base font-bold text-text-primary group-hover:text-emerald-400 truncate max-w-[140px] sm:max-w-[220px]">{match.estadio}</span>
               </a>
             </div>
           </div>
 
           {/* Countdown */}
-          <div className="flex flex-col items-center bg-bg-secondary border border-border-subtle rounded-[1.5rem] p-8 shrink-0">
-            <p className="text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-6 flex items-center gap-2">
-              <Zap className="h-3.5 w-3.5 text-emerald-500" />
+          <div className="flex flex-col items-center bg-bg-secondary border border-border-subtle rounded-xl sm:rounded-[1.5rem] p-4 sm:p-8 shrink-0">
+            <p className="text-[10px] sm:text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-3 sm:mb-6 flex items-center gap-2">
+              <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-500" />
               Empieza en
             </p>
             <Countdown dateStr={match.fecha} />
