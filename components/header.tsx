@@ -81,57 +81,57 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-overlay-strong/80 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-xl max-w-md w-full mx-4"
+            className="bg-surface-card border border-border-default p-6 rounded-2xl shadow-elevated max-w-md w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Acceso a la Plantilla</h2>
+            <h2 className="text-xl font-bold mb-4 text-text-primary">Acceso a la Plantilla</h2>
             <form onSubmit={handleLogin}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Email</label>
+                <label className="block text-sm font-medium mb-1 text-text-secondary">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                  className="w-full p-3 border border-border-subtle bg-bg-secondary text-text-primary rounded-xl focus:ring-2 focus:ring-accent-primary focus:outline-none transition-all"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Password</label>
+                <label className="block text-sm font-medium mb-1 text-text-secondary">Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                  className="w-full p-3 border border-border-subtle bg-bg-secondary text-text-primary rounded-xl focus:ring-2 focus:ring-accent-primary focus:outline-none transition-all"
                   required
                 />
               </div>
-              {error && <p className="text-red-500 text-sm mb-4 font-medium">{error}</p>}
+              {error && <p className="text-danger text-sm mb-4 font-medium">{error}</p>}
               <div className="flex gap-3 mt-6">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-primary text-primary-foreground font-bold py-3 px-4 rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50"
+                  className="flex-1 bg-accent-primary text-accent-contrast font-bold py-3 px-4 rounded-xl hover:bg-accent-primary-hover transition-all disabled:opacity-50"
                 >
                   {loading ? 'Cargando...' : 'Iniciar Sesión'}
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-3 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-medium"
+                  className="px-6 py-3 border border-border-subtle text-text-secondary rounded-xl hover:bg-surface-card-hover transition-all font-medium"
                 >
                   Cancelar
                 </button>
               </div>
 
-              <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800 pt-4">
+              <div className="mt-6 text-center text-sm text-text-muted border-t border-border-subtle pt-4">
                 ¿No tienes cuenta?{' '}
                 <button
                   type="button"
@@ -139,7 +139,7 @@ function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
                     onClose();
                     window.dispatchEvent(new CustomEvent('openRegisterModal'));
                   }}
-                  className="text-emerald-500 font-semibold hover:underline transition-colors"
+                  className="text-text-accent font-semibold hover:underline transition-colors"
                 >
                   Crear cuenta de espectador
                 </button>
@@ -200,64 +200,64 @@ function RegisterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
+          className="fixed inset-0 bg-overlay-strong/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-3xl shadow-2xl max-w-md w-full relative"
+            className="bg-surface-card border border-border-default p-8 rounded-3xl shadow-elevated max-w-md w-full relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-card-hover text-text-muted transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
+              <h2 className="text-3xl font-extrabold text-text-primary mb-2 tracking-tight">
                 Únete al Equipo
               </h2>
-              <p className="text-slate-500 dark:text-slate-400">
+              <p className="text-text-secondary">
                 Crea tu cuenta para participar en El Oráculo y más.
               </p>
             </div>
 
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">Nombre o Alias</label>
+                <label className="block text-sm font-semibold mb-1.5 text-text-secondary">Nombre o Alias</label>
                 <input
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  className="w-full p-3.5 border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium placeholder:text-slate-400"
+                  className="w-full p-3.5 border border-border-subtle bg-bg-secondary text-text-primary rounded-xl focus:ring-2 focus:ring-accent-primary/40 focus:border-accent-primary transition-all font-medium placeholder:text-text-muted"
                   placeholder="Ej: Paco_Futbol7"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">Email</label>
+                <label className="block text-sm font-semibold mb-1.5 text-text-secondary">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3.5 border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium placeholder:text-slate-400"
+                  className="w-full p-3.5 border border-border-subtle bg-bg-secondary text-text-primary rounded-xl focus:ring-2 focus:ring-accent-primary/40 focus:border-accent-primary transition-all font-medium placeholder:text-text-muted"
                   placeholder="tu@email.com"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">Contraseña</label>
+                <label className="block text-sm font-semibold mb-1.5 text-text-secondary">Contraseña</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3.5 border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium"
+                  className="w-full p-3.5 border border-border-subtle bg-bg-secondary text-text-primary rounded-xl focus:ring-2 focus:ring-accent-primary/40 focus:border-accent-primary transition-all font-medium"
                   placeholder="••••••••"
                   minLength={6}
                   required
@@ -265,12 +265,12 @@ function RegisterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               </div>
 
               {error && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 bg-red-50 dark:bg-red-500/10 p-3 rounded-lg text-sm font-medium border border-red-200 dark:border-red-500/20">
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-danger bg-danger/10 p-3 rounded-lg text-sm font-medium border border-danger/20">
                   {error}
                 </motion.p>
               )}
               {success && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-lg text-sm font-medium border border-emerald-200 dark:border-emerald-500/20">
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-success bg-success/10 p-3 rounded-lg text-sm font-medium border border-success/20">
                   {success}
                 </motion.p>
               )}
@@ -278,12 +278,12 @@ function RegisterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               <button
                 type="submit"
                 disabled={loading || !!success}
-                className="w-full bg-emerald-600 text-white font-bold py-4 px-4 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 mt-4 shadow-lg shadow-emerald-500/20"
+                className="w-full bg-accent-primary text-accent-contrast font-bold py-4 px-4 rounded-xl hover:bg-accent-primary-hover transition-colors disabled:opacity-50 mt-4 shadow-elevated"
               >
                 {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
               </button>
 
-              <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800 pt-6">
+              <div className="mt-6 text-center text-sm text-text-muted border-t border-border-subtle pt-6">
                 ¿Ya tienes cuenta?{' '}
                 <button
                   type="button"
@@ -291,7 +291,7 @@ function RegisterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                     onClose();
                     window.dispatchEvent(new CustomEvent('openLoginModal'));
                   }}
-                  className="text-emerald-500 font-semibold hover:underline transition-colors"
+                  className="text-text-accent font-semibold hover:underline transition-colors"
                 >
                   Inicia sesión aquí
                 </button>
@@ -403,7 +403,7 @@ export function Header() {
               <a
                 key={link.href}
                 href={link.href}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary"
+                className="rounded-md px-3 py-2 text-sm font-medium text-text-secondary transition-colors duration-200 hover:text-text-primary hover:bg-surface-card-hover"
               >
                 {link.label}
               </a>
@@ -411,7 +411,7 @@ export function Header() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="rounded-md px-4 py-2 text-sm font-bold text-primary transition-colors duration-200 hover:text-primary/80 hover:bg-secondary flex items-center gap-2 border border-primary/20 bg-primary/10">
+                  <button className="rounded-md px-4 py-2 text-sm font-bold text-text-accent transition-all duration-200 hover:bg-surface-card-hover flex items-center gap-2 border border-accent-primary/20 bg-accent-soft">
                     <User className="h-4 w-4" />
                     {user.nombre || (user.rol === 'admin' ? 'Admin' : 'Jugador')}
                   </button>
@@ -452,7 +452,7 @@ export function Header() {
             ) : (
               <button
                 onClick={() => setLoginModalOpen(true)}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-secondary flex items-center gap-1"
+                className="rounded-md px-3 py-2 text-sm font-medium text-text-secondary transition-colors duration-200 hover:text-text-primary hover:bg-surface-card-hover flex items-center gap-1"
               >
                 <User className="h-4 w-4" />
                 Acceso

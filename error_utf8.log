@@ -1,0 +1,385 @@
+﻿[dotenv@17.3.1] injecting env (7) from .env.local -- tip: ÔÜÖ´©Å  override existing env vars with { override: true }
+Starting test...
+node.exe : APICallError 
+[AI_APICallError]: The 
+model `mixtral-8x7b-32768` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.
+En C:\Program 
+Files\nodejs\npx.ps1: 29 
+Carácter: 3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (API  
+  CallError [A...to use    
+ instead.:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+    at <anonymous> (C:\User
+s\mario\PycharmProjects\fut
+bol7\node_modules\@ai-sdk\p
+rovider-utils\src\response-
+handler.ts:56:16)
+    at process.processTicks
+AndRejections (node:interna
+l/process/task_queues:105:5
+)
+    at async postToApi (C:\
+Users\mario\PycharmProjects
+\futbol7\node_modules\@ai-s
+dk\provider-utils\src\post-
+to-api.ts:118:28)
+    at async OpenAIResponse
+sLanguageModel.doStream (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\@ai-
+sdk\openai\src\responses\op
+enai-responses-language-mod
+el.ts:981:50)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:167
+0:27)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24)
+    at async _retryWithExpo
+nentialBackoff (C:\Users\ma
+rio\PycharmProjects\futbol7
+\node_modules\ai\src\util\r
+etry-with-exponential-backo
+ff.ts:96:12)
+    at async streamStep (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\ai\s
+rc\generate-text\stream-tex
+t.ts:1622:17)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:213
+5:9)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24) {
+  cause: undefined,
+  url: 'https://api.groq.co
+m/openai/v1/responses',
+  requestBodyValues: {
+    model: 
+'mixtral-8x7b-32768',
+    input: [ [Object] ],
+    temperature: undefined,
+    top_p: undefined,
+    max_output_tokens: 
+undefined,
+    conversation: 
+undefined,
+    max_tool_calls: 
+undefined,
+    metadata: undefined,
+    parallel_tool_calls: 
+undefined,
+    previous_response_id: 
+undefined,
+    store: undefined,
+    user: undefined,
+    instructions: 
+undefined,
+    service_tier: 
+undefined,
+    include: undefined,
+    prompt_cache_key: 
+undefined,
+    
+prompt_cache_retention: 
+undefined,
+    safety_identifier: 
+undefined,
+    top_logprobs: 
+undefined,
+    truncation: undefined,
+    tools: [ [Object] ],
+    tool_choice: 'auto',
+    stream: true
+  },
+  statusCode: 400,
+  responseHeaders: {
+    'alt-svc': 'h3=":443"; 
+ma=86400',
+    'cache-control': 
+'private, max-age=0, 
+no-store, no-cache, 
+must-revalidate',
+    'cf-cache-status': 
+'DYNAMIC',
+    'cf-ray': 
+'9d9ade2b7ed85030-MAD',
+    connection: 
+'keep-alive',
+    'content-length': 
+'279',
+    'content-type': 
+'application/json',
+    date: 'Mon, 09 Mar 
+2026 14:46:13 GMT',
+    server: 'cloudflare',
+    'set-cookie': '__cf_bm=
+1MS.eN_Z.Ctm_0uqXhAsXAL5G8V
+gn_6IUVrYkuQqOuo-1773067573
+.0343144-1.0.1.1-uK6E.MwANo
+zV8qY5w8wytdjIwOcdhdGLgAllA
+6uru68DzwG_HL_kq89fs0AAiRtQ
+iMEItcwNTO542xwnOGK.Vkiq.9_
+EP.OuZSCyL2dJJKEpJMXOKYtN2j
+1thixRFXCq; HttpOnly; 
+Secure; Path=/; 
+Domain=groq.com; 
+Expires=Mon, 09 Mar 2026 
+15:16:13 GMT',
+    'strict-transport-secur
+ity': 'max-age=15552000',
+    vary: 'Origin',
+    via: '1.1 google',
+    'x-groq-region': 'dls',
+    'x-request-id': 'req_01
+kk9h05vreattwgkym1fh4zy4'
+  },
+  responseBody: 
+'{"error":{"message":"The 
+model `mixtral-8x7b-32768` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.","typ
+e":"invalid_request_error",
+"code":"model_decommissione
+d"}}\n',
+  isRetryable: false,
+  data: {
+    error: {
+      message: 'The model 
+`mixtral-8x7b-32768` has 
+been decommissioned and is 
+no longer supported. 
+Please refer to https://con
+sole.groq.com/docs/deprecat
+ions for a recommendation 
+on which model to use 
+instead.',
+      type: 
+'invalid_request_error',
+      code: 
+'model_decommissioned'
+    }
+  },
+  
+[Symbol(vercel.ai.error)]: 
+true,
+  [Symbol(vercel.ai.error.A
+I_APICallError)]: true
+}
+
+[STREAM ERROR]: 
+APICallError 
+[AI_APICallError]: The 
+model `mixtral-8x7b-32768` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.
+    at <anonymous> (C:\User
+s\mario\PycharmProjects\fut
+bol7\node_modules\@ai-sdk\p
+rovider-utils\src\response-
+handler.ts:56:16)
+    at process.processTicks
+AndRejections (node:interna
+l/process/task_queues:105:5
+)
+    at async postToApi (C:\
+Users\mario\PycharmProjects
+\futbol7\node_modules\@ai-s
+dk\provider-utils\src\post-
+to-api.ts:118:28)
+    at async OpenAIResponse
+sLanguageModel.doStream (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\@ai-
+sdk\openai\src\responses\op
+enai-responses-language-mod
+el.ts:981:50)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:167
+0:27)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24)
+    at async _retryWithExpo
+nentialBackoff (C:\Users\ma
+rio\PycharmProjects\futbol7
+\node_modules\ai\src\util\r
+etry-with-exponential-backo
+ff.ts:96:12)
+    at async streamStep (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\ai\s
+rc\generate-text\stream-tex
+t.ts:1622:17)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:213
+5:9)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24) {
+  cause: undefined,
+  url: 'https://api.groq.co
+m/openai/v1/responses',
+  requestBodyValues: {
+    model: 
+'mixtral-8x7b-32768',
+    input: [ [Object] ],
+    temperature: undefined,
+    top_p: undefined,
+    max_output_tokens: 
+undefined,
+    conversation: 
+undefined,
+    max_tool_calls: 
+undefined,
+    metadata: undefined,
+    parallel_tool_calls: 
+undefined,
+    previous_response_id: 
+undefined,
+    store: undefined,
+    user: undefined,
+    instructions: 
+undefined,
+    service_tier: 
+undefined,
+    include: undefined,
+    prompt_cache_key: 
+undefined,
+    
+prompt_cache_retention: 
+undefined,
+    safety_identifier: 
+undefined,
+    top_logprobs: 
+undefined,
+    truncation: undefined,
+    tools: [ [Object] ],
+    tool_choice: 'auto',
+    stream: true
+  },
+  statusCode: 400,
+  responseHeaders: {
+    'alt-svc': 'h3=":443"; 
+ma=86400',
+    'cache-control': 
+'private, max-age=0, 
+no-store, no-cache, 
+must-revalidate',
+    'cf-cache-status': 
+'DYNAMIC',
+    'cf-ray': 
+'9d9ade2b7ed85030-MAD',
+    connection: 
+'keep-alive',
+    'content-length': 
+'279',
+    'content-type': 
+'application/json',
+    date: 'Mon, 09 Mar 
+2026 14:46:13 GMT',
+    server: 'cloudflare',
+    'set-cookie': '__cf_bm=
+1MS.eN_Z.Ctm_0uqXhAsXAL5G8V
+gn_6IUVrYkuQqOuo-1773067573
+.0343144-1.0.1.1-uK6E.MwANo
+zV8qY5w8wytdjIwOcdhdGLgAllA
+6uru68DzwG_HL_kq89fs0AAiRtQ
+iMEItcwNTO542xwnOGK.Vkiq.9_
+EP.OuZSCyL2dJJKEpJMXOKYtN2j
+1thixRFXCq; HttpOnly; 
+Secure; Path=/; 
+Domain=groq.com; 
+Expires=Mon, 09 Mar 2026 
+15:16:13 GMT',
+    'strict-transport-secur
+ity': 'max-age=15552000',
+    vary: 'Origin',
+    via: '1.1 google',
+    'x-groq-region': 'dls',
+    'x-request-id': 'req_01
+kk9h05vreattwgkym1fh4zy4'
+  },
+  responseBody: 
+'{"error":{"message":"The 
+model `mixtral-8x7b-32768` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.","typ
+e":"invalid_request_error",
+"code":"model_decommissione
+d"}}\n',
+  isRetryable: false,
+  data: {
+    error: {
+      message: 'The model 
+`mixtral-8x7b-32768` has 
+been decommissioned and is 
+no longer supported. 
+Please refer to https://con
+sole.groq.com/docs/deprecat
+ions for a recommendation 
+on which model to use 
+instead.',
+
+Done.
+      type: 
+'invalid_request_error',
+      code: 
+'model_decommissioned'
+    }
+  },
+  
+[Symbol(vercel.ai.error)]: 
+true,
+  [Symbol(vercel.ai.error.A
+I_APICallError)]: true
+}

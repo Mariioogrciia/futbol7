@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { partido_id, apuestas, total_wagered } = body;
+        const { partido_id, apuestas, total_wagered, tipo_apuesta, combinada_odd } = body;
 
         if (!partido_id || !apuestas || !Array.isArray(apuestas) || typeof total_wagered !== 'number') {
             return NextResponse.json({ error: 'Faltan parámetros de apuesta' }, { status: 400 });
@@ -62,20 +62,60 @@ export async function POST(request: Request) {
         }
 
         // 3. Insert bets
-        const betsToInsert = apuestas.map((bet: any) => ({
-            usuario_id: user.id,
-            partido_id: partido_id,
-            mercado_id: bet.id, // the unique id of the option like gs_uuid
-            opcion_label: bet.label,
-            cuota: bet.odd,
-            cantidad_apostada: bet.amount,
-            ganancia_potencial: bet.amount * bet.odd,
-            estado: 'pendiente'
-        }));
+        let insertError;
 
-        const { error: insertError } = await supabaseAdmin
-            .from('apuestas')
-            .insert(betsToInsert);
+        if (tipo_apuesta === 'combinada') {
+            const parentBet = {
+                usuario_id: user.id,
+                partido_id: partido_id,
+                mercado_id: 'combinada',
+                opcion_label: `Combinada: ${apuestas.length} selecciones`,
+                cuota: combinada_odd || 1,
+                cantidad_apostada: total_wagered,
+                ganancia_potencial: total_wagered * (combinada_odd || 1),
+                estado: 'pendiente'
+            };
+
+            const { data: parentData, error: pErr } = await supabaseAdmin
+                .from('apuestas')
+                .insert(parentBet)
+                .select('id')
+                .single();
+
+            if (pErr) {
+                insertError = pErr;
+            } else {
+                const childBets = apuestas.map((bet: any) => ({
+                    usuario_id: user.id,
+                    partido_id: partido_id,
+                    mercado_id: `comb_${parentData.id}`,
+                    opcion_label: bet.label,
+                    cuota: bet.odd,
+                    cantidad_apostada: 0,
+                    ganancia_potencial: 0,
+                    estado: 'pendiente'
+                }));
+                const { error: cErr } = await supabaseAdmin.from('apuestas').insert(childBets);
+                insertError = cErr;
+            }
+        } else {
+            const betsToInsert = apuestas.map((bet: any) => ({
+                usuario_id: user.id,
+                partido_id: partido_id,
+                mercado_id: bet.id, // the unique id of the option like gs_uuid
+                opcion_label: bet.label,
+                cuota: bet.odd,
+                cantidad_apostada: bet.amount,
+                ganancia_potencial: bet.amount * bet.odd,
+                estado: 'pendiente'
+            }));
+
+            const { error: iErr } = await supabaseAdmin
+                .from('apuestas')
+                .insert(betsToInsert);
+            
+            insertError = iErr;
+        }
 
         if (insertError) {
             // Rollback manual

@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 
 export function MisterChat() {
     // useChat manually handles messages, we manage input locally
-    const { messages, sendMessage, status } = useChat();
+    // useChat manually handles messages, we manage input locally
+    const { messages, append, status, error } = useChat();
+
     const isLoading = status === "submitted" || status === "streaming";
 
     const [input, setInput] = useState("");
@@ -19,7 +21,7 @@ export function MisterChat() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
-        sendMessage({ text: input });
+        append({ role: "user", content: input });
         setInput("");
     };
 
@@ -85,6 +87,15 @@ export function MisterChat() {
                                     <div className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce"></div>
                                     <div className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce delay-75"></div>
                                     <div className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce delay-150"></div>
+                                </div>
+                            </div>
+                        )}
+                        {error && (
+                            <div className="flex items-start gap-2">
+                                <span className="text-2xl mt-1">🤬</span>
+                                <div className="bg-red-900/50 text-red-200 border border-red-800 rounded-2xl rounded-tl-sm px-4 py-2 text-sm shadow-sm flex flex-col gap-1">
+                                    <span className="font-bold">¡Fallo técnico! ¡Espabila y arregla esto!</span>
+                                    <span className="text-xs opacity-80">{error.message}</span>
                                 </div>
                             </div>
                         )}

@@ -63,12 +63,20 @@ export default function ImpersedBetPage() {
     const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
     const [successAnim, setSuccessAnim] = useState(false);
     const [loading, setLoading] = useState(false);
+    
+    // Bet Mode
+    const [betMode, setBetMode] = useState<'individual' | 'combinada'>('individual');
+    const [combinadaAmount, setCombinadaAmount] = useState<number | ''>('');
 
     // New UI States
-    const [activeTab, setActiveTab] = useState<'marcadores' | 'eventos' | 'goleadores' | 'carnicero' | 'canallas' | 'ranking'>('marcadores');
+    const [activeTab, setActiveTab] = useState<'marcadores' | 'eventos' | 'goleadores' | 'carnicero' | 'canallas' | 'ranking' | 'mis_apuestas'>('marcadores');
     const [ranking, setRanking] = useState<{ id: string, nombre: string, puntos: number }[]>([]);
     const [exactScoreLocal, setExactScoreLocal] = useState(0);
     const [exactScoreAway, setExactScoreAway] = useState(0);
+
+    // History state
+    const [misApuestas, setMisApuestas] = useState<any[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     // Compute exact score odd
     const getExactScoreOdd = (local: number, away: number) => {
@@ -170,9 +178,42 @@ export default function ImpersedBetPage() {
         loadData();
     }, []);
 
+    const fetchHistory = async () => {
+        if (!session) return;
+        setLoadingHistory(true);
+        try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            if (!currentSession) return;
+            const res = await fetch('/api/apuestas/mis-apuestas', {
+                headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setMisApuestas(data.apuestas || []);
+            }
+        } catch (e) {
+            console.error("Error fetching history", e);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'mis_apuestas') {
+            fetchHistory();
+        }
+    }, [activeTab, session]);
+
     // Derived states
-    const totalWagered = betSlip.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-    const totalPotentialWin = betSlip.reduce((acc, curr) => acc + ((curr.amount || 0) * curr.odd), 0);
+    const combinadaOdd = betSlip.reduce((acc, curr) => acc * curr.odd, 1);
+
+    const totalWagered = betMode === 'individual'
+        ? betSlip.reduce((acc, curr) => acc + (curr.amount || 0), 0)
+        : (typeof combinadaAmount === 'number' ? combinadaAmount : 0);
+
+    const totalPotentialWin = betMode === 'individual'
+        ? betSlip.reduce((acc, curr) => acc + ((curr.amount || 0) * curr.odd), 0)
+        : (typeof combinadaAmount === 'number' ? combinadaAmount : 0) * combinadaOdd;
 
     const topPlayers = [...jugadores].sort((a, b) => (b.goles || 0) - (a.goles || 0));
     const p1 = topPlayers[0]?.nombre || 'Carlos';
@@ -322,10 +363,21 @@ export default function ImpersedBetPage() {
         if (betSlip.length === 0) return;
 
         // Find if any bet has no amount or amount > current balance
-        const emptyBets = betSlip.some(b => !b.amount || b.amount <= 0);
-        if (emptyBets) {
-            toast.error("Por favor, introduce una cantidad en todas tus selecciones.");
-            return;
+        if (betMode === 'individual') {
+            const emptyBets = betSlip.some(b => !b.amount || b.amount <= 0);
+            if (emptyBets) {
+                toast.error("Por favor, introduce una cantidad en todas tus selecciones.");
+                return;
+            }
+        } else {
+            if (!combinadaAmount || combinadaAmount <= 0) {
+                toast.error("Por favor, introduce la cantidad para la combinada.");
+                return;
+            }
+            if (betSlip.length < 2) {
+                toast.error("Una combinada requiere al menos 2 selecciones.");
+                return;
+            }
         }
 
         if (totalWagered > balance) {
@@ -355,7 +407,9 @@ export default function ImpersedBetPage() {
                 body: JSON.stringify({
                     partido_id: partido.id,
                     apuestas: betSlip,
-                    total_wagered: totalWagered
+                    total_wagered: totalWagered,
+                    tipo_apuesta: betMode,
+                    combinada_odd: combinadaOdd
                 })
             });
 
@@ -398,15 +452,15 @@ export default function ImpersedBetPage() {
                 key={option.id}
                 onClick={() => toggleSelection(market, option)}
                 className={`
-                    flex items-center justify-between px-5 py-3 rounded-full transition-all duration-300 border w-full
+                    flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border w-full group/odd
                     ${selected
-                        ? 'bg-emerald-500 border-emerald-500 text-white dark:text-zinc-950 font-bold shadow-[0_4px_15px_rgba(16,185,129,0.4)] transform scale-[1.02]'
-                        : 'bg-slate-100 dark:bg-zinc-900 border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:border-emerald-500/50 hover:text-slate-900 dark:hover:text-white'
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-400 border-emerald-400 text-zinc-950 font-black shadow-[0_6px_16px_rgba(16,185,129,0.3)] transform scale-[1.02]'
+                        : 'bg-surface-card border-border-subtle text-text-secondary hover:bg-surface-card-hover hover:border-emerald-500/40 hover:text-text-primary'
                     }
                 `}
             >
-                <span className="text-sm truncate mr-4 text-left font-medium">{option.label}</span>
-                <span className={`text-sm md:text-base ml-2 whitespace-nowrap ${selected ? 'text-white dark:text-zinc-950 font-black' : 'text-emerald-500 dark:text-emerald-400 font-bold'}`}>
+                <span className="text-xs truncate mr-3 text-left font-semibold tracking-tight">{option.label}</span>
+                <span className={`text-sm ml-2 font-black tabular-nums transition-transform duration-300 group-hover/odd:scale-105 ${selected ? 'text-zinc-950' : 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.1)]'}`}>
                     {option.odd.toFixed(2)}
                 </span>
             </button>
@@ -414,80 +468,96 @@ export default function ImpersedBetPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 flex flex-col font-sans transition-colors duration-200">
+        <main className="min-h-screen bg-bg-primary text-text-primary flex flex-col font-sans transition-colors duration-200">
             {/* Header / Nav simulation (could replace with your actual <Header />, but adding custom balance badge) */}
             <Header />
 
             {/* Custom Topbar just below Header for Betting specific info */}
-            <div className="w-full bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 sticky top-[64px] lg:top-[72px] z-40 transition-all">
-                <div className="max-w-[1440px] w-full mx-auto px-4 h-16 flex items-center justify-between">
+            <div className="w-full bg-surface-card/90 backdrop-blur-xl border-b border-border-subtle sticky top-[64px] lg:top-[72px] z-40 transition-all shadow-soft">
+                <div className="max-w-[1440px] w-full mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
 
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-emerald-500/20 text-emerald-500 rounded-md">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.1)]">
                             <BarChart3 className="w-5 h-5" />
                         </div>
-                        <h1 className="font-bold text-lg md:text-xl tracking-tight hidden sm:block">
-                            <span className="text-zinc-100">Impersed</span>
-                            <span className="text-emerald-500">BET</span>
+                        <h1 className="font-black text-xl md:text-2xl tracking-tighter hidden sm:flex items-center gap-1">
+                            <span className="text-text-primary">Impersed</span>
+                            <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent uppercase font-black drop-shadow-[0_2px_10px_rgba(16,185,129,0.3)]">BET</span>
                         </h1>
                     </div>
 
                     {/* Balance Badge */}
                     <motion.div
-                        animate={balanceChanged ? { scale: [1, 1.1, 1], color: ['#fff', '#ef4444', '#fff'] } : {}}
-                        transition={{ duration: 0.5 }}
-                        className="flex items-center gap-2 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 px-4 py-2 rounded-lg transition-colors"
+                        animate={balanceChanged ? { scale: [1, 1.05, 1], y: [0, -2, 0] } : {}}
+                        transition={{ duration: 0.4 }}
+                        className="flex items-center gap-3 bg-bg-secondary border border-border-subtle pl-2 pr-4 py-1.5 rounded-full transition-all hover:bg-surface-card-hover group shadow-sm"
                     >
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center text-xs font-black shadow-[0_0_8px_rgba(16,185,129,0.4)]">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-[10px] font-black text-zinc-950 shadow-[0_0_12px_rgba(16,185,129,0.4)] group-hover:scale-105 transition-transform">
                             СР
                         </div>
-                        <span className="font-mono font-bold tracking-wider">{balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-black tracking-wider text-text-muted uppercase leading-none">Mi Saldo</span>
+                            <span className="font-mono font-bold tracking-tight text-text-primary text-sm">
+                                {balance.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <span className="text-xs text-emerald-500 font-bold">CP</span>
+                            </span>
+                        </div>
                     </motion.div>
 
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 max-w-[1440px] w-full mx-auto flex flex-col lg:flex-row relative">
+            <div className="flex-1 max-w-[1440px] w-full mx-auto flex flex-col lg:flex-row relative min-h-[calc(100vh-136px)]">
 
                 {/* --- LEFT DESKTOP / MAIN VIEW --- */}
-                <div className="flex-1 w-full lg:w-[70%] p-4 md:p-6 pb-32 lg:pb-12 space-y-6">
+                <div className="flex-1 w-full lg:w-[70%] p-5 md:p-8 pb-32 lg:pb-20 space-y-8 flex flex-col">
 
                     {initialLoading ? (
-                        <div className="w-full h-48 md:h-64 rounded-xl relative overflow-hidden flex flex-col items-center justify-center border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl dark:shadow-2xl transition-colors">
+                        <div className="w-full h-48 md:h-64 rounded-xl relative overflow-hidden flex flex-col items-center justify-center border border-border-default bg-surface-card shadow-elevated transition-colors">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
                             <p className="mt-4 text-zinc-500">Consultando al Oráculo...</p>
                         </div>
                     ) : partido ? (
-                        <div className="w-full min-h-[12rem] md:h-64 rounded-xl relative overflow-hidden flex flex-col items-center justify-center border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl dark:shadow-2xl transition-colors py-8 md:py-0">
-                            {/* Background pattern */}
-                            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+                        <div className="w-full min-h-[16rem] md:h-96 rounded-2xl relative overflow-hidden flex flex-col items-center justify-center border border-border-default bg-surface-card shadow-elevated py-8 md:py-0 group transition-all duration-500 hover:border-emerald-500/20">
+                            {/* Cinematic Background overlay */}
+                            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6))] z-10"></div>
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.1),transparent_70%)] z-10 animate-pulse"></div>
+                            
+                            {/* Abstract sports-grid on back */}
+                            <div className="absolute inset-0 opacity-15 mix-blend-overlay z-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.2) 1px, transparent 0)', backgroundSize: '20px 20px' }}></div>
 
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
+                            <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-emerald-500/15 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none z-0"></div>
+                            <div className="absolute top-1/2 right-1/4 w-72 h-72 bg-teal-500/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
 
-                            <div className="relative z-10 text-center w-full px-2 sm:px-4">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-widest uppercase mb-4 sm:mb-6">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <div className="relative z-20 text-center w-full px-4 flex flex-col items-center justify-between h-full py-6 md:py-10">
+                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 dark:text-emerald-400 text-[10px] font-black tracking-[0.15em] uppercase mb-4 backdrop-blur-sm shadow-sm">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
                                     Próxima Batalla
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 md:gap-12 w-full">
-                                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-slate-900 dark:text-white drop-shadow-[0_0_10px_rgba(16,185,129,0.3)] text-center break-words max-w-full">
+                                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-14 w-full">
+                                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)] text-center transition-transform duration-500 group-hover:scale-[1.02]">
                                         Impersed FC
                                     </h2>
-                                    <span className="text-xl sm:text-2xl md:text-3xl font-black text-slate-400 dark:text-zinc-600 italic">VS</span>
-                                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-slate-700 dark:text-zinc-300 text-center break-words max-w-full">
+                                    
+                                    <div className="flex flex-col items-center">
+                                        <div className="text-lg md:text-2xl font-black text-emerald-400 italic bg-bg-secondary/80 backdrop-blur-md px-3 py-1 rounded-xl border border-border-subtle tracking-widest shadow-soft">VS</div>
+                                    </div>
+
+                                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-text-primary dark:text-zinc-300 drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)] text-center group-hover:scale-[1.02] transition-transform duration-500">
                                         {partido.rival}
                                     </h2>
                                 </div>
-                                <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-slate-500 dark:text-zinc-500 font-medium">
-                                    {new Date(partido.fecha).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                </p>
+                                
+                                <div className="mt-6 flex items-center gap-2 bg-black/30 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/5 shadow-inner">
+                                    <span className="text-xs text-zinc-300 font-medium">
+                                        {new Date(partido.fecha).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full min-h-[12rem] md:h-64 rounded-xl relative overflow-hidden flex flex-col items-center justify-center border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl dark:shadow-2xl transition-colors py-8 md:py-0">
+                        <div className="w-full min-h-[12rem] md:h-64 rounded-xl relative overflow-hidden flex flex-col items-center justify-center border border-border-default bg-surface-card shadow-elevated transition-colors py-8 md:py-0">
                             <div className="p-4 bg-zinc-800/50 rounded-full mb-4">
                                 <HelpCircle className="w-8 h-8 text-zinc-500" />
                             </div>
@@ -495,72 +565,78 @@ export default function ImpersedBetPage() {
                         </div>
                     )}
 
-                    <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+                    <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-3 px-1">
                         {[
                             { id: 'marcadores', label: 'Marcadores', icon: <Trophy className="w-4 h-4" /> },
                             { id: 'eventos', label: 'Eventos', icon: <Zap className="w-4 h-4" /> },
                             { id: 'goleadores', label: 'Goleadores', icon: <User className="w-4 h-4" /> },
                             { id: 'carnicero', label: 'El Carnicero', icon: <AlertCircle className="w-4 h-4" /> },
                             { id: 'canallas', label: 'Canalladas', icon: <Star className="w-4 h-4" /> },
-                            { id: 'ranking', label: 'Ranking', icon: <Medal className="w-4 h-4" /> }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`
-                                    flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all
-                                    ${activeTab === tab.id
-                                        ? 'bg-emerald-500 text-white dark:text-zinc-950 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                                        : 'bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 hover:text-slate-800 hover:bg-slate-200 dark:hover:text-zinc-200 dark:hover:border-zinc-700'}
-                                `}
-                            >
-                                {tab.icon}
-                                {tab.label}
-                            </button>
-                        ))}
+                            { id: 'ranking', label: 'Ranking', icon: <Medal className="w-4 h-4" /> },
+                            { id: 'mis_apuestas', label: 'Mis Apuestas', icon: <Coins className="w-4 h-4" /> }
+                        ].map(tab => {
+                            const active = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={`
+                                        flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap text-xs font-black uppercase tracking-wider transition-all duration-300 border
+                                        ${active
+                                            ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-zinc-950 border-emerald-400 shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:brightness-105'
+                                            : 'bg-surface-card border-border-subtle text-text-secondary hover:text-text-primary hover:bg-surface-card-hover hover:border-emerald-500/30'}
+                                    `}
+                                >
+                                    <span className={`transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>{tab.icon}</span>
+                                    {tab.label}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Markets List based on Active Tab */}
                     <div className="space-y-4">
                         {/* Custom exact score component for 'marcadores' tab */}
                         {activeTab === 'marcadores' && (
-                            <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden p-6 relative transition-colors shadow-sm dark:shadow-none">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none transition-colors"></div>
-                                <h3 className="font-bold text-xl text-slate-900 dark:text-zinc-100 mb-6 flex items-center gap-2 transition-colors">
-                                    <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+                            <div className="bg-surface-card border border-border-default rounded-2xl overflow-hidden p-6 relative transition-all shadow-soft group hover:border-emerald-500/10">
+                                <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none transition-colors"></div>
+                                <h3 className="font-black text-lg uppercase tracking-wider text-text-primary mb-6 flex items-center gap-2 transition-colors">
+                                    <Target className="w-5 h-5 text-emerald-500" />
                                     Crea tu Marcador Exacto
                                 </h3>
 
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                                    <div className="flex-1 w-full bg-slate-50 dark:bg-zinc-950/50 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-col items-center transition-colors">
-                                        <span className="font-bold text-slate-800 dark:text-zinc-300 mb-3 truncate max-w-full">{partido ? "Impersed FC" : "Local"}</span>
-                                        <div className="flex items-center gap-4">
-                                            <button onClick={() => setExactScoreLocal(Math.max(0, exactScoreLocal - 1))} className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-zinc-700 text-xl font-bold transition-colors">-</button>
-                                            <span className="text-3xl font-black min-w-[32px] text-center text-slate-900 dark:text-white">{exactScoreLocal}</span>
-                                            <button onClick={() => setExactScoreLocal(exactScoreLocal + 1)} className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-zinc-700 text-xl font-bold transition-colors">+</button>
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
+                                    <div className="flex-1 w-full bg-bg-secondary p-5 rounded-xl border border-border-subtle flex flex-col items-center transition-all hover:border-emerald-500/20 group/score">
+                                        <span className="font-black text-xs uppercase tracking-widest text-text-secondary mb-3 truncate max-w-full">{partido ? "Impersed FC" : "Local"}</span>
+                                        <div className="flex items-center gap-5">
+                                            <button onClick={() => setExactScoreLocal(Math.max(0, exactScoreLocal - 1))} className="w-10 h-10 rounded-xl bg-surface-card border border-border-subtle flex items-center justify-center hover:bg-surface-card-hover hover:border-emerald-500/50 text-xl font-bold transition-all shadow-sm">-</button>
+                                            <span className="text-4xl font-black min-w-[36px] text-center text-text-primary tabular-nums tracking-tighter group-hover/score:text-emerald-500 transition-colors">{exactScoreLocal}</span>
+                                            <button onClick={() => setExactScoreLocal(exactScoreLocal + 1)} className="w-10 h-10 rounded-xl bg-surface-card border border-border-subtle flex items-center justify-center hover:bg-surface-card-hover hover:border-emerald-500/50 text-xl font-bold transition-all shadow-sm">+</button>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-black text-slate-400 dark:text-zinc-700">VS</span>
-                                    <div className="flex-1 w-full bg-slate-50 dark:bg-zinc-950/50 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-col items-center transition-colors">
-                                        <span className="font-bold text-slate-800 dark:text-zinc-300 mb-3 truncate max-w-full">{partido ? partido.rival : 'Rival'}</span>
-                                        <div className="flex items-center gap-4">
-                                            <button onClick={() => setExactScoreAway(Math.max(0, exactScoreAway - 1))} className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-zinc-700 text-xl font-bold transition-colors">-</button>
-                                            <span className="text-3xl font-black min-w-[32px] text-center text-slate-900 dark:text-white">{exactScoreAway}</span>
-                                            <button onClick={() => setExactScoreAway(exactScoreAway + 1)} className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-zinc-700 text-xl font-bold transition-colors">+</button>
+                                    
+                                    <span className="text-lg font-black text-text-muted italic">M.E</span>
+                                    
+                                    <div className="flex-1 w-full bg-bg-secondary p-5 rounded-xl border border-border-subtle flex flex-col items-center transition-all hover:border-emerald-500/20 group/score">
+                                        <span className="font-black text-xs uppercase tracking-widest text-text-secondary mb-3 truncate max-w-full">{partido ? partido.rival : 'Rival'}</span>
+                                        <div className="flex items-center gap-5">
+                                            <button onClick={() => setExactScoreAway(Math.max(0, exactScoreAway - 1))} className="w-10 h-10 rounded-xl bg-surface-card border border-border-subtle flex items-center justify-center hover:bg-surface-card-hover hover:border-emerald-500/50 text-xl font-bold transition-all shadow-sm">-</button>
+                                            <span className="text-4xl font-black min-w-[36px] text-center text-text-primary tabular-nums tracking-tighter group-hover/score:text-emerald-500 transition-colors">{exactScoreAway}</span>
+                                            <button onClick={() => setExactScoreAway(exactScoreAway + 1)} className="w-10 h-10 rounded-xl bg-surface-card border border-border-subtle flex items-center justify-center hover:bg-surface-card-hover hover:border-emerald-500/50 text-xl font-bold transition-all shadow-sm">+</button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-zinc-800/50 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors">
+                                <div className="mt-6 pt-6 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-5 transition-colors">
                                     <div className="text-center sm:text-left">
-                                        <span className="block text-xs text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-1">Cuota Estimada</span>
-                                        <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">
+                                        <span className="block text-[10px] text-text-muted uppercase font-black tracking-widest mb-1">Cuota Estimada</span>
+                                        <span className="text-3xl font-black text-emerald-500 drop-shadow-[0_2px_8px_rgba(16,185,129,0.2)] tabular-nums">
                                             x{getExactScoreOdd(exactScoreLocal, exactScoreAway).toFixed(2)}
                                         </span>
                                     </div>
                                     <button
                                         onClick={addExactScoreToSlip}
-                                        className="w-full sm:w-auto px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-white dark:text-zinc-950 font-bold rounded-xl transition-all shadow-[0_4px_15px_rgba(16,185,129,0.2)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 active:translate-y-0"
+                                        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:brightness-105 text-zinc-950 font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-[0_4px_12px_rgba(16,185,129,0.2)] hover:shadow-[0_4px_18px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 active:translate-y-0"
                                     >
                                         Añadir al Boleto
                                     </button>
@@ -568,26 +644,123 @@ export default function ImpersedBetPage() {
                             </div>
                         )}
 
+                        {activeTab === 'mis_apuestas' && (
+                            <div className="bg-surface-card border border-border-default rounded-xl overflow-hidden p-6 relative transition-colors shadow-sm dark:shadow-none min-h-[400px]">
+                                <h3 className="font-bold text-xl text-text-primary mb-6 flex items-center gap-2">
+                                    <Coins className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+                                    Mis Apuestas Realizadas
+                                </h3>
+
+                                {!session ? (
+                                    <div className="text-center py-12 text-text-muted">
+                                        Debes iniciar sesión para ver tu historial.
+                                    </div>
+                                ) : loadingHistory ? (
+                                    <div className="flex justify-center items-center py-12">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+                                    </div>
+                                ) : misApuestas.length === 0 ? (
+                                    <div className="text-center py-12 text-text-muted font-medium">
+                                        Aún no has realizado ninguna apuesta.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {misApuestas
+                                            .filter(b => b.mercado_id === 'combinada' || !b.mercado_id.startsWith('comb_'))
+                                            .map(bet => {
+                                                const isCombinada = bet.mercado_id === 'combinada';
+                                                const children = isCombinada ? misApuestas.filter(c => c.mercado_id === `comb_${bet.id}`) : [];
+                                                
+                                                return (
+                                                    <div key={bet.id} className="flex flex-col p-4 bg-bg-secondary rounded-2xl border border-border-subtle transition-all hover:bg-surface-card-hover shadow-sm relative overflow-hidden">
+                                                        <div className="absolute top-0 right-0 h-full w-2 flex flex-col">
+                                                            <div className={`flex-1 ${bet.estado === 'ganada' ? 'bg-emerald-500' : bet.estado === 'perdida' ? 'bg-red-500' : 'bg-amber-400'}`}></div>
+                                                        </div>
+                                                        <div className="flex justify-between items-start mb-2 pr-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-text-primary text-lg">
+                                                                    {isCombinada ? 'Apuesta Combinada' : bet.opcion_label}
+                                                                </span>
+                                                                {isCombinada && (
+                                                                    <span className="px-2 py-0.5 text-[10px] font-black tracking-wider rounded-md bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-200 dark:border-purple-500/30 uppercase">
+                                                                        {children.length} Selecciones
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className={`px-3 py-1 text-xs font-bold rounded-full border shadow-sm flex items-center gap-1 ${bet.estado === 'pendiente' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30' : bet.estado === 'ganada' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30'}`}>
+                                                                {bet.estado === 'ganada' && <CheckCircle2 className="w-3 h-3" />}
+                                                                {bet.estado === 'perdida' && <AlertCircle className="w-3 h-3" />}
+                                                                {bet.estado.toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        {isCombinada && (
+                                                            <p className="text-sm text-text-secondary mb-3">{bet.opcion_label}</p>
+                                                        )}
+
+                                                        <div className="flex justify-between text-sm font-bold bg-white dark:bg-zinc-900 overflow-hidden rounded-xl border border-slate-100 dark:border-zinc-800 mr-2 mt-2">
+                                                            <div className="flex flex-col p-3 flex-1 border-r border-slate-100 dark:border-zinc-800">
+                                                                <span className="text-xs text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Apostado</span>
+                                                                <span className="text-slate-800 dark:text-zinc-200">{bet.cantidad_apostada} CP</span>
+                                                            </div>
+                                                            <div className="flex flex-col p-3 flex-1 border-r border-slate-100 dark:border-zinc-800">
+                                                                <span className="text-xs text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Cuota Total</span>
+                                                                <span className="text-slate-800 dark:text-zinc-200">{bet.cuota.toFixed(2)}</span>
+                                                            </div>
+                                                            <div className="flex flex-col p-3 flex-1">
+                                                                <span className="text-xs text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Ganancia Pot.</span>
+                                                                <span className="text-emerald-600 dark:text-emerald-400">{bet.ganancia_potencial.toFixed(2)} CP</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {isCombinada && children.length > 0 && (
+                                                            <div className="mt-4 pl-4 border-l-2 border-border-subtle space-y-2 mr-2">
+                                                                {children.map(child => (
+                                                                    <div key={child.id} className="flex justify-between items-center text-sm py-1 border-b border-transparent hover:border-border-subtle">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-semibold text-slate-700 dark:text-zinc-300">{child.opcion_label}</span>
+                                                                            <span className="text-xs font-bold text-slate-500">Cuota: {child.cuota}</span>
+                                                                        </div>
+                                                                        {child.estado !== 'pendiente' && (
+                                                                            <span className={`${child.estado === 'ganada' ? 'text-emerald-500' : 'text-red-500'} font-bold text-xs uppercase`}>
+                                                                                {child.estado === 'ganada' ? '✅' : '❌'} {child.estado}
+                                                                            </span>
+                                                                        )}
+                                                                        {child.estado === 'pendiente' && (
+                                                                            <span className="text-amber-500 font-bold text-xs uppercase">⏳</span>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Standard Markets rendered according to tab */}
                         {(() => {
                             if (activeTab === 'ranking') {
                                 return (
-                                    <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden p-6 max-h-[800px] overflow-y-auto custom-scrollbar transition-colors">
-                                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200 dark:border-zinc-800 transition-colors">
+                                    <div className="bg-surface-card border border-border-default rounded-xl overflow-hidden p-6 max-h-[800px] overflow-y-auto custom-scrollbar transition-colors">
+                                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border-subtle transition-colors">
                                             <Medal className="w-6 h-6 text-emerald-500" />
-                                            <h3 className="text-xl font-bold text-slate-900 dark:text-zinc-100">Top Apostadores</h3>
+                                            <h3 className="text-xl font-bold text-text-primary">Top Apostadores</h3>
                                         </div>
                                         {ranking.length === 0 ? (
                                             <p className="text-slate-500 dark:text-zinc-500 text-center py-8">No hay hooligans en el ranking todavía.</p>
                                         ) : (
                                             <div className="space-y-3">
                                                 {ranking.map((user, index) => (
-                                                    <div key={user.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-zinc-950/50 rounded-lg border border-slate-200 dark:border-zinc-800/50 transition-all hover:bg-slate-100 dark:hover:bg-zinc-800">
+                                                    <div key={user.id} className="flex items-center justify-between p-4 bg-bg-secondary rounded-lg border border-border-subtle transition-all hover:bg-surface-card-hover">
                                                         <div className="flex items-center gap-4">
-                                                            <div className={`w-8 h-8 flex items-center justify-center rounded-full font-black text-sm ${index === 0 ? 'bg-yellow-500 text-zinc-900' : index === 1 ? 'bg-zinc-300 text-zinc-900' : index === 2 ? 'bg-amber-700 text-zinc-100' : 'bg-slate-200 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400'}`}>
+                                                            <div className={`w-8 h-8 flex items-center justify-center rounded-full font-black text-sm ${index === 0 ? 'bg-yellow-500 text-zinc-900' : index === 1 ? 'bg-zinc-300 text-zinc-900' : index === 2 ? 'bg-amber-700 text-zinc-100' : 'bg-bg-primary text-text-muted'}`}>
                                                                 {index + 1}
                                                             </div>
-                                                            <span className="font-bold text-slate-800 dark:text-zinc-200">{user.nombre}</span>
+                                                            <span className="font-bold text-text-primary">{user.nombre}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-mono text-emerald-600 dark:text-emerald-500 font-bold">{user.puntos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -621,12 +794,14 @@ export default function ImpersedBetPage() {
                             }
 
                             return marketsToDisplay.map(market => (
-                                <div key={market.id} className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden transition-colors">
-                                    <div className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 transition-colors">
-                                        {market.icon}
-                                        <h3 className="font-bold text-slate-800 dark:text-zinc-200">{market.title}</h3>
+                                <div key={market.id} className="bg-surface-card border border-border-default rounded-2xl overflow-hidden transition-all shadow-soft group hover:border-emerald-500/10">
+                                    <div className="flex items-center gap-3 p-4 bg-surface-card border-b border-border-subtle transition-colors">
+                                        <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20 shadow-sm">
+                                            {market.icon}
+                                        </div>
+                                        <h3 className="font-black text-sm uppercase tracking-wider text-text-primary">{market.title}</h3>
                                     </div>
-                                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-slate-50 dark:bg-zinc-950/50 transition-colors">
+                                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-bg-secondary/30 transition-colors">
                                         {market.options.map(option => renderOddButton(market, option))}
                                     </div>
                                 </div>
@@ -637,8 +812,8 @@ export default function ImpersedBetPage() {
                 </div>
 
                 {/* --- RIGHT DESKTOP / BET SLIP SIDEBAR --- */}
-                <div className="hidden lg:block w-[30%] min-w-[320px] max-w-[400px] border-l border-slate-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 p-6 flex flex-col h-[calc(100vh-136px)] sticky top-[136px] transition-colors">
-                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200 dark:border-zinc-800 transition-colors">
+                <div className="hidden lg:block w-[30%] min-w-[320px] max-w-[400px] border-l border-border-subtle bg-surface-card/50 p-6 flex flex-col h-[calc(100vh-136px)] sticky top-[136px] transition-colors">
+                    <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border-subtle transition-colors">
                         <div className="relative">
                             <PlayCircle className="w-6 h-6 text-emerald-500" />
                             {betSlip.length > 0 && (
@@ -647,23 +822,36 @@ export default function ImpersedBetPage() {
                                 </span>
                             )}
                         </div>
-                        <h2 className="text-xl font-bold">Boleto de Apuesta</h2>
+                        <h2 className="text-xl font-bold">Boleto</h2>
                         {betSlip.length > 0 && (
                             <button onClick={() => setBetSlip([])} className="ml-auto text-xs text-zinc-500 hover:text-red-400 transition-colors">
-                                Limpiar todo
+                                Limpiar
                             </button>
                         )}
                     </div>
+                    
+                    {/* Bet Mode Toggle */}
+                    <div className="flex bg-bg-secondary border border-border-subtle p-1 rounded-lg mb-4">
+                        <button onClick={() => setBetMode('individual')} className={`flex-1 text-sm font-bold py-1.5 rounded-md transition-all ${betMode === 'individual' ? 'bg-surface-card text-text-primary shadow-sm' : 'text-text-secondary'}`}>Sencilla</button>
+                        <button onClick={() => setBetMode('combinada')} className={`flex-1 text-sm font-bold py-1.5 rounded-md transition-all ${betMode === 'combinada' ? 'bg-surface-card text-text-primary shadow-sm' : 'text-text-secondary'}`}>Combinada</button>
+                    </div>
 
-                    <div className="flex-1 overflow-y-auto pr-2 space-y-3 pb-6 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto pr-2 space-y-3 pb-6 custom-scrollbar min-h-0">
                         <AnimatePresence mode="popLayout">
                             {betSlip.length === 0 ? (
                                 <motion.div
-                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                    className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-zinc-500 space-y-4 opacity-50"
+                                    initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                    className="h-full flex flex-col items-center justify-center text-text-muted space-y-5 px-4"
                                 >
-                                    <Coins className="w-12 h-12 stroke-1" />
-                                    <p className="text-center font-medium">El boleto está vacío.<br />Haz clic en una cuota para añadir una selección.</p>
+                                    <div className="p-4 rounded-full bg-bg-secondary border border-border-subtle shadow-inner animate-bounce-slow">
+                                        <Coins className="w-10 h-10 text-emerald-500/60 stroke-[1.5]" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="font-black text-xs uppercase tracking-wider text-text-primary mb-1">Boleto Vacío</p>
+                                        <p className="text-xs text-text-muted max-w-[200px] mx-auto leading-relaxed">
+                                            Selecciona una cuota para empezar a construir tu apuesta.
+                                        </p>
+                                    </div>
                                 </motion.div>
                             ) : (
                                 betSlip.map(bet => (
@@ -674,7 +862,7 @@ export default function ImpersedBetPage() {
                                         exit={{ opacity: 0, x: -20, scale: 0.95 }}
                                         transition={{ duration: 0.2 }}
                                         key={bet.id}
-                                        className="bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg p-3 group relative transition-colors shadow-sm dark:shadow-none"
+                                        className="bg-bg-secondary border border-border-subtle rounded-lg p-3 group relative transition-colors shadow-sm dark:shadow-none"
                                     >
                                         <button
                                             onClick={() => removeSelection(bet.id)}
@@ -683,23 +871,27 @@ export default function ImpersedBetPage() {
                                             <Trash2 className="w-4 h-4" />
                                         </button>
 
-                                        <p className="text-xs text-slate-500 dark:text-zinc-500 font-medium mb-1 truncate pr-6">{bet.marketTitle}</p>
+                                        <p className="text-xs text-text-muted font-medium mb-1 truncate pr-6">{bet.marketTitle}</p>
                                         <div className="flex items-end justify-between mb-3">
-                                            <p className="font-bold text-slate-800 dark:text-zinc-200">{bet.label}</p>
+                                            <p className="font-bold text-text-primary">{bet.label}</p>
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <div className="relative flex-1">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500 font-bold text-xs">CP</span>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={bet.amount === ('' as unknown as number) ? '' : bet.amount}
-                                                    onChange={e => updateBetAmount(bet.id, e.target.value)}
-                                                    placeholder="0.00"
-                                                    className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-md py-2 pl-9 pr-3 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-600"
-                                                />
-                                            </div>
+                                            {betMode === 'individual' ? (
+                                                <div className="relative flex-1">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500 font-bold text-xs">CP</span>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={bet.amount === ('' as unknown as number) ? '' : bet.amount}
+                                                        onChange={e => updateBetAmount(bet.id, e.target.value)}
+                                                        placeholder="0.00"
+                                                        className="w-full bg-surface-card border border-border-subtle rounded-md py-2 pl-9 pr-3 text-sm font-bold text-text-primary focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-text-muted"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="flex-1"></div>
+                                            )}
                                             <div className="flex flex-col items-end">
                                                 <span className="text-xs text-slate-500 dark:text-zinc-500 font-medium">Cuota</span>
                                                 <span className="font-black text-emerald-600 dark:text-emerald-400">{bet.odd.toFixed(2)}</span>
@@ -712,31 +904,57 @@ export default function ImpersedBetPage() {
                     </div>
 
                     {/* Summary Footer */}
-                    <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4 transition-colors">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-500 dark:text-zinc-500">Apuesta Total</span>
-                            <span className="font-bold font-mono text-slate-800 dark:text-zinc-200">{totalWagered.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {totalWagered > 0 && 'CP'}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-500 dark:text-zinc-500">Ganancia Potencial</span>
-                            <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{totalPotentialWin.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {totalPotentialWin > 0 && 'CP'}</span>
+                    <div className="pt-4 border-t border-border-subtle space-y-3 transition-all">
+                        
+                        {betMode === 'combinada' && betSlip.length > 0 && (
+                            <div className="bg-emerald-500/5 dark:bg-emerald-500/10 rounded-xl p-3.5 border border-emerald-500/20 shadow-sm">
+                                <div className="flex justify-between items-center mb-2.5">
+                                    <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Cuota Tot. Combinada</span>
+                                    <span className="font-black text-emerald-500 text-base tabular-nums drop-shadow-[0_1px_6px_rgba(16,185,129,0.2)]">x{combinadaOdd.toFixed(2)}</span>
+                                </div>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500 font-black text-xs">CP</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={combinadaAmount === '' ? '' : combinadaAmount}
+                                        onChange={e => {
+                                            let val = parseFloat(e.target.value);
+                                            setCombinadaAmount(isNaN(val) || val < 0 ? '' : val);
+                                        }}
+                                        placeholder="Importe de Combinada"
+                                        className="w-full bg-surface-card border border-emerald-500/20 rounded-lg py-2 pl-9 pr-3 font-bold text-sm text-text-primary focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none shadow-inner"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="bg-bg-secondary p-3 rounded-xl border border-border-subtle space-y-2 shadow-inner">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="font-bold text-text-secondary">Apuesta Total</span>
+                                <span className="font-black tabular-nums text-text-primary">{totalWagered.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <span className="text-[10px] text-text-muted">CP</span></span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="font-bold text-text-primary">Ganancia Potencial</span>
+                                <span className="font-black tabular-nums text-emerald-500 drop-shadow-[0_1px_4px_rgba(16,185,129,0.1)]">{totalPotentialWin.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <span className="text-[10px]">CP</span></span>
+                            </div>
                         </div>
 
                         <button
                             disabled={betSlip.length === 0 || loading}
                             onClick={placeBet}
                             className={`
-                                w-full py-4 rounded-xl font-bold uppercase tracking-wider relative overflow-hidden transition-all duration-300
+                                w-full py-3.5 rounded-xl font-black uppercase text-xs tracking-wider relative overflow-hidden transition-all duration-300
                                 ${betSlip.length === 0
-                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                    : 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-[0_4px_15px_rgba(16,185,129,0.3)] hover:shadow-[0_4px_25px_rgba(16,185,129,0.5)] transform hover:-translate-y-0.5'
+                                    ? 'bg-bg-secondary text-text-muted border border-border-subtle cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-emerald-500 to-teal-400 text-zinc-950 shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.5)] transform hover:-translate-y-0.5 active:translate-y-0'
                                 }
                             `}
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center gap-2">
-                                    <div className="w-5 h-5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
-                                    Confirmando...
+                                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
+                                    <span>Procesando...</span>
                                 </div>
                             ) : (
                                 "Realizar Apuesta"
@@ -760,13 +978,17 @@ export default function ImpersedBetPage() {
                             />
                             <motion.div
                                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                className="absolute bottom-16 left-0 right-0 h-[70vh] bg-zinc-900 rounded-t-2xl z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-zinc-800"
+                                className="absolute bottom-16 left-0 right-0 h-[70vh] bg-surface-card rounded-t-2xl z-50 flex flex-col shadow-elevated border-t border-border-subtle"
                             >
                                 <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-                                    <h3 className="font-bold">Boleto de Apuesta ({betSlip.length})</h3>
-                                    {betSlip.length > 0 && (
-                                        <button onClick={() => setBetSlip([])} className="text-xs text-red-500">Limpiar</button>
-                                    )}
+                                    <h3 className="font-bold">Boleto ({betSlip.length})</h3>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex bg-zinc-950 p-1 rounded-md text-xs">
+                                            <button onClick={() => setBetMode('individual')} className={`px-2 py-1 rounded ${betMode === 'individual' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}>Sencilla</button>
+                                            <button onClick={() => setBetMode('combinada')} className={`px-2 py-1 rounded ${betMode === 'combinada' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}>Combi</button>
+                                        </div>
+                                        {betSlip.length > 0 && <button onClick={() => setBetSlip([])} className="text-xs text-red-500">Limpiar</button>}
+                                    </div>
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -774,20 +996,24 @@ export default function ImpersedBetPage() {
                                         <p className="text-center text-zinc-500 mt-10 text-sm">Boleto vacío</p>
                                     ) : (
                                         betSlip.map(bet => (
-                                            <div key={bet.id} className="bg-zinc-950 border border-zinc-800 rounded-lg p-3 relative">
-                                                <button onClick={() => removeSelection(bet.id)} className="absolute top-2 right-2 text-zinc-600">
+                                            <div key={bet.id} className="bg-bg-secondary border border-border-subtle rounded-lg p-3 relative">
+                                                <button onClick={() => removeSelection(bet.id)} className="absolute top-2 right-2 text-text-muted hover:text-red-500 transition-colors">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
-                                                <p className="text-[10px] text-zinc-500 mb-1">{bet.marketTitle}</p>
-                                                <p className="font-bold text-sm text-zinc-200 mb-2">{bet.label}</p>
+                                                <p className="text-[10px] text-text-muted mb-1">{bet.marketTitle}</p>
+                                                <p className="font-bold text-sm text-text-primary mb-2">{bet.label}</p>
                                                 <div className="flex gap-2 items-center">
-                                                    <div className="relative flex-1">
-                                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-emerald-500 font-bold text-xs">CP</span>
-                                                        <input
-                                                            type="number" min="0" value={bet.amount === ('' as unknown as number) ? '' : bet.amount} onChange={e => updateBetAmount(bet.id, e.target.value)} placeholder="0"
-                                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-md py-1.5 pl-8 pr-2 text-sm font-bold focus:border-emerald-500 outline-none"
-                                                        />
-                                                    </div>
+                                                    {betMode === 'individual' ? (
+                                                        <div className="relative flex-1">
+                                                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-emerald-500 font-bold text-xs">CP</span>
+                                                            <input
+                                                                type="number" min="0" value={bet.amount === ('' as unknown as number) ? '' : bet.amount} onChange={e => updateBetAmount(bet.id, e.target.value)} placeholder="0"
+                                                                className="w-full bg-surface-card border border-border-subtle rounded-md py-1.5 pl-8 pr-2 text-sm font-bold text-text-primary focus:border-emerald-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex-1"></div>
+                                                    )}
                                                     <span className="font-black text-emerald-400 text-sm">{bet.odd.toFixed(2)}</span>
                                                 </div>
                                             </div>
@@ -795,8 +1021,25 @@ export default function ImpersedBetPage() {
                                     )}
                                 </div>
 
-                                <div className="p-4 bg-zinc-950 border-t border-zinc-800">
-                                    <div className="flex justify-between items-center text-xs text-zinc-400 mb-1">
+                                <div className="p-4 bg-surface-card border-t border-border-subtle">
+                                    {betMode === 'combinada' && betSlip.length > 0 && (
+                                        <div className="mb-3 flex gap-2">
+                                            <div className="relative flex-1">
+                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-emerald-500 font-bold text-xs">CP</span>
+                                                <input
+                                                    type="number" min="0" value={combinadaAmount === '' ? '' : combinadaAmount} onChange={e => {
+                                                        let val = parseFloat(e.target.value);
+                                                        setCombinadaAmount(isNaN(val) || val < 0 ? '' : val);
+                                                    }} placeholder="Importe Combi"
+                                                    className="w-full bg-bg-secondary border border-emerald-500/30 rounded-md py-1.5 pl-8 pr-2 text-sm font-bold text-text-primary focus:border-emerald-500 outline-none"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-center bg-bg-secondary px-3 rounded-md border border-border-subtle">
+                                                <span className="text-emerald-400 font-black text-sm">x{combinadaOdd.toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center text-xs text-text-secondary mb-1">
                                         <span>Apuesta Total</span><span>{totalWagered.toFixed(2)} CP</span>
                                     </div>
                                     <div className="flex justify-between items-center text-xs text-emerald-400 font-bold mb-3">
@@ -843,14 +1086,14 @@ export default function ImpersedBetPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 backdrop-blur-sm pointer-events-none"
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 backdrop-blur-sm"
                     >
                         <motion.div
                             initial={{ scale: 0.5, y: 50, opacity: 0 }}
                             animate={{ scale: 1, y: 0, opacity: 1 }}
                             exit={{ scale: 1.2, opacity: 0 }}
                             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            className="bg-zinc-900 border border-emerald-500/50 p-8 rounded-3xl shadow-[0_0_100px_rgba(16,185,129,0.4)] flex flex-col items-center"
+                            className="bg-surface-card border border-emerald-500/30 p-8 rounded-3xl shadow-elevated flex flex-col items-center"
                         >
                             <motion.div
                                 initial={{ rotate: -90, scale: 0 }}
@@ -861,7 +1104,7 @@ export default function ImpersedBetPage() {
                                 <CheckCircle2 className="w-12 h-12 text-emerald-500" />
                             </motion.div>
                             <h2 className="text-2xl md:text-4xl font-black italic uppercase text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.8)] mb-2 tracking-tighter">¡Apuesta Sellada!</h2>
-                            <p className="text-zinc-400 font-medium text-center">Tus CubiertasPoints han sido deducidos.<br />¡Que la suerte te acompañe, Hooligan!</p>
+                            <p className="text-text-secondary font-medium text-center">Tus CubiertasPoints han sido deducidos.<br />¡Que la suerte te acompañe, Hooligan!</p>
                         </motion.div>
                     </motion.div>
                 )}

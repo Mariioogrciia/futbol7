@@ -1,0 +1,383 @@
+﻿[dotenv@17.3.1] injecting env (7) from .env.local -- tip: ÔÜÖ´©Å  enable debug logging with { debug: true }
+Starting test...
+node.exe : APICallError 
+[AI_APICallError]: The 
+model `llama3-70b-8192` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.
+En C:\Program 
+Files\nodejs\npx.ps1: 29 
+Carácter: 3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (API  
+  CallError [A...to use    
+ instead.:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+    at <anonymous> (C:\User
+s\mario\PycharmProjects\fut
+bol7\node_modules\@ai-sdk\p
+rovider-utils\src\response-
+handler.ts:56:16)
+    at process.processTicks
+AndRejections (node:interna
+l/process/task_queues:105:5
+)
+    at async postToApi (C:\
+Users\mario\PycharmProjects
+\futbol7\node_modules\@ai-s
+dk\provider-utils\src\post-
+to-api.ts:118:28)
+    at async OpenAIResponse
+sLanguageModel.doStream (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\@ai-
+sdk\openai\src\responses\op
+enai-responses-language-mod
+el.ts:981:50)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:167
+0:27)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24)
+    at async _retryWithExpo
+nentialBackoff (C:\Users\ma
+rio\PycharmProjects\futbol7
+\node_modules\ai\src\util\r
+etry-with-exponential-backo
+ff.ts:96:12)
+    at async streamStep (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\ai\s
+rc\generate-text\stream-tex
+t.ts:1622:17)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:213
+5:9)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24) {
+  cause: undefined,
+  url: 'https://api.groq.co
+m/openai/v1/responses',
+  requestBodyValues: {
+    model: 
+'llama3-70b-8192',
+    input: [ [Object] ],
+    temperature: undefined,
+    top_p: undefined,
+    max_output_tokens: 
+undefined,
+    conversation: 
+undefined,
+    max_tool_calls: 
+undefined,
+    metadata: undefined,
+    parallel_tool_calls: 
+undefined,
+    previous_response_id: 
+undefined,
+    store: undefined,
+    user: undefined,
+    instructions: 
+undefined,
+    service_tier: 
+undefined,
+    include: undefined,
+    prompt_cache_key: 
+undefined,
+    
+prompt_cache_retention: 
+undefined,
+    safety_identifier: 
+undefined,
+    top_logprobs: 
+undefined,
+    truncation: undefined,
+    tools: [ [Object] ],
+    tool_choice: 'auto',
+    stream: true
+  },
+  statusCode: 400,
+  responseHeaders: {
+    'alt-svc': 'h3=":443"; 
+ma=86400',
+    'cache-control': 
+'private, max-age=0, 
+no-store, no-cache, 
+must-revalidate',
+    'cf-cache-status': 
+'DYNAMIC',
+    'cf-ray': 
+'9d9ae6e57c2c0355-MAD',
+    connection: 
+'keep-alive',
+    'content-length': 
+'276',
+    'content-type': 
+'application/json',
+    date: 'Mon, 09 Mar 
+2026 14:52:10 GMT',
+    server: 'cloudflare',
+    'set-cookie': '__cf_bm=
+.I.Hid6fiel1pVMpuT.qiaCsvAP
+hkM2rFTqzyPTqpN0-1773067930
+.48-1.0.1.1-qqfXbED9CHgwXHK
+J5uN1ZZjv9knSfLu5TM56Fvrz49
+xNfMUn4EhsofSGtvL.JAgrGOm2A
+Fc7vekk5PS3GLv5yHd78eFVHoKJ
+8c4Aql0SLoGpqOOLCrH8PvIvObz
+fC99m; HttpOnly; Secure; 
+Path=/; Domain=groq.com; 
+Expires=Mon, 09 Mar 2026 
+15:22:10 GMT',
+    'strict-transport-secur
+ity': 'max-age=15552000',
+    vary: 'Origin',
+    via: '1.1 google',
+    'x-groq-region': 'dls',
+    'x-request-id': 'req_01
+kk9hb2xvfdv9ryv14y9hf3cr'
+  },
+  responseBody: 
+'{"error":{"message":"The 
+model `llama3-70b-8192` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.","typ
+e":"invalid_request_error",
+"code":"model_decommissione
+d"}}\n',
+  isRetryable: false,
+  data: {
+    error: {
+      message: 'The model 
+`llama3-70b-8192` has been 
+decommissioned and is no 
+longer supported. Please 
+refer to https://console.gr
+oq.com/docs/deprecations 
+for a recommendation on 
+which model to use 
+instead.',
+      type: 
+'invalid_request_error',
+      code: 
+'model_decommissioned'
+    }
+  },
+  
+[Symbol(vercel.ai.error)]: 
+true,
+  [Symbol(vercel.ai.error.A
+I_APICallError)]: true
+}
+
+[STREAM ERROR]: 
+APICallError 
+[AI_APICallError]: The 
+model `llama3-70b-8192` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.
+    at <anonymous> (C:\User
+s\mario\PycharmProjects\fut
+bol7\node_modules\@ai-sdk\p
+rovider-utils\src\response-
+handler.ts:56:16)
+    at process.processTicks
+AndRejections (node:interna
+l/process/task_queues:105:5
+)
+    at async postToApi (C:\
+Users\mario\PycharmProjects
+\futbol7\node_modules\@ai-s
+dk\provider-utils\src\post-
+to-api.ts:118:28)
+    at async OpenAIResponse
+sLanguageModel.doStream (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\@ai-
+sdk\openai\src\responses\op
+enai-responses-language-mod
+el.ts:981:50)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:167
+0:27)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24)
+    at async _retryWithExpo
+nentialBackoff (C:\Users\ma
+rio\PycharmProjects\futbol7
+\node_modules\ai\src\util\r
+etry-with-exponential-backo
+ff.ts:96:12)
+    at async streamStep (C:
+\Users\mario\PycharmProject
+s\futbol7\node_modules\ai\s
+rc\generate-text\stream-tex
+t.ts:1622:17)
+    at async fn (C:\Users\m
+ario\PycharmProjects\futbol
+7\node_modules\ai\src\gener
+ate-text\stream-text.ts:213
+5:9)
+    at async <anonymous> (C
+:\Users\mario\PycharmProjec
+ts\futbol7\node_modules\ai\
+src\telemetry\record-span.t
+s:32:24) {
+  cause: undefined,
+  url: 'https://api.groq.co
+m/openai/v1/responses',
+  requestBodyValues: {
+    model: 
+'llama3-70b-8192',
+    input: [ [Object] ],
+    temperature: undefined,
+    top_p: undefined,
+    max_output_tokens: 
+undefined,
+    conversation: 
+undefined,
+    max_tool_calls: 
+undefined,
+    metadata: undefined,
+    parallel_tool_calls: 
+undefined,
+    previous_response_id: 
+undefined,
+    store: undefined,
+    user: undefined,
+    instructions: 
+undefined,
+    service_tier: 
+undefined,
+    include: undefined,
+    prompt_cache_key: 
+undefined,
+    
+prompt_cache_retention: 
+undefined,
+    safety_identifier: 
+undefined,
+    top_logprobs: 
+undefined,
+    truncation: undefined,
+    tools: [ [Object] ],
+    tool_choice: 'auto',
+    stream: true
+  },
+  statusCode: 400,
+  responseHeaders: {
+    'alt-svc': 'h3=":443"; 
+ma=86400',
+    'cache-control': 
+'private, max-age=0, 
+no-store, no-cache, 
+must-revalidate',
+    'cf-cache-status': 
+'DYNAMIC',
+    'cf-ray': 
+'9d9ae6e57c2c0355-MAD',
+    connection: 
+'keep-alive',
+    'content-length': 
+'276',
+    'content-type': 
+'application/json',
+    date: 'Mon, 09 Mar 
+2026 14:52:10 GMT',
+    server: 'cloudflare',
+    'set-cookie': '__cf_bm=
+.I.Hid6fiel1pVMpuT.qiaCsvAP
+hkM2rFTqzyPTqpN0-1773067930
+.48-1.0.1.1-qqfXbED9CHgwXHK
+J5uN1ZZjv9knSfLu5TM56Fvrz49
+xNfMUn4EhsofSGtvL.JAgrGOm2A
+Fc7vekk5PS3GLv5yHd78eFVHoKJ
+8c4Aql0SLoGpqOOLCrH8PvIvObz
+fC99m; HttpOnly; Secure; 
+Path=/; Domain=groq.com; 
+Expires=Mon, 09 Mar 2026 
+15:22:10 GMT',
+    'strict-transport-secur
+ity': 'max-age=15552000',
+    vary: 'Origin',
+    via: '1.1 google',
+    'x-groq-region': 'dls',
+    'x-request-id': 'req_01
+kk9hb2xvfdv9ryv14y9hf3cr'
+  },
+  responseBody: 
+'{"error":{"message":"The 
+model `llama3-70b-8192` 
+has been decommissioned 
+and is no longer 
+supported. Please refer to 
+https://console.groq.com/do
+cs/deprecations for a 
+recommendation on which 
+model to use instead.","typ
+e":"invalid_request_error",
+"code":"model_decommissione
+d"}}\n',
+  isRetryable: false,
+  data: {
+    error: {
+      message: 'The model 
+`llama3-70b-8192` has been 
+decommissioned and is no 
+longer supported. Please 
+refer to https://console.gr
+oq.com/docs/deprecations 
+for a recommendation on 
+which model to use 
+instead.',
+
+Done.
+      type: 
+'invalid_request_error',
+      code: 
+'model_decommissioned'
+    }
+  },
+  
+[Symbol(vercel.ai.error)]: 
+true,
+  [Symbol(vercel.ai.error.A
+I_APICallError)]: true
+}

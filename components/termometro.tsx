@@ -78,7 +78,7 @@ export function Termometro() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-6 inline-flex flex-col gap-2 rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4 backdrop-blur-sm transition-all hover:bg-primary-foreground/10"
+            className="mt-6 inline-flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-all hover:bg-white/8"
         >
             <div className="flex items-center gap-3">
                 <span className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/70">
