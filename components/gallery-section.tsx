@@ -87,7 +87,7 @@ export function GallerySection() {
               <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border-subtle to-transparent max-w-12" />
             </div>
 
-            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-text-primary leading-[0.95]">
+            <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter text-text-primary leading-[0.95]">
               Galería de<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-300">
                 Momentos

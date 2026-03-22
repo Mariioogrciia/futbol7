@@ -10,7 +10,8 @@ export async function GET(request: Request) {
             .from('apuestas')
             .select(`
                 *,
-                usuario:usuarios(nombre)
+                usuario:usuarios(nombre),
+                partido:partidos(rival)
             `)
             .order('created_at', { ascending: false });
 

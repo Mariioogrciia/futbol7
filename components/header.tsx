@@ -337,12 +337,14 @@ export function Header() {
 
     window.addEventListener('openRegisterModal', handleOpenRegister);
     window.addEventListener('openLoginModal', handleOpenLogin);
+    window.addEventListener('profileUpdated', checkAuthStatus);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       subscription.unsubscribe();
       window.removeEventListener('openRegisterModal', handleOpenRegister);
       window.removeEventListener('openLoginModal', handleOpenLogin);
+      window.removeEventListener('profileUpdated', checkAuthStatus);
     };
   }, []);
 
@@ -411,13 +413,20 @@ export function Header() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="rounded-md px-4 py-2 text-sm font-bold text-text-accent transition-all duration-200 hover:bg-surface-card-hover flex items-center gap-2 border border-accent-primary/20 bg-accent-soft">
-                    <User className="h-4 w-4" />
+                  <button className="rounded-md pr-4 pl-3 py-2 text-sm font-bold text-text-accent transition-all duration-200 hover:bg-surface-card-hover flex items-center gap-2 border border-accent-primary/20 bg-accent-soft">
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt="Avatar" className="w-5 h-5 rounded-full object-cover shadow-sm bg-surface-card" />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
                     {user.nombre || (user.rol === 'admin' ? 'Admin' : 'Jugador')}
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => window.location.href = '/perfil'} className="cursor-pointer font-bold text-accent-primary focus:text-accent-primary">
+                    Mi Perfil
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {user.rol === 'admin' ? (
                     <DropdownMenuItem onClick={() => window.open('/admin', '_blank')} className="cursor-pointer font-medium text-emerald-500">
@@ -499,6 +508,15 @@ export function Header() {
                     <button
                       onClick={() => {
                         setMobileOpen(false);
+                        window.location.href = '/perfil';
+                      }}
+                      className="rounded-md px-3 py-3 text-base font-bold text-accent-primary transition-colors hover:text-accent-primary-hover hover:bg-secondary text-left flex items-center gap-2"
+                    >
+                      Mi Perfil
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
                         window.open('/admin', '_blank');
                       }}
                       className="rounded-md px-3 py-3 text-base font-medium text-emerald-500 transition-colors hover:text-emerald-400 hover:bg-secondary text-left flex items-center gap-2"
@@ -515,6 +533,15 @@ export function Header() {
                 )}
                 {user?.rol === 'equipo' && (
                   <>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        window.location.href = '/perfil';
+                      }}
+                      className="rounded-md px-3 py-3 text-base font-bold text-accent-primary transition-colors hover:text-accent-primary-hover hover:bg-secondary text-left flex items-center gap-2"
+                    >
+                      Mi Perfil
+                    </button>
                     {user.jugador_id && (
                       <button
                         onClick={() => {
@@ -554,6 +581,15 @@ export function Header() {
                 )}
                 {user?.rol === 'espectador' && (
                   <>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        window.location.href = '/perfil';
+                      }}
+                      className="rounded-md px-3 py-3 text-base font-bold text-accent-primary transition-colors hover:text-accent-primary-hover hover:bg-secondary text-left flex items-center gap-2"
+                    >
+                      Mi Perfil
+                    </button>
                     <button
                       onClick={() => {
                         setMobileOpen(false);

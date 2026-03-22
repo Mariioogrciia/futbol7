@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, AlertCircle, CheckCircle2, ChevronDown, Trophy, Users, Loader2, CalendarHeart, ImagePlus, UploadCloud, CircleDollarSign, RotateCcw } from "lucide-react";
+import { Save, AlertCircle, CheckCircle2, ChevronDown, Trophy, Users, Loader2, CalendarHeart, ImagePlus, UploadCloud, CircleDollarSign, RotateCcw, UserPlus, Pencil, Trash2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -50,13 +50,23 @@ export default function AdminPanel() {
   const [loadingConvocatorias, setLoadingConvocatorias] = useState(false);
 
   // Gallery Upload State
-  const [activeTab, setActiveTab] = useState<"resultados" | "asistencia" | "galeria" | "apuestas">("resultados");
+  const [activeTab, setActiveTab] = useState<"resultados" | "asistencia" | "galeria" | "apuestas" | "usuarios">("resultados");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // Apuestas State
   const [apuestas, setApuestas] = useState<any[]>([]);
   const [loadingApuestas, setLoadingApuestas] = useState(false);
+
+  // Usuarios State
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [loadingAdminUsers, setLoadingAdminUsers] = useState(false);
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [newUser, setNewUser] = useState({ nombre: '', email: '', password: '', rol: 'espectador', jugador_id: '' });
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
 
   // Validation
   const totalScorersAssigned = Object.values(scorerCounts).reduce((a, b) => a + b, 0);
@@ -148,10 +158,11 @@ export default function AdminPanel() {
     }
   };
 
-  const fetchApuestas = async (matchId: string) => {
+  const fetchApuestas = async (matchId?: string) => {
     setLoadingApuestas(true);
     try {
-      const res = await fetch(`/api/admin/apuestas?partido_id=${matchId}`);
+      const url = matchId ? `/api/admin/apuestas?partido_id=${matchId}` : `/api/admin/apuestas`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setApuestas(data.apuestas || []);
@@ -160,6 +171,21 @@ export default function AdminPanel() {
       console.error(e);
     } finally {
       setLoadingApuestas(false);
+    }
+  };
+
+  const fetchAdminUsers = async () => {
+    setLoadingAdminUsers(true);
+    try {
+      const res = await fetch('/api/admin/usuarios');
+      if (res.ok) {
+        const data = await res.json();
+        setAdminUsers(data.usuarios || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAdminUsers(false);
     }
   };
 
@@ -173,7 +199,11 @@ export default function AdminPanel() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al validar');
       showToast(`Marcada como ${newState.toUpperCase()}`, 'success');
-      if (selectedMatch) {
+      
+      // Refresh bets depending on the view
+      if (activeTab === 'apuestas') {
+        fetchApuestas();
+      } else if (selectedMatch) {
         fetchApuestas(selectedMatch);
       }
     } catch (e: any) {
@@ -186,8 +216,12 @@ export default function AdminPanel() {
     if (activeTab === "asistencia" && selectedMatch) {
       fetchConvocatorias(selectedMatch);
     }
-    if (activeTab === "apuestas" && selectedMatch) {
-      fetchApuestas(selectedMatch);
+    if (activeTab === "apuestas") {
+      // Fetch all bets globally when switching to Apuestas tab
+      fetchApuestas();
+    }
+    if (activeTab === "usuarios") {
+      fetchAdminUsers();
     }
   }, [activeTab]);
 
@@ -246,15 +280,87 @@ export default function AdminPanel() {
     }
   };
 
-  const handleResetPoints = async () => {
-    if (!window.confirm("¿Estás seguro de que quieres restablecer los CubiertasPoints de TODOS los usuarios a 1000? Esto no se puede deshacer.")) return;
+  const handleResetPoints = async (userId: string, currentName: string) => {
+    if (!window.confirm(`¿Estás seguro de que quieres restablecer los CubiertasPoints a 1000 para el usuario ${currentName}?`)) return;
     try {
-      const res = await fetch('/api/admin/reset-points', { method: 'POST' });
+      const res = await fetch('/api/admin/usuarios/reset-points', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario_id: userId, cantidad: 1000 })
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al restablecer puntos');
       showToast(data.message, 'success');
+      fetchAdminUsers();
     } catch (e: any) {
       showToast(e.message, 'error');
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreatingUser(true);
+    try {
+      const res = await fetch('/api/admin/usuarios/crear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al crear usuario');
+      
+      showToast(data.message, 'success');
+      setNewUser({ nombre: '', email: '', password: '', rol: 'espectador', jugador_id: '' });
+      setShowCreateUser(false);
+      fetchAdminUsers();
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    } finally {
+      setIsCreatingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, currentName: string) => {
+    if (!window.confirm(`¿Estás súper seguro de que quieres BORRAR DEFINITIVAMENTE al usuario ${currentName}? Esto eliminará su cuenta, acceso y todo su historial.`)) return;
+    try {
+      const res = await fetch(`/api/admin/usuarios/borrar?id=${userId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al borrar usuario');
+      showToast(data.message, 'success');
+      fetchAdminUsers();
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setIsUpdatingUser(true);
+    try {
+      const res = await fetch('/api/admin/usuarios/editar', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingUser.id,
+          nombre: editingUser.nombre,
+          email: editingUser.email,
+          rol: editingUser.rol,
+          jugador_id: editingUser.jugador_id,
+          saldo_cubiertaspoints: editingUser.saldo_cubiertaspoints,
+          // only send password if changed, backend handles if it is empty string
+          ...(editingUser.password ? { password: editingUser.password } : {})
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al actualizar usuario');
+      showToast(data.message, 'success');
+      setEditingUser(null);
+      fetchAdminUsers();
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    } finally {
+      setIsUpdatingUser(false);
     }
   };
 
@@ -413,7 +519,7 @@ export default function AdminPanel() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-widest mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Control
             </div>
-            <h1 className="text-4xl sm:text-6xl font-black text-text-primary tracking-tighter leading-[1.1]">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-text-primary tracking-tighter leading-[1.1]">
               Panel Central <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-600">
                 Impersed Cubiertas
@@ -437,14 +543,14 @@ export default function AdminPanel() {
             <div className="lg:col-span-4 space-y-6">
 
               {/* TABS */}
-              <div className="flex flex-col sm:flex-row lg:flex-col bg-surface-card/50 dark:bg-surface-card/50 p-3 rounded-2xl sm:rounded-full lg:rounded-[2rem] border border-border-default shadow-sm backdrop-blur-2xl gap-2 relative z-10">
+              <div className="grid grid-cols-2 sm:flex sm:flex-row lg:flex-col bg-surface-card/50 dark:bg-surface-card/50 p-3 rounded-2xl sm:rounded-full lg:rounded-[2rem] border border-border-default shadow-sm backdrop-blur-2xl gap-2 relative z-10 w-full">
                 <button
                   onClick={() => setActiveTab("resultados")}
                   className={`group relative flex-1 flex items-center gap-4 py-4 px-6 rounded-xl sm:rounded-full lg:rounded-2xl transition-all duration-500 overflow-hidden ${activeTab === "resultados" ? "bg-surface-card dark:bg-surface-card/5 text-emerald-600 dark:text-emerald-400 shadow-[0_8px_20px_rgb(0,0,0,0.05)] dark:shadow-none border border-border-default" : "text-text-secondary hover:bg-surface-card/50 dark:hover:bg-surface-card/[0.02]"}`}
                 >
                   {activeTab === "resultados" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-500 rounded-r-full" />}
                   <Trophy className={`h-5 w-5 shrink-0 transition-transform duration-300 ${activeTab === "resultados" ? "scale-110" : "group-hover:scale-110"}`} />
-                  <span className="font-bold tracking-wide text-sm">Resultados</span>
+                  <span className="font-bold tracking-wide text-xs sm:text-sm">Resultados</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("asistencia")}
@@ -452,7 +558,7 @@ export default function AdminPanel() {
                 >
                   {activeTab === "asistencia" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
                   <CalendarHeart className={`h-5 w-5 shrink-0 transition-transform duration-300 ${activeTab === "asistencia" ? "scale-110" : "group-hover:scale-110"}`} />
-                  <span className="font-bold tracking-wide text-sm">Asistencia</span>
+                  <span className="font-bold tracking-wide text-xs sm:text-sm">Asistencia</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("galeria")}
@@ -460,7 +566,7 @@ export default function AdminPanel() {
                 >
                   {activeTab === "galeria" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-500 rounded-r-full" />}
                   <ImagePlus className={`h-5 w-5 shrink-0 transition-transform duration-300 ${activeTab === "galeria" ? "scale-110" : "group-hover:scale-110"}`} />
-                  <span className="font-bold tracking-wide text-sm">Galería</span>
+                  <span className="font-bold tracking-wide text-xs sm:text-sm">Galería</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("apuestas")}
@@ -468,12 +574,20 @@ export default function AdminPanel() {
                 >
                   {activeTab === "apuestas" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-500 rounded-r-full" />}
                   <CircleDollarSign className={`h-5 w-5 shrink-0 transition-transform duration-300 ${activeTab === "apuestas" ? "scale-110" : "group-hover:scale-110"}`} />
-                  <span className="font-bold tracking-wide text-sm">Apuestas</span>
+                  <span className="font-bold tracking-wide text-xs sm:text-sm">Apuestas</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("usuarios")}
+                  className={`group relative flex-1 flex items-center gap-4 py-4 px-6 rounded-xl sm:rounded-full lg:rounded-2xl transition-all duration-500 overflow-hidden ${activeTab === "usuarios" ? "bg-surface-card dark:bg-surface-card/5 text-amber-600 dark:text-amber-400 shadow-[0_8px_20px_rgb(0,0,0,0.05)] dark:shadow-none border border-border-default" : "text-text-secondary hover:bg-surface-card/50 dark:hover:bg-surface-card/[0.02]"}`}
+                >
+                  {activeTab === "usuarios" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-amber-500 rounded-r-full" />}
+                  <Users className={`h-5 w-5 shrink-0 transition-transform duration-300 ${activeTab === "usuarios" ? "scale-110" : "group-hover:scale-110"}`} />
+                  <span className="font-bold tracking-wide text-xs sm:text-sm">Usuarios</span>
                 </button>
               </div>
 
               {/* Match Selector (Only for Asistencia and Resultados and Apuestas) */}
-              {activeTab !== "galeria" && (
+              {(activeTab === "resultados" || activeTab === "asistencia" || activeTab === "apuestas") && (
                 <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden group transition-all duration-500 flex flex-col gap-5 z-10">
                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   
@@ -525,7 +639,7 @@ export default function AdminPanel() {
                           type="number"
                           min="0"
                           readOnly
-                          className="w-14 sm:w-20 bg-transparent text-center text-5xl font-black text-text-primary border-0 focus:ring-0 p-0"
+                          className="w-12 sm:w-20 bg-transparent text-center text-4xl sm:text-5xl font-black text-text-primary border-0 focus:ring-0 p-0"
                           value={golesEquipo}
                         />
                         <button
@@ -563,9 +677,315 @@ export default function AdminPanel() {
               )}
             </div>
 
-            {/* Right Column: Dynamic View Based on Tab */}
-            <div className="lg:col-span-8">
-              {activeTab === "galeria" ? (
+            {/* Right Column: Actions */}
+            <div className="lg:col-span-8 flex flex-col h-full">
+              {activeTab === "apuestas" ? (
+                // Always render the Apuestas panel regardless of selectedMatch
+                <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden transition-all duration-500 min-h-[500px]">
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-emerald-500 via-teal-400 to-transparent opacity-50" />
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 border-b border-border-subtle pb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                          <CircleDollarSign className="text-emerald-500 h-6 w-6 shrink-0" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black text-text-primary tracking-tight">Registro General de Apuestas</h3>
+                        <p className="text-sm text-text-secondary mt-1 font-medium">Centro de control global de todas las apuestas.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => fetchApuestas()} className="bg-surface-card-hover hover:bg-surface-card-active text-text-secondary dark:text-text-primary border border-border-default px-4 py-3 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 text-xs uppercase tracking-widest shrink-0">
+                        Actualizar
+                      </button>
+                    </div>
+                  </div>
+
+                  {loadingApuestas ? (
+                    <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] h-10 w-10" /></div>
+                  ) : apuestas.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center bg-surface-card/50 dark:bg-surface-card/50 rounded-[2rem] border border-dashed border-border-default">
+                        <span className="text-5xl opacity-30 mb-4">💸</span>
+                        <p className="text-text-primary font-black text-xl tracking-tight">Sin Apuestas Registradas</p>
+                        <p className="text-text-secondary font-medium text-sm mt-2">Los jugadores aún no han realizado ninguna apuesta.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-5">
+                      {apuestas
+                        .filter(b => b.mercado_id === 'combinada' || !b.mercado_id.startsWith('comb_'))
+                        .map(bet => {
+                          const isCombinada = bet.mercado_id === 'combinada';
+                          const children = isCombinada ? apuestas.filter(c => c.mercado_id === `comb_${bet.id}`) : [];
+
+                          return (
+                            <div key={bet.id} className="flex flex-col p-6 bg-surface-card dark:bg-surface-card rounded-[1.5rem] border border-border-default transition-all hover:shadow-md shadow-sm">
+                              <div className="flex justify-between items-start mb-5">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                  <span className="font-black text-text-primary text-xl tracking-tight">{bet.usuario?.nombre || 'Hooligan'}</span>
+                                  {isCombinada && (
+                                    <span className="px-3 py-1 text-[10px] font-black tracking-[0.15em] rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 uppercase">
+                                      Combinada
+                                    </span>
+                                  )}
+                                  {bet.partido?.rival && (
+                                    <span className="px-3 py-1 text-[10px] font-bold tracking-[0.1em] rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 uppercase">
+                                      vs {bet.partido.rival}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className={`px-4 py-1.5 text-[10px] font-black tracking-[0.15em] rounded-xl border uppercase ${bet.estado === 'pendiente' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30' : bet.estado === 'ganada' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30'}`}>
+                                  {bet.estado}
+                                </span>
+                              </div>
+                              <p className="text-base text-text-primary dark:text-text-secondary mb-5 font-bold">{bet.opcion_label}</p>
+                              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 bg-surface-card/50 dark:bg-surface-card/50 p-5 rounded-2xl border border-border-default">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                  <span className="text-text-secondary uppercase tracking-wider text-[10px] font-black">Apostado:</span>
+                                  <span className="text-text-primary dark:text-text-primary text-base"><span className="text-emerald-500 font-black">{bet.cantidad_apostada}</span> CP</span>
+                                  <span className="text-text-secondary text-xs mt-1 sm:mt-0 ml-0 sm:ml-2">{isCombinada ? `(Cuota Total: ${bet.cuota.toFixed(2)})` : `(Cuota: ${bet.cuota})`}</span>
+                                </div>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-right">
+                                  <span className="text-text-secondary uppercase tracking-wider text-[10px] font-black">Retorno:</span>
+                                  <span className="text-text-primary dark:text-text-primary text-base"><span className="text-emerald-500 font-black">{bet.ganancia_potencial.toFixed(2)}</span> CP</span>
+                                </div>
+                              </div>
+
+                              {!isCombinada && bet.estado === 'pendiente' && (
+                                <div className="flex flex-wrap items-center justify-end gap-3 mt-5 pt-5 border-t border-border-subtle">
+                                  <button onClick={() => validateBet(bet.id, 'ganada')} className="px-6 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black rounded-xl text-xs transition-colors border border-emerald-500/30 uppercase tracking-widest">✅ Ganada</button>
+                                  <button onClick={() => validateBet(bet.id, 'perdida')} className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-black rounded-xl text-xs transition-colors border border-red-500/30 uppercase tracking-widest">❌ Perdida</button>
+                                  <button onClick={() => validateBet(bet.id, 'nula')} className="px-6 py-2.5 bg-surface-card-hover hover:bg-surface-card-active dark:bg-surface-card/5 dark:hover:bg-surface-card/10 text-text-primary dark:text-text-secondary font-black rounded-xl text-xs transition-colors border border-border-default uppercase tracking-widest">➖ Nula</button>
+                                </div>
+                              )}
+
+                              {isCombinada && children.length > 0 && (
+                                <div className="mt-5 pl-5 border-l-2 border-emerald-500/30 space-y-3">
+                                  <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-3">Selecciones Combinadas ({children.length})</h4>
+                                  {children.map(child => (
+                                    <div key={child.id} className="flex justify-between items-center bg-surface-card/50 dark:bg-surface-card/50 p-4 rounded-2xl border border-border-default shadow-sm">
+                                      <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-text-primary dark:text-text-primary">{child.opcion_label}</span>
+                                        <span className="text-xs font-black text-emerald-500 mt-1">Cuota: {child.cuota}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {child.estado !== 'pendiente' ? (
+                                          <span className={`px-3 py-1.5 text-[10px] font-black tracking-[0.1em] rounded-xl uppercase ${child.estado === 'ganada' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30'}`}>
+                                            {child.estado}
+                                          </span>
+                                        ) : bet.estado !== 'pendiente' ? null : (
+                                          <div className="flex gap-2">
+                                            <button onClick={() => validateBet(child.id, 'ganada')} className="p-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 rounded-xl transition-colors border border-emerald-500/30" title="Ganada">✅</button>
+                                            <button onClick={() => validateBet(child.id, 'perdida')} className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-xl transition-colors border border-red-500/30" title="Perdida">❌</button>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+              ) : activeTab === "usuarios" ? (
+                <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden transition-all duration-500 min-h-[500px]">
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-amber-500 via-yellow-400 to-transparent opacity-50" />
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 border-b border-border-subtle pb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                          <Users className="text-amber-500 h-6 w-6 shrink-0" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black text-text-primary tracking-tight">Gestión de Usuarios</h3>
+                        <p className="text-sm text-text-secondary mt-1 font-medium">Control de accesos y CubiertasPoints.</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setShowCreateUser(!showCreateUser)}
+                      className={`px-5 py-3 rounded-xl font-black transition-all shadow-sm flex items-center gap-2 text-xs uppercase tracking-widest shrink-0 ${showCreateUser ? 'bg-surface-card-hover text-text-primary border border-border-default' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'}`}
+                    >
+                      <UserPlus className="w-4 h-4" /> {showCreateUser ? 'Cancelar' : 'Crear Usuario'}
+                    </button>
+                  </div>
+
+                  {/* Create User Form */}
+                  {showCreateUser && (
+                    <div className="mb-8 p-6 bg-surface-card/50 dark:bg-surface-card/50 rounded-2xl border border-amber-500/20 shadow-sm animate-in slide-in-from-top-2 fade-in">
+                      <h4 className="text-sm font-black text-text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-amber-500" /> Nuevo Usuario
+                      </h4>
+                      <form onSubmit={handleCreateUser} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Nombre</label>
+                          <input required type="text" value={newUser.nombre} onChange={e => setNewUser({...newUser, nombre: e.target.value})} className="w-full bg-surface-card border border-border-subtle rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="Mario García" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Email</label>
+                          <input required type="email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} className="w-full bg-surface-card border border-border-subtle rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="mario@ejemplo.com" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Contraseña</label>
+                          <input required type="password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} className="w-full bg-surface-card border border-border-subtle rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary placeholder:text-text-muted focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="••••••••" minLength={6} />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Rol</label>
+                          <select value={newUser.rol} onChange={e => setNewUser({...newUser, rol: e.target.value, jugador_id: e.target.value === 'equipo' ? newUser.jugador_id : ''})} className="w-full bg-surface-card border border-border-subtle rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                            <option value="espectador">Espectador</option>
+                            <option value="equipo">Equipo (Plantilla)</option>
+                            <option value="admin">Administrador</option>
+                          </select>
+                        </div>
+                        {newUser.rol === 'equipo' && (
+                          <div className="sm:col-span-2">
+                            <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Vincular con Jugador</label>
+                            <select value={newUser.jugador_id || ''} onChange={e => setNewUser({...newUser, jugador_id: e.target.value})} className="w-full bg-surface-card border border-border-subtle rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                              <option value="">-- No vincular a ningún jugador --</option>
+                              {players.map(p => (
+                                <option key={p.id} value={p.id}>{p.nombre} (#{p.dorsal})</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                        <div className="sm:col-span-2 flex justify-end mt-2">
+                          <button type="submit" disabled={isCreatingUser} className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-amber-500/20 text-xs uppercase tracking-widest disabled:opacity-50 flex items-center gap-2">
+                            {isCreatingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            Crear Cuenta
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+
+                  {loadingAdminUsers ? (
+                    <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)] h-10 w-10" /></div>
+                  ) : adminUsers.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center bg-surface-card/50 dark:bg-surface-card/50 rounded-[2rem] border border-dashed border-border-default">
+                        <Users className="h-10 w-10 text-amber-500/40 mb-3" />
+                        <p className="text-text-primary font-black text-xl tracking-tight">No hay usuarios</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {adminUsers.map(u => (
+                        <div key={u.id} className="relative">
+                          {editingUser?.id === u.id ? (
+                            <form onSubmit={handleUpdateUser} className="bg-surface-card dark:bg-surface-card/80 p-5 rounded-2xl border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 gap-4 grid grid-cols-1 sm:grid-cols-2">
+                              <div className="col-span-1 sm:col-span-2 flex justify-between items-center mb-2">
+                                <h4 className="text-sm font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                                  <Pencil className="w-4 h-4" /> Editando {u.nombre}
+                                </h4>
+                                <button type="button" onClick={() => setEditingUser(null)} className="p-1.5 text-text-muted hover:text-text-primary bg-surface-card-hover rounded-lg transition-colors">
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Nombre</label>
+                                <input required type="text" value={editingUser.nombre} onChange={e => setEditingUser({...editingUser, nombre: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Email</label>
+                                <input required type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Nueva Contraseña (Opcional)</label>
+                                <input type="password" value={editingUser.password || ''} onChange={e => setEditingUser({...editingUser, password: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="Dejar en blanco para no cambiar" minLength={6} />
+                              </div>
+                              <div className="flex gap-3">
+                                <div className="flex-1">
+                                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Rol</label>
+                                  <select value={editingUser.rol} onChange={e => setEditingUser({...editingUser, rol: e.target.value, jugador_id: e.target.value === 'equipo' ? editingUser.jugador_id : null})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                                    <option value="espectador">Espectador</option>
+                                    <option value="equipo">Equipo (Plantilla)</option>
+                                    <option value="admin">Administrador</option>
+                                  </select>
+                                </div>
+                                <div className="w-32">
+                                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Saldo CP</label>
+                                  <input type="number" value={editingUser.saldo_cubiertaspoints} onChange={e => setEditingUser({...editingUser, saldo_cubiertaspoints: Number(e.target.value)})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-bold text-emerald-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" />
+                                </div>
+                              </div>
+                              {editingUser.rol === 'equipo' && (
+                                <div className="col-span-1 sm:col-span-2">
+                                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Vincular con Jugador</label>
+                                  <select value={editingUser.jugador_id || ''} onChange={e => setEditingUser({...editingUser, jugador_id: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none cursor-pointer">
+                                    <option value="">-- No vincular a ningún jugador --</option>
+                                    {players.map(p => (
+                                      <option key={p.id} value={p.id}>{p.nombre} (#{p.dorsal})</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+
+                              <div className="col-span-1 sm:col-span-2 flex justify-end mt-2">
+                                <button type="submit" disabled={isUpdatingUser} className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-amber-500/20 text-xs uppercase tracking-widest disabled:opacity-50 flex items-center gap-2">
+                                  {isUpdatingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                  Guardar Cambios
+                                </button>
+                              </div>
+                            </form>
+                          ) : (
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-surface-card/50 dark:bg-surface-card/50 p-4 rounded-2xl border border-border-default shadow-sm gap-4 transition-all hover:bg-surface-card/80">
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
+                                  {u.nombre ? u.nombre.charAt(0).toUpperCase() : 'U'}
+                                </div>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="text-sm font-bold text-text-primary">{u.nombre || 'Usuario'}</span>
+                                    <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-md ${u.rol === 'admin' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : u.rol === 'equipo' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-surface-card-hover text-text-secondary border border-border-default'}`}>{u.rol || 'espectador'}</span>
+                                    {u.jugador_id && (
+                                      <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                        Jugador Vinculado
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-text-secondary">{u.email}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                                <div className="flex items-center gap-4 justify-between w-full sm:w-auto mt-2 sm:mt-0">
+                                  <div className="flex flex-col items-start sm:items-end">
+                                    <span className="text-[10px] text-text-secondary uppercase font-bold">Saldo</span>
+                                    <span className="text-sm font-black text-emerald-500">{u.saldo_cubiertaspoints} CP</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => handleResetPoints(u.id, u.nombre || 'Usuario')}
+                                      className="bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-text-secondary border border-border-default px-2.5 py-2.5 rounded-xl transition-all shadow-sm"
+                                      title="Resetear Saldo a 1000"
+                                    >
+                                      <RotateCcw className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => setEditingUser({...u, password: ''})}
+                                      className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 px-2.5 py-2.5 rounded-xl transition-all shadow-sm"
+                                      title="Editar Usuario"
+                                    >
+                                      <Pencil className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteUser(u.id, u.nombre || 'Usuario')}
+                                      className="bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 px-2.5 py-2.5 rounded-xl transition-all shadow-sm"
+                                      title="Borrar Usuario"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : activeTab === "galeria" ? (
                 <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden transition-all duration-500 flex flex-col h-full min-h-[500px]">
                   <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-purple-500 via-pink-400 to-transparent opacity-50" />
 
@@ -694,14 +1114,14 @@ export default function AdminPanel() {
                         {players.map((p) => {
                           const goalsAssigned = scorerCounts[p.id] || 0;
                           return (
-                            <div key={p.id} className={`flex items-center justify-between p-5 rounded-2xl transition-all duration-300 ${goalsAssigned > 0 ? "bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/30 shadow-[0_8px_20px_rgb(16,185,129,0.1)] scale-[1.02]" : "bg-surface-card dark:bg-surface-card hover:bg-surface-card-hover dark:hover:bg-surface-card-hover border border-border-default shadow-sm"}`}>
-                              <div className="flex items-center gap-5">
-                                <span className={`flex items-center justify-center w-12 h-12 rounded-full text-lg font-black shadow-inner ${goalsAssigned > 0 ? "bg-emerald-500 text-white" : "bg-surface-card/50 dark:bg-surface-card/5 text-text-primary dark:text-text-primary/80"}`}>
+                            <div key={p.id} className={`flex items-center justify-between gap-2 p-3 sm:p-5 rounded-2xl transition-all duration-300 ${goalsAssigned > 0 ? "bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/30 shadow-[0_8px_20px_rgb(16,185,129,0.1)] scale-[1.02]" : "bg-surface-card dark:bg-surface-card hover:bg-surface-card-hover dark:hover:bg-surface-card-hover border border-border-default shadow-sm"}`}>
+                              <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+                                <span className={`flex shrink-0 items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full text-base sm:text-lg font-black shadow-inner ${goalsAssigned > 0 ? "bg-emerald-500 text-white" : "bg-surface-card/50 dark:bg-surface-card/5 text-text-primary dark:text-text-primary/80"}`}>
                                   {p.dorsal}
                                 </span>
-                                <div>
-                                  <p className={`font-black tracking-tight text-lg ${goalsAssigned > 0 ? "text-text-primary dark:text-text-primary" : "text-text-primary dark:text-text-secondary"}`}>{p.nombre}</p>
-                                  <p className="text-xs text-text-secondary dark:text-text-secondary font-bold uppercase tracking-[0.2em] mt-1">{p.posicion}</p>
+                                <div className="min-w-0">
+                                  <p className={`font-black tracking-tight text-base sm:text-lg truncate ${goalsAssigned > 0 ? "text-text-primary dark:text-text-primary" : "text-text-primary dark:text-text-secondary"}`}>{p.nombre}</p>
+                                  <p className="text-[10px] sm:text-xs text-text-secondary dark:text-text-secondary font-bold uppercase tracking-[0.2em] mt-1 truncate">{p.posicion}</p>
                                 </div>
                               </div>
 
@@ -709,15 +1129,15 @@ export default function AdminPanel() {
                                 <button
                                   onClick={() => updateScorer(p.id, -1)}
                                   disabled={goalsAssigned === 0}
-                                  className="px-5 py-3 rounded-lg hover:bg-surface-card dark:hover:bg-surface-card/5 disabled:opacity-30 disabled:hover:bg-transparent text-text-secondary dark:text-text-secondary transition-colors focus:outline-none font-black text-xl"
+                                  className="px-3 sm:px-5 py-2 sm:py-3 rounded-lg hover:bg-surface-card dark:hover:bg-surface-card/5 disabled:opacity-30 disabled:hover:bg-transparent text-text-secondary dark:text-text-secondary transition-colors focus:outline-none font-black text-lg sm:text-xl"
                                 >-</button>
-                                <span className={`w-12 text-center font-black text-2xl ${goalsAssigned > 0 ? "text-emerald-500" : "text-text-secondary dark:text-text-secondary"}`}>
+                                <span className={`w-8 sm:w-12 text-center font-black text-xl sm:text-2xl ${goalsAssigned > 0 ? "text-emerald-500" : "text-text-secondary dark:text-text-secondary"}`}>
                                   {goalsAssigned > 0 ? goalsAssigned : "0"}
                                 </span>
                                 <button
                                   onClick={() => updateScorer(p.id, 1)}
                                   disabled={missingScorers === 0}
-                                  className="px-5 py-3 rounded-lg hover:bg-surface-card dark:hover:bg-surface-card/5 disabled:opacity-30 disabled:hover:bg-transparent text-text-secondary dark:text-text-secondary transition-colors focus:outline-none font-black text-xl"
+                                  className="px-3 sm:px-5 py-2 sm:py-3 rounded-lg hover:bg-surface-card dark:hover:bg-surface-card/5 disabled:opacity-30 disabled:hover:bg-transparent text-text-secondary dark:text-text-secondary transition-colors focus:outline-none font-black text-lg sm:text-xl"
                                 >+</button>
                               </div>
                             </div>
@@ -772,14 +1192,14 @@ export default function AdminPanel() {
                           if (!rsvp) return null;
 
                           return (
-                            <div key={p.id} className="flex items-center justify-between p-5 bg-surface-card dark:bg-surface-card rounded-2xl border border-border-default transition-all hover:bg-surface-card-hover dark:hover:bg-surface-card-hover hover:shadow-md shadow-sm">
-                              <div className="flex items-center gap-5">
-                                <span className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-black shadow-inner bg-surface-card/50 dark:bg-surface-card/5 text-text-primary dark:text-text-primary/80">
+                            <div key={p.id} className="flex items-center justify-between gap-2 p-3 sm:p-5 bg-surface-card dark:bg-surface-card rounded-2xl border border-border-default transition-all hover:bg-surface-card-hover dark:hover:bg-surface-card-hover hover:shadow-md shadow-sm">
+                              <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+                                <span className="flex shrink-0 items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full text-base sm:text-lg font-black shadow-inner bg-surface-card/50 dark:bg-surface-card/5 text-text-primary dark:text-text-primary/80">
                                   {p.dorsal}
                                 </span>
-                                <div>
-                                  <p className="font-black text-text-primary text-lg tracking-tight">{p.nombre}</p>
-                                  <p className="text-xs text-text-secondary font-bold uppercase tracking-[0.2em] mt-1">{p.posicion}</p>
+                                <div className="min-w-0">
+                                  <p className="font-black text-text-primary text-base sm:text-lg tracking-tight truncate">{p.nombre}</p>
+                                  <p className="text-[10px] sm:text-xs text-text-secondary font-bold uppercase tracking-[0.2em] mt-1 truncate">{p.posicion}</p>
                                 </div>
                               </div>
 
@@ -807,108 +1227,6 @@ export default function AdminPanel() {
                             ))}
                             </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ) : activeTab === "apuestas" ? (
-                  <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden transition-all duration-500 min-h-[500px]">
-                    <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-emerald-500 via-teal-400 to-transparent opacity-50" />
-
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 border-b border-border-subtle pb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                            <CircleDollarSign className="text-emerald-500 h-6 w-6 shrink-0" />
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-black text-text-primary tracking-tight">Registro de Apuestas</h3>
-                          <p className="text-sm text-text-secondary mt-1 font-medium">Centro de control de apuestas de la liga.</p>
-                        </div>
-                      </div>
-                      <button onClick={handleResetPoints} className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-5 py-3 rounded-2xl font-black transition-all shadow-sm flex items-center gap-2 text-xs uppercase tracking-widest shrink-0">
-                        <RotateCcw className="w-4 h-4" /> Reset Puntos
-                      </button>
-                    </div>
-
-                    {loadingApuestas ? (
-                      <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] h-10 w-10" /></div>
-                    ) : apuestas.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-24 text-center bg-surface-card/50 dark:bg-surface-card/50 rounded-[2rem] border border-dashed border-border-default">
-                          <span className="text-5xl opacity-30 mb-4">💸</span>
-                          <p className="text-text-primary font-black text-xl tracking-tight">Sin Apuestas Registradas</p>
-                          <p className="text-text-secondary font-medium text-sm mt-2">Los jugadores aún no han realizado ninguna apuesta en este partido.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-5">
-                        {apuestas
-                          .filter(b => b.mercado_id === 'combinada' || !b.mercado_id.startsWith('comb_'))
-                          .map(bet => {
-                            const isCombinada = bet.mercado_id === 'combinada';
-                            const children = isCombinada ? apuestas.filter(c => c.mercado_id === `comb_${bet.id}`) : [];
-
-                            return (
-                              <div key={bet.id} className="flex flex-col p-6 bg-surface-card dark:bg-surface-card rounded-[1.5rem] border border-border-default transition-all hover:shadow-md shadow-sm">
-                                <div className="flex justify-between items-start mb-5">
-                                  <div className="flex items-center gap-3 flex-wrap">
-                                    <span className="font-black text-text-primary text-xl tracking-tight">{bet.usuario?.nombre || 'Hooligan'}</span>
-                                    {isCombinada && (
-                                      <span className="px-3 py-1 text-[10px] font-black tracking-[0.15em] rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 uppercase">
-                                        Combinada
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className={`px-4 py-1.5 text-[10px] font-black tracking-[0.15em] rounded-xl border uppercase ${bet.estado === 'pendiente' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30' : bet.estado === 'ganada' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30'}`}>
-                                    {bet.estado}
-                                  </span>
-                                </div>
-                                <p className="text-base text-text-primary dark:text-text-secondary mb-5 font-bold">{bet.opcion_label}</p>
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 bg-surface-card/50 dark:bg-surface-card/50 p-5 rounded-2xl border border-border-default">
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                    <span className="text-text-secondary uppercase tracking-wider text-[10px] font-black">Apostado:</span>
-                                    <span className="text-text-primary dark:text-text-primary text-base"><span className="text-emerald-500 font-black">{bet.cantidad_apostada}</span> CP</span>
-                                    <span className="text-text-secondary text-xs mt-1 sm:mt-0 ml-0 sm:ml-2">{isCombinada ? `(Cuota Total: ${bet.cuota.toFixed(2)})` : `(Cuota: ${bet.cuota})`}</span>
-                                  </div>
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-right">
-                                    <span className="text-text-secondary uppercase tracking-wider text-[10px] font-black">Retorno:</span>
-                                    <span className="text-text-primary dark:text-text-primary text-base"><span className="text-emerald-500 font-black">{bet.ganancia_potencial.toFixed(2)}</span> CP</span>
-                                  </div>
-                                </div>
-
-                                {!isCombinada && bet.estado === 'pendiente' && (
-                                  <div className="flex flex-wrap items-center justify-end gap-3 mt-5 pt-5 border-t border-border-subtle">
-                                    <button onClick={() => validateBet(bet.id, 'ganada')} className="px-6 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black rounded-xl text-xs transition-colors border border-emerald-500/30 uppercase tracking-widest">✅ Ganada</button>
-                                    <button onClick={() => validateBet(bet.id, 'perdida')} className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-black rounded-xl text-xs transition-colors border border-red-500/30 uppercase tracking-widest">❌ Perdida</button>
-                                    <button onClick={() => validateBet(bet.id, 'nula')} className="px-6 py-2.5 bg-surface-card-hover hover:bg-surface-card-active dark:bg-surface-card/5 dark:hover:bg-surface-card/10 text-text-primary dark:text-text-secondary font-black rounded-xl text-xs transition-colors border border-border-default uppercase tracking-widest">➖ Nula</button>
-                                  </div>
-                                )}
-
-                                {isCombinada && children.length > 0 && (
-                                  <div className="mt-5 pl-5 border-l-2 border-emerald-500/30 space-y-3">
-                                    <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-3">Selecciones Combinadas ({children.length})</h4>
-                                    {children.map(child => (
-                                      <div key={child.id} className="flex justify-between items-center bg-surface-card/50 dark:bg-surface-card/50 p-4 rounded-2xl border border-border-default shadow-sm">
-                                        <div className="flex flex-col">
-                                          <span className="text-sm font-bold text-text-primary dark:text-text-primary">{child.opcion_label}</span>
-                                          <span className="text-xs font-black text-emerald-500 mt-1">Cuota: {child.cuota}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                          {child.estado !== 'pendiente' ? (
-                                            <span className={`px-3 py-1.5 text-[10px] font-black tracking-[0.1em] rounded-xl uppercase ${child.estado === 'ganada' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30'}`}>
-                                              {child.estado}
-                                            </span>
-                                          ) : bet.estado !== 'pendiente' ? null : (
-                                            <div className="flex gap-2">
-                                              <button onClick={() => validateBet(child.id, 'ganada')} className="p-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 rounded-xl transition-colors border border-emerald-500/30" title="Ganada">✅</button>
-                                              <button onClick={() => validateBet(child.id, 'perdida')} className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-xl transition-colors border border-red-500/30" title="Perdida">❌</button>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
                       </div>
                     )}
                   </div>

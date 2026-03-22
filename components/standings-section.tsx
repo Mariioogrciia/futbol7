@@ -37,7 +37,7 @@ export function StandingsSection() {
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div>
-              <h2 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
+              <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
                 Tabla de<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-300">
                   Posiciones

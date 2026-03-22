@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     const { data: userData, error: dbError } = await supabaseAdmin
       .from('usuarios')
-      .select('*')
+      .select('nombre, rol, avatar_url')
       .eq('id', user.id)
       .single();
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       valid: true,
-      user: { id: user.id, email: user.email, nombre: userData.nombre, rol: userData.rol },
+      user: { id: user.id, email: user.email, nombre: userData.nombre, rol: userData.rol, avatar_url: userData.avatar_url },
     });
   } catch {
     return NextResponse.json({ valid: false }, { status: 500 });

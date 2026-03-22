@@ -812,8 +812,8 @@ export default function ImpersedBetPage() {
                 </div>
 
                 {/* --- RIGHT DESKTOP / BET SLIP SIDEBAR --- */}
-                <div className="hidden lg:block w-[30%] min-w-[320px] max-w-[400px] border-l border-border-subtle bg-surface-card/50 p-6 flex flex-col h-[calc(100vh-136px)] sticky top-[136px] transition-colors">
-                    <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border-subtle transition-colors">
+                <div className="hidden lg:flex w-[30%] min-w-[320px] max-w-[400px] border-l border-border-subtle bg-surface-card/50 p-6 flex-col h-[calc(100vh-136px)] sticky top-[136px] overflow-hidden transition-colors">
+                    <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border-subtle transition-colors shrink-0">
                         <div className="relative">
                             <PlayCircle className="w-6 h-6 text-emerald-500" />
                             {betSlip.length > 0 && (
@@ -831,7 +831,7 @@ export default function ImpersedBetPage() {
                     </div>
                     
                     {/* Bet Mode Toggle */}
-                    <div className="flex bg-bg-secondary border border-border-subtle p-1 rounded-lg mb-4">
+                    <div className="flex bg-bg-secondary border border-border-subtle p-1 rounded-lg mb-4 shrink-0">
                         <button onClick={() => setBetMode('individual')} className={`flex-1 text-sm font-bold py-1.5 rounded-md transition-all ${betMode === 'individual' ? 'bg-surface-card text-text-primary shadow-sm' : 'text-text-secondary'}`}>Sencilla</button>
                         <button onClick={() => setBetMode('combinada')} className={`flex-1 text-sm font-bold py-1.5 rounded-md transition-all ${betMode === 'combinada' ? 'bg-surface-card text-text-primary shadow-sm' : 'text-text-secondary'}`}>Combinada</button>
                     </div>
@@ -862,7 +862,7 @@ export default function ImpersedBetPage() {
                                         exit={{ opacity: 0, x: -20, scale: 0.95 }}
                                         transition={{ duration: 0.2 }}
                                         key={bet.id}
-                                        className="bg-bg-secondary border border-border-subtle rounded-lg p-3 group relative transition-colors shadow-sm dark:shadow-none"
+                                        className="bg-bg-secondary border border-border-subtle rounded-lg p-3 group relative transition-colors shadow-sm dark:shadow-none shrink-0"
                                     >
                                         <button
                                             onClick={() => removeSelection(bet.id)}
@@ -892,7 +892,7 @@ export default function ImpersedBetPage() {
                                             ) : (
                                                 <div className="flex-1"></div>
                                             )}
-                                            <div className="flex flex-col items-end">
+                                            <div className="flex flex-col items-end shrink-0">
                                                 <span className="text-xs text-slate-500 dark:text-zinc-500 font-medium">Cuota</span>
                                                 <span className="font-black text-emerald-600 dark:text-emerald-400">{bet.odd.toFixed(2)}</span>
                                             </div>
@@ -904,7 +904,7 @@ export default function ImpersedBetPage() {
                     </div>
 
                     {/* Summary Footer */}
-                    <div className="pt-4 border-t border-border-subtle space-y-3 transition-all">
+                    <div className="pt-4 border-t border-border-subtle space-y-3 transition-all shrink-0">
                         
                         {betMode === 'combinada' && betSlip.length > 0 && (
                             <div className="bg-emerald-500/5 dark:bg-emerald-500/10 rounded-xl p-3.5 border border-emerald-500/20 shadow-sm">

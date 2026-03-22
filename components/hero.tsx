@@ -111,7 +111,7 @@ export function Hero() {
                                     </div>
 
                                     {/* Headline */}
-                                    <h1 className="text-5xl font-black leading-[0.95] tracking-tighter text-white drop-shadow-2xl sm:text-6xl lg:text-7xl">
+                                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[0.95] tracking-tighter text-white drop-shadow-2xl">
                                         La pasión por el{" "}
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400">
                                             fútbol
@@ -149,7 +149,7 @@ export function Hero() {
                                 </div>
 
                                 {/* Right: stats grid */}
-                                <div className="grid grid-cols-2 gap-3 lg:gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
                                     {quickStats.map((stat, i) => (
                                         <motion.div
                                             key={stat.label}
@@ -189,7 +189,7 @@ export function Hero() {
                                     </div>
 
                                     {/* Headline */}
-                                    <h2 className="text-5xl font-black leading-[0.95] tracking-tighter text-white sm:text-6xl lg:text-7xl">
+                                    <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[0.95] tracking-tighter text-white">
                                         La Piel de{" "}
                                         <span className={cn(
                                             "text-transparent bg-clip-text bg-gradient-to-r transition-all duration-700",

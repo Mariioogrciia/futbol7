@@ -106,7 +106,7 @@ function NextMatchCard({ match }: { match: Match }) {
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-10">
               <div className="flex flex-col">
                 <span className="text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-2">Local</span>
-                <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">
+                <span className="text-3xl sm:text-4xl lg:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">
                   Impersed<br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Cubiertas</span>
                 </span>
@@ -118,7 +118,7 @@ function NextMatchCard({ match }: { match: Match }) {
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-black tracking-[0.15em] uppercase text-text-muted mb-2">Rival</span>
-                <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">{match.rival}</span>
+                <span className="text-3xl sm:text-4xl lg:text-6xl font-black text-text-primary tracking-tight leading-[0.9] text-balance">{match.rival}</span>
               </div>
             </div>
 
@@ -329,9 +329,9 @@ function MatchCard({ match, index, isAdmin, jugadores, goleadores }: { match: Ma
               {/* Left: teams + meta */}
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-4">
-                  <span className="text-xl sm:text-2xl font-black text-text-primary tracking-tight">Impersed Cubiertas</span>
+                  <span className="text-lg sm:text-xl lg:text-2xl font-black text-text-primary tracking-tight">Impersed Cubiertas</span>
                   <span className="text-sm text-text-muted font-black shrink-0">VS</span>
-                  <span className="text-xl sm:text-2xl font-black text-text-primary tracking-tight break-words">{match.rival}</span>
+                  <span className="text-lg sm:text-xl lg:text-2xl font-black text-text-primary tracking-tight break-words">{match.rival}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-4">
@@ -364,7 +364,7 @@ function MatchCard({ match, index, isAdmin, jugadores, goleadores }: { match: Ma
               {/* Right: score + edit */}
               <div className="flex sm:flex-col items-center sm:items-end gap-3 shrink-0 w-full sm:w-auto">
                 {match.estado === "finalizado" && c && (
-                  <div className={cn("flex items-center gap-1.5 text-4xl font-black tabular-nums tracking-tight", c.scoreTxt)}>
+                  <div className={cn("flex items-center gap-1.5 text-3xl sm:text-4xl font-black tabular-nums tracking-tight", c.scoreTxt)}>
                     <span>{gf}</span>
                     <span className="text-text-muted/40 text-2xl">:</span>
                     <span>{ga}</span>
@@ -507,7 +507,7 @@ export function MatchesSection() {
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div>
-              <h2 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
+              <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
                 Calendario<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-300">
                   {activeFormat === "liga" ? "de Liga" : "de Copa"}
@@ -578,7 +578,7 @@ export function MatchesSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-10"
         >
-          <div className="inline-flex items-center gap-1 bg-bg-secondary border border-border-subtle rounded-2xl p-1.5 backdrop-blur-xl">
+          <div className="flex flex-wrap items-center justify-center gap-2 bg-bg-secondary border border-border-subtle rounded-2xl p-2 backdrop-blur-xl">
             {(["todos", "proximos", "jugados"] as const).map((filter) => (
               <button
                 key={filter}

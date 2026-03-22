@@ -264,7 +264,7 @@ export function TeamSection() {
             {/* Main title row */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
               <div>
-                <h2 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
+                <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-text-primary leading-[0.95]">
                   La<br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-400 dark:to-emerald-300">
                     Plantilla
@@ -294,7 +294,7 @@ export function TeamSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-12"
           >
-            <div className="inline-flex items-center gap-1 bg-surface-card/80 backdrop-blur-xl border border-border-subtle rounded-2xl p-1.5 shadow-soft">
+            <div className="flex flex-wrap items-center justify-center gap-2 bg-surface-card/80 backdrop-blur-xl border border-border-subtle rounded-2xl p-2 shadow-soft w-full md:w-auto">
               {positions.map((pos) => {
                 const isActive = active === pos;
                 return (
@@ -325,7 +325,7 @@ export function TeamSection() {
           </motion.div>
 
           {/* ── Player Grid ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
             {loading ? (
               <div className="col-span-full flex items-center justify-center py-24">
                 <div className="flex flex-col items-center gap-4">
@@ -369,7 +369,7 @@ export function TeamSection() {
               Los que dirigen desde la banda (o rellenan las botellas cuando toca).
             </p>
 
-            <div className="grid gap-5 sm:grid-cols-2 max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-2xl mx-auto sm:mx-0">
               {staff.map((member, i) => (
                 <StaffCard key={member.id} member={member} index={i} onPhotoClick={openLightbox} />
               ))}
