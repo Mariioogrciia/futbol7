@@ -25,7 +25,7 @@ const navLinks = [
   { label: "Goleadores", href: "/#goleadores" },
   { label: "Estadisticas", href: "/#estadisticas" },
   { label: "Galeria", href: "/#galeria" },
-  { label: "El Oráculo 🔮", href: "/porra" },
+  { label: "ImpersedBet", href: "/porra" },
 ];
 
 function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -222,7 +222,7 @@ function RegisterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 Únete al Equipo
               </h2>
               <p className="text-text-secondary">
-                Crea tu cuenta para participar en El Oráculo y más.
+                Crea tu cuenta para participar en ImpersedBet y más.
               </p>
             </div>
 
@@ -313,6 +313,14 @@ export function Header() {
   // Auth state
   const [user, setUser] = useState<any>(null);
 
+  // Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
   const router = useRouter();
 
   useEffect(() => {
@@ -367,10 +375,18 @@ export function Header() {
     }
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    window.location.reload();
+  const handleLogout = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Cerrar Sesión',
+      message: '¿Estás seguro de que quieres salir?',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        await supabase.auth.signOut();
+        setUser(null);
+        window.location.reload();
+      }
+    });
   };
 
   return (
@@ -442,16 +458,8 @@ export function Header() {
                       <DropdownMenuItem onClick={() => window.open('/jugador', '_blank')} className="cursor-pointer">
                         Asistencia
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => window.location.href = '/porra'} className="cursor-pointer font-bold text-fuchsia-500">
-                        El Oráculo 🔮
-                      </DropdownMenuItem>
                     </>
-                  ) : (
-                    <DropdownMenuItem onClick={() => window.location.href = '/porra'} className="cursor-pointer font-bold text-fuchsia-500">
-                      El Oráculo 🔮
-                    </DropdownMenuItem>
-                  )}
+                  ) : null}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500 focus:text-red-500">
                     Cerrar sesión
@@ -563,15 +571,6 @@ export function Header() {
                       Asistencia
                     </button>
                     <button
-                      onClick={() => {
-                        setMobileOpen(false);
-                        window.location.href = '/porra';
-                      }}
-                      className="rounded-md px-3 py-3 text-base font-bold text-fuchsia-500 transition-colors hover:text-fuchsia-400 hover:bg-secondary text-left flex items-center gap-2"
-                    >
-                      El Oráculo 🔮
-                    </button>
-                    <button
                       onClick={handleLogout}
                       className="rounded-md px-3 py-3 text-base font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary text-left"
                     >
@@ -589,15 +588,6 @@ export function Header() {
                       className="rounded-md px-3 py-3 text-base font-bold text-accent-primary transition-colors hover:text-accent-primary-hover hover:bg-secondary text-left flex items-center gap-2"
                     >
                       Mi Perfil
-                    </button>
-                    <button
-                      onClick={() => {
-                        setMobileOpen(false);
-                        window.location.href = '/porra';
-                      }}
-                      className="rounded-md px-3 py-3 text-base font-bold text-fuchsia-500 transition-colors hover:text-fuchsia-400 hover:bg-secondary text-left flex items-center gap-2"
-                    >
-                      El Oráculo 🔮
                     </button>
                     <button
                       onClick={handleLogout}
@@ -627,6 +617,33 @@ export function Header() {
 
       <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
       <RegisterModal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} />
+
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-surface-card border border-border-default rounded-2xl p-6 max-w-sm w-full shadow-elevated animate-in zoom-in-95 duration-200">
+            <h4 className="text-base font-bold text-text-primary tracking-tight mb-2">
+              {confirmModal.title}
+            </h4>
+            <p className="text-sm text-text-secondary leading-relaxed mb-6">
+              {confirmModal.message}
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="flex-1 bg-surface-card-hover hover:bg-surface-card-active text-text-primary font-bold py-2.5 rounded-xl border border-border-default transition-colors text-sm"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={confirmModal.onConfirm}
+                className="flex-1 bg-accent-primary hover:bg-accent-primary-hover text-accent-contrast font-bold py-2.5 rounded-xl transition-all shadow-md text-sm"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

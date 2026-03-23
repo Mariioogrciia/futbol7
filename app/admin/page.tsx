@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, AlertCircle, CheckCircle2, ChevronDown, Trophy, Users, Loader2, CalendarHeart, ImagePlus, UploadCloud, CircleDollarSign, RotateCcw, UserPlus, Pencil, Trash2, X } from "lucide-react";
+import { Save, AlertCircle, CheckCircle2, ChevronDown, Trophy, Users, Loader2, CalendarHeart, ImagePlus, UploadCloud, CircleDollarSign, RotateCcw, UserPlus, Pencil, Trash2, X, Coins } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -77,6 +77,19 @@ export default function AdminPanel() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedBetId, setExpandedBetId] = useState<string | null>(null);
 
+  // New Usuarios States
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userFilterRole, setUserFilterRole] = useState<'all' | 'admin' | 'equipo' | 'espectador'>('all');
+
+  // Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type?: 'danger' | 'warning';
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -123,9 +136,18 @@ export default function AdminPanel() {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
+  const handleLogout = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Cerrar Sesión',
+      message: '¿Estás seguro de que quieres salir del panel de administración?',
+      type: 'warning',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        await supabase.auth.signOut();
+        router.push("/");
+      }
+    });
   };
 
   const handleMatchSelect = (matchId: string) => {
@@ -286,20 +308,28 @@ export default function AdminPanel() {
   };
 
   const handleResetPoints = async (userId: string, currentName: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres restablecer los CubiertasPoints a 1000 para el usuario ${currentName}?`)) return;
-    try {
-      const res = await fetch('/api/admin/usuarios/reset-points', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuario_id: userId, cantidad: 1000 })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al restablecer puntos');
-      showToast(data.message, 'success');
-      fetchAdminUsers();
-    } catch (e: any) {
-      showToast(e.message, 'error');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Restablecer Puntos',
+      message: `¿Estás seguro de que quieres restablecer los CubiertasPoints a 1000 para el usuario ${currentName}?`,
+      type: 'warning',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await fetch('/api/admin/usuarios/reset-points', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_id: userId, cantidad: 1000 })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Error al restablecer puntos');
+          showToast(data.message, 'success');
+          fetchAdminUsers();
+        } catch (e: any) {
+          showToast(e.message, 'error');
+        }
+      }
+    });
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -326,16 +356,24 @@ export default function AdminPanel() {
   };
 
   const handleDeleteUser = async (userId: string, currentName: string) => {
-    if (!window.confirm(`¿Estás súper seguro de que quieres BORRAR DEFINITIVAMENTE al usuario ${currentName}? Esto eliminará su cuenta, acceso y todo su historial.`)) return;
-    try {
-      const res = await fetch(`/api/admin/usuarios/borrar?id=${userId}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al borrar usuario');
-      showToast(data.message, 'success');
-      fetchAdminUsers();
-    } catch (e: any) {
-      showToast(e.message, 'error');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Borrar Usuario',
+      message: `¿Estás súper seguro de que quieres BORRAR DEFINITIVAMENTE al usuario ${currentName}? Esto eliminará su cuenta, acceso y todo su historial.`,
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await fetch(`/api/admin/usuarios/borrar?id=${userId}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Error al borrar usuario');
+          showToast(data.message, 'success');
+          fetchAdminUsers();
+        } catch (e: any) {
+          showToast(e.message, 'error');
+        }
+      }
+    });
   };
 
   const handleUpdateUser = async (e: React.FormEvent) => {
@@ -624,62 +662,64 @@ export default function AdminPanel() {
               )}
 
               {/* Score Inputs (Only visible if match selected and in Results tab) */}
-              {selectedMatch && activeTab === "resultados" && (
-                <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden transition-all duration-500 mt-6 lg:mt-0">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/[0.03] to-transparent pointer-events-none" />
-                  <h3 className="text-[10px] font-black text-text-secondary dark:text-emerald-500/70 uppercase tracking-[0.2em] mb-6 flex items-center gap-3 relative z-10">
-                    Control de Marcador
-                  </h3>
+              {selectedMatch && activeTab === "resultados" && (() => {
+                const match = matches.find(m => m.id === selectedMatch);
+                if (!match) return null;
 
-                  <div className="flex items-center justify-between gap-4 sm:gap-8 relative z-10 w-full">
-                    {/* Home (Us) */}
-                    <div className="flex-1 flex flex-col items-center min-w-0">
-                      <label className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 mb-4 text-center uppercase tracking-[0.2em] truncate w-full">Nosotros</label>
-                      <div className="flex items-center bg-surface-card dark:bg-surface-card border border-border-default rounded-[1.5rem] overflow-hidden shadow-inner w-full sm:w-auto p-1">
-                        <button
+                return (
+                  <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-6 lg:p-8 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden transition-all duration-500 mt-6 lg:mt-0">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/[0.03] to-transparent pointer-events-none" />
+                    <h4 className="text-[10px] font-black text-text-secondary dark:text-emerald-500/70 uppercase tracking-[0.2em] flex items-center gap-3 relative z-10">
+                      Control de Marcador
+                    </h4>
+
+                    {/* Fila Equipos (Top) */}
+                    <div className="flex justify-between items-center text-center relative z-10">
+                      <span className="flex-1 font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wide text-xs truncate pr-2">Nosotros</span>
+                      <span className="px-3 py-1 bg-surface-card-hover dark:bg-surface-card-hover border border-border-default rounded-full font-black text-[10px] text-text-secondary shrink-0">VS</span>
+                      <span className="flex-1 font-black text-text-primary uppercase tracking-wide text-xs truncate pl-2">{match.rival}</span>
+                    </div>
+
+                    {/* Fila Marcadores (Main) */}
+                    <div className="grid grid-cols-2 gap-4 items-center relative z-10">
+                      {/* Bloque Local */}
+                      <div className="flex items-center justify-between p-3 bg-bg-secondary/50 dark:bg-surface-card/30 rounded-2xl border border-border-subtle">
+                        <button 
                           onClick={() => { setGolesEquipo(prev => Math.max(0, prev - 1)); setScorerCounts({}); }}
-                          className="px-5 sm:px-6 py-4 rounded-xl hover:bg-emerald-500/10 text-text-secondary dark:text-text-secondary hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors active:bg-emerald-500/20 font-black text-xl"
+                          className="w-12 h-12 flex items-center justify-center bg-surface-card dark:bg-surface-card border border-border-default rounded-xl hover:bg-emerald-500/10 active:scale-95 transition-all text-xl font-black text-text-secondary hover:text-emerald-500"
                         >-</button>
-                        <input
-                          type="number"
-                          min="0"
-                          readOnly
-                          className="w-12 sm:w-20 bg-transparent text-center text-4xl sm:text-5xl font-black text-text-primary border-0 focus:ring-0 p-0"
-                          value={golesEquipo}
-                        />
-                        <button
-                          onClick={() => setGolesEquipo(prev => prev + 1)}
-                          className="px-5 sm:px-6 py-4 rounded-xl hover:bg-emerald-500/10 text-text-secondary dark:text-text-secondary hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors active:bg-emerald-500/20 font-black text-xl"
+                        <div className="text-5xl lg:text-6xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{golesEquipo}</div>
+                        <button 
+                          onClick={() => { setGolesEquipo(prev => prev + 1); setScorerCounts({}); }}
+                          className="w-12 h-12 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-zinc-950 rounded-xl active:scale-95 transition-all text-xl font-black"
                         >+</button>
                       </div>
-                    </div>
 
-                    <div className="text-xs border border-border-default rounded-full px-4 py-1.5 font-black text-text-secondary dark:text-text-secondary bg-surface-card/50 dark:bg-surface-card/50 tracking-widest shrink-0 shadow-sm relative top-4">VS</div>
-
-                    {/* Away (Rival) */}
-                    <div className="flex-1 flex flex-col items-center min-w-0">
-                      <label className="text-xs sm:text-sm font-black text-text-secondary dark:text-text-secondary mb-4 text-center uppercase tracking-[0.2em] truncate w-full">Rival</label>
-                      <div className="flex items-center bg-surface-card dark:bg-surface-card border border-border-default rounded-[1.5rem] overflow-hidden shadow-inner w-full sm:w-auto p-1">
-                        <button
+                      {/* Bloque Rival */}
+                      <div className="flex items-center justify-between p-3 bg-bg-secondary/50 dark:bg-surface-card/30 rounded-2xl border border-border-subtle">
+                        <button 
                           onClick={() => setGolesRival(prev => Math.max(0, prev - 1))}
-                          className="px-5 sm:px-6 py-4 rounded-xl hover:bg-surface-card-hover dark:hover:bg-surface-card-hover text-text-secondary dark:text-text-secondary hover:text-text-primary dark:hover:text-text-primary transition-colors active:bg-surface-card-active dark:active:bg-surface-card-active font-black text-xl"
+                          className="w-12 h-12 flex items-center justify-center bg-surface-card dark:bg-surface-card border border-border-default rounded-xl hover:bg-surface-card-hover active:scale-95 transition-all text-xl font-black text-text-secondary"
                         >-</button>
-                        <input
-                          type="number"
-                          min="0"
-                          readOnly
-                          className="w-14 sm:w-20 bg-transparent text-center text-5xl font-black text-text-primary border-0 focus:ring-0 p-0"
-                          value={golesRival}
-                        />
-                        <button
+                        <div className="text-5xl lg:text-6xl font-black text-text-primary font-mono">{golesRival}</div>
+                        <button 
                           onClick={() => setGolesRival(prev => prev + 1)}
-                          className="px-5 sm:px-6 py-4 rounded-xl hover:bg-surface-card-hover dark:hover:bg-surface-card-hover text-text-secondary dark:text-text-secondary hover:text-text-primary dark:hover:text-text-primary transition-colors active:bg-surface-card-active dark:active:bg-surface-card-active font-black text-xl"
+                          className="w-12 h-12 flex items-center justify-center bg-surface-card dark:bg-surface-card border border-border-default rounded-xl hover:bg-surface-card-hover active:scale-95 transition-all text-xl font-black text-text-primary"
                         >+</button>
                       </div>
                     </div>
+
+                    {/* Botón Guardar */}
+                    <button 
+                      onClick={() => handleLiveAction("update")}
+                      disabled={isLiveLoading}
+                      className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-zinc-950 font-black py-4 rounded-xl transition-all shadow-md shadow-emerald-500/10 flex items-center justify-center gap-2 relative z-10 text-sm uppercase tracking-wider"
+                    >
+                      {isLiveLoading ? 'Guardando...' : 'Guardar resultado'}
+                    </button>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* Right Column: Actions */}
@@ -903,6 +943,50 @@ export default function AdminPanel() {
                     </button>
                   </div>
 
+                  {/* Métricas Resumen */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    {[
+                      { 
+                        title: 'Total Usuarios', 
+                        value: adminUsers.length, 
+                        icon: Users, 
+                        color: 'from-amber-500 to-yellow-500', 
+                        bgColor: 'bg-amber-500/10 border-amber-500/20' 
+                      },
+                      { 
+                        title: 'Jugadores', 
+                        value: adminUsers.filter(u => u.rol === 'equipo').length, 
+                        icon: UserPlus, 
+                        color: 'from-blue-500 to-cyan-500', 
+                        bgColor: 'bg-blue-500/10 border-blue-500/20' 
+                      },
+                      { 
+                        title: 'Espectadores', 
+                        value: adminUsers.filter(u => u.rol === 'espectador').length, 
+                        icon: Users, 
+                        color: 'from-purple-500 to-pink-500', 
+                        bgColor: 'bg-purple-500/10 border-purple-500/20' 
+                      },
+                      { 
+                        title: 'Saldo CP Total', 
+                        value: `${adminUsers.reduce((sum, u) => sum + (u.saldo_cubiertaspoints || 0), 0)}`, 
+                        icon: Coins, 
+                        color: 'from-emerald-500 to-teal-500', 
+                        bgColor: 'bg-emerald-500/10 border-emerald-500/20' 
+                      }
+                    ].map((item, index) => (
+                      <div key={index} className={`p-4 rounded-2xl border ${item.bgColor} backdrop-blur-md flex items-center justify-between shadow-sm hover:shadow-md transition-all group`}>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black tracking-widest text-text-secondary uppercase">{item.title}</span>
+                          <span className={`text-xl font-black bg-gradient-to-r ${item.color} bg-clip-text text-transparent mt-1 group-hover:scale-105 transition-transform origin-left`}>{item.value}</span>
+                        </div>
+                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${item.color} shadow-md shadow-inner`}>
+                          <item.icon className="w-4 h-4 text-zinc-950" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
                   {/* Create User Form */}
                   {showCreateUser && (
                     <div className="mb-8 p-6 bg-surface-card/50 dark:bg-surface-card/50 rounded-2xl border border-amber-500/20 shadow-sm animate-in slide-in-from-top-2 fade-in">
@@ -951,131 +1035,177 @@ export default function AdminPanel() {
                     </div>
                   )}
 
-                  {loadingAdminUsers ? (
-                    <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)] h-10 w-10" /></div>
-                  ) : adminUsers.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 text-center bg-surface-card/50 dark:bg-surface-card/50 rounded-[2rem] border border-dashed border-border-default">
-                        <Users className="h-10 w-10 text-amber-500/40 mb-3" />
-                        <p className="text-text-primary font-black text-xl tracking-tight">No hay usuarios</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {adminUsers.map(u => (
-                        <div key={u.id} className="relative">
-                          {editingUser?.id === u.id ? (
-                            <form onSubmit={handleUpdateUser} className="bg-surface-card dark:bg-surface-card/80 p-5 rounded-2xl border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 gap-4 grid grid-cols-1 sm:grid-cols-2">
-                              <div className="col-span-1 sm:col-span-2 flex justify-between items-center mb-2">
-                                <h4 className="text-sm font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                                  <Pencil className="w-4 h-4" /> Editando {u.nombre}
-                                </h4>
-                                <button type="button" onClick={() => setEditingUser(null)} className="p-1.5 text-text-muted hover:text-text-primary bg-surface-card-hover rounded-lg transition-colors">
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-
-                              <div>
-                                <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Nombre</label>
-                                <input required type="text" value={editingUser.nombre} onChange={e => setEditingUser({...editingUser, nombre: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Email</label>
-                                <input required type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Nueva Contraseña (Opcional)</label>
-                                <input type="password" value={editingUser.password || ''} onChange={e => setEditingUser({...editingUser, password: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="Dejar en blanco para no cambiar" minLength={6} />
-                              </div>
-                              <div className="flex gap-3">
-                                <div className="flex-1">
-                                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Rol</label>
-                                  <select value={editingUser.rol} onChange={e => setEditingUser({...editingUser, rol: e.target.value, jugador_id: e.target.value === 'equipo' ? editingUser.jugador_id : null})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none cursor-pointer">
-                                    <option value="espectador">Espectador</option>
-                                    <option value="equipo">Equipo (Plantilla)</option>
-                                    <option value="admin">Administrador</option>
-                                  </select>
-                                </div>
-                                <div className="w-32">
-                                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Saldo CP</label>
-                                  <input type="number" value={editingUser.saldo_cubiertaspoints} onChange={e => setEditingUser({...editingUser, saldo_cubiertaspoints: Number(e.target.value)})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-bold text-emerald-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" />
-                                </div>
-                              </div>
-                              {editingUser.rol === 'equipo' && (
-                                <div className="col-span-1 sm:col-span-2">
-                                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1.5 ml-1">Vincular con Jugador</label>
-                                  <select value={editingUser.jugador_id || ''} onChange={e => setEditingUser({...editingUser, jugador_id: e.target.value})} className="w-full bg-bg-secondary border border-border-default rounded-xl px-4 py-2.5 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none cursor-pointer">
-                                    <option value="">-- No vincular a ningún jugador --</option>
-                                    {players.map(p => (
-                                      <option key={p.id} value={p.id}>{p.nombre} (#{p.dorsal})</option>
-                                    ))}
-                                  </select>
-                                </div>
-                              )}
-
-                              <div className="col-span-1 sm:col-span-2 flex justify-end mt-2">
-                                <button type="submit" disabled={isUpdatingUser} className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-amber-500/20 text-xs uppercase tracking-widest disabled:opacity-50 flex items-center gap-2">
-                                  {isUpdatingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                  Guardar Cambios
-                                </button>
-                              </div>
-                            </form>
-                          ) : (
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-surface-card/50 dark:bg-surface-card/50 p-4 rounded-2xl border border-border-default shadow-sm gap-4 transition-all hover:bg-surface-card/80">
-                              <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
-                                  {u.nombre ? u.nombre.charAt(0).toUpperCase() : 'U'}
-                                </div>
-                                <div className="flex flex-col">
-                                  <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-sm font-bold text-text-primary">{u.nombre || 'Usuario'}</span>
-                                    <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-md ${u.rol === 'admin' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : u.rol === 'equipo' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-surface-card-hover text-text-secondary border border-border-default'}`}>{u.rol || 'espectador'}</span>
-                                    {u.jugador_id && (
-                                      <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                                        Jugador Vinculado
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-xs text-text-secondary">{u.email}</span>
-                                </div>
-                              </div>
-                              
-                              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                                <div className="flex items-center gap-4 justify-between w-full sm:w-auto mt-2 sm:mt-0">
-                                  <div className="flex flex-col items-start sm:items-end">
-                                    <span className="text-[10px] text-text-secondary uppercase font-bold">Saldo</span>
-                                    <span className="text-sm font-black text-emerald-500">{u.saldo_cubiertaspoints} CP</span>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() => handleResetPoints(u.id, u.nombre || 'Usuario')}
-                                      className="bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-text-secondary border border-border-default px-2.5 py-2.5 rounded-xl transition-all shadow-sm"
-                                      title="Resetear Saldo a 1000"
-                                    >
-                                      <RotateCcw className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => setEditingUser({...u, password: ''})}
-                                      className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 px-2.5 py-2.5 rounded-xl transition-all shadow-sm"
-                                      title="Editar Usuario"
-                                    >
-                                      <Pencil className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteUser(u.id, u.nombre || 'Usuario')}
-                                      className="bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 px-2.5 py-2.5 rounded-xl transition-all shadow-sm"
-                                      title="Borrar Usuario"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                  {/* Barra de Filtros y Búsqueda de Usuarios */}
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 bg-surface-card/30 p-4 rounded-2xl border border-border-subtle backdrop-blur-md">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(['all', 'admin', 'equipo', 'espectador'] as const).map((role) => (
+                        <button
+                          key={role}
+                          onClick={() => setUserFilterRole(role)}
+                          className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 border ${
+                            userFilterRole === role 
+                              ? 'bg-amber-500 text-zinc-950 border-amber-500 shadow-md shadow-amber-500/10' 
+                              : 'bg-surface-card/50 text-text-secondary border-border-default hover:bg-surface-card-hover hover:text-text-primary'
+                          }`}
+                        >
+                          {role === 'all' ? 'Todos' : role === 'equipo' ? 'Jugadores' : role}
+                        </button>
                       ))}
                     </div>
+                    
+                    <div className="relative w-full md:w-64">
+                      <input
+                        type="text"
+                        placeholder="Buscar por nombre o email..."
+                        value={userSearchQuery}
+                        onChange={(e) => setUserSearchQuery(e.target.value)}
+                        className="w-full bg-surface-card border border-border-default rounded-xl px-4 py-2.5 pl-10 text-sm font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                      />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {loadingAdminUsers ? (
+                    <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)] h-10 w-10" /></div>
+                  ) : (
+                    <div className="bg-surface-card/30 rounded-2xl border border-border-subtle overflow-hidden">
+                      {/* Cabecera de Tabla (SaaS deskptop) */}
+                      <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-surface-card/80 border-b border-border-subtle text-[10px] font-black text-text-secondary uppercase tracking-widest">
+                        <div className="col-span-4">Identidad / Email</div>
+                        <div className="col-span-2">Rol</div>
+                        <div className="col-span-3">Vínculo</div>
+                        <div className="col-span-2 text-right">Saldo</div>
+                        <div className="col-span-1 text-center">Acciones</div>
+                      </div>
+
+                      <div className="divide-y divide-border-subtle/30">
+                        {adminUsers
+                          .filter(u => userFilterRole === 'all' || u.rol === userFilterRole)
+                          .filter(u => {
+                            if (!userSearchQuery) return true;
+                            const s = userSearchQuery.toLowerCase();
+                            return u.nombre?.toLowerCase().includes(s) || u.email?.toLowerCase().includes(s);
+                          })
+                          .length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center">
+                                <span className="text-4xl opacity-50 mb-3">🔍</span>
+                                <p className="text-text-primary font-black text-lg tracking-tight">Sin usuarios encontrados</p>
+                                <p className="text-text-secondary font-medium text-xs mt-1">Intenta con otros filtros o términos de búsqueda.</p>
+                            </div>
+                        ) : (
+                          adminUsers
+                            .filter(u => userFilterRole === 'all' || u.rol === userFilterRole)
+                            .filter(u => {
+                              if (!userSearchQuery) return true;
+                              const s = userSearchQuery.toLowerCase();
+                              return u.nombre?.toLowerCase().includes(s) || u.email?.toLowerCase().includes(s);
+                            })
+                            .map(u => (
+                              <div key={u.id} className="relative group hover:bg-surface-card/60 transition-colors">
+                                {editingUser?.id === u.id ? (
+                                  <form onSubmit={handleUpdateUser} className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-surface-card-hover/20 animate-in fade-in duration-200">
+                                    <div className="col-span-2 flex justify-between items-center bg-surface-card/40 p-2 rounded-xl mb-1">
+                                      <span className="text-xs font-black text-amber-500 uppercase tracking-widest flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> Edición Rápida</span>
+                                      <button type="button" onClick={() => setEditingUser(null)} className="p-1 hover:bg-surface-card-active rounded-lg transition-all"><X className="w-3.5 h-3.5 text-text-muted" /></button>
+                                    </div>
+                                    <input required type="text" value={editingUser.nombre} onChange={e => setEditingUser({...editingUser, nombre: e.target.value})} className="bg-bg-secondary border border-border-default rounded-xl px-3 py-2 text-xs font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="Nombre" />
+                                    <input required type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} className="bg-bg-secondary border border-border-default rounded-xl px-3 py-2 text-xs font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="Email" />
+                                    <input type="password" value={editingUser.password || ''} onChange={e => setEditingUser({...editingUser, password: e.target.value})} className="bg-bg-secondary border border-border-default rounded-xl px-3 py-2 text-xs font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="Nueva Clave (opcional)" />
+                                    <div className="flex gap-2">
+                                      <select value={editingUser.rol} onChange={e => setEditingUser({...editingUser, rol: e.target.value, jugador_id: e.target.value === 'equipo' ? editingUser.jugador_id : null})} className="flex-1 bg-bg-secondary border border-border-default rounded-xl px-3 py-2 text-xs font-medium text-text-primary focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all cursor-pointer">
+                                        <option value="espectador">Espectador</option>
+                                        <option value="equipo">Equipo</option>
+                                        <option value="admin">Admin</option>
+                                      </select>
+                                      <input type="number" value={editingUser.saldo_cubiertaspoints} onChange={e => setEditingUser({...editingUser, saldo_cubiertaspoints: Number(e.target.value)})} className="w-24 bg-bg-secondary border border-border-default rounded-xl px-3 py-2 text-xs font-bold text-emerald-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all" />
+                                    </div>
+                                    <div className="col-span-2 flex justify-end gap-2 mt-1">
+                                      <button type="submit" disabled={isUpdatingUser} className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black px-4 py-2 rounded-xl transition-all shadow-sm text-[10px] uppercase tracking-widest disabled:opacity-50 flex items-center gap-1.5">
+                                        {isUpdatingUser ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} Guardar
+                                      </button>
+                                    </div>
+                                  </form>
+                                ) : (
+                                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center px-6 py-3.5 text-sm">
+                                    {/* Identidad */}
+                                    <div className="col-span-1 md:col-span-4 flex items-center gap-3">
+                                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-xs shadow-sm shrink-0">
+                                        {u.nombre ? u.nombre.charAt(0).toUpperCase() : 'U'}
+                                      </div>
+                                      <div className="flex flex-col min-w-0">
+                                        <span className="font-bold text-text-primary tracking-tight truncate text-xs">{u.nombre || 'Usuario'}</span>
+                                        <span className="text-[10px] text-text-secondary truncate mt-0.5">{u.email}</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Rol */}
+                                    <div className="col-span-1 md:col-span-2">
+                                      <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md border ${
+                                        u.rol === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 
+                                        u.rol === 'equipo' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
+                                        'bg-surface-card-hover text-text-secondary border-border-default'
+                                      }`}>
+                                        {u.rol || 'espectador'}
+                                      </span>
+                                    </div>
+
+                                    {/* Vínculo */}
+                                    <div className="col-span-1 md:col-span-3">
+                                      {u.jugador_id ? (
+                                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 bg-emerald-500/5 px-2 py-1 rounded-lg border border-emerald-500/10 w-fit">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                          Jugador de Campo
+                                        </span>
+                                      ) : (
+                                        <span className="text-[10px] text-text-secondary/40 font-medium">-</span>
+                                      )}
+                                    </div>
+
+                                    {/* Saldo y Acciones */}
+                                    <div className="col-span-1 md:col-span-3 flex items-center justify-between md:justify-end gap-3 sm:gap-4 w-full md:w-auto mt-2 md:mt-0 pt-2 md:pt-0 border-t md:border-t-0 border-border-subtle/30">
+                                      <div className="flex flex-col items-start md:items-end">
+                                        <span className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Saldo</span>
+                                        <span className="text-xs font-black text-emerald-500 flex items-center gap-1 mt-0.5">
+                                          <Coins className="w-3.5 h-3.5 opacity-80" />
+                                          {u.saldo_cubiertaspoints} <span className="text-[9px] text-text-secondary/60">CP</span>
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          onClick={() => handleResetPoints(u.id, u.nombre || 'Usuario')}
+                                          className="p-1.5 hover:bg-surface-card-active rounded-lg transition-all text-text-secondary hover:text-text-primary border border-transparent hover:border-border-default bg-surface-card/40"
+                                          title="Resetear Saldo"
+                                        >
+                                          <RotateCcw className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          onClick={() => setEditingUser({...u, password: ''})}
+                                          className="p-1.5 hover:bg-indigo-500/10 rounded-lg transition-all text-text-secondary hover:text-indigo-400 border border-transparent hover:border-indigo-500/10 bg-surface-card/40"
+                                          title="Editar"
+                                        >
+                                          <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteUser(u.id, u.nombre || 'Usuario')}
+                                          className="p-1.5 hover:bg-red-500/10 rounded-lg transition-all text-text-secondary hover:text-red-400 border border-transparent hover:border-red-500/10 bg-surface-card/40"
+                                          title="Borrar"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                        )}
+                      </div>
+                    </div>
                   )}
+
                 </div>
               ) : activeTab === "galeria" ? (
                 <div className="bg-surface-card/80 dark:bg-surface-card/80 border border-border-default rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden transition-all duration-500 flex flex-col h-full min-h-[500px]">
@@ -1353,6 +1483,33 @@ export default function AdminPanel() {
 
           </div>
         )}
+        {confirmModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-surface-card border border-border-default rounded-[2rem] p-6 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+              <h4 className="text-base font-black text-text-primary tracking-tight mb-2">
+                {confirmModal.title}
+              </h4>
+              <p className="text-sm text-text-secondary leading-relaxed mb-6">
+                {confirmModal.message}
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                  className="flex-1 bg-surface-card-hover hover:bg-surface-card-active text-text-primary font-bold py-2.5 rounded-xl border border-border-default transition-colors text-sm"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={confirmModal.onConfirm}
+                  className={`flex-1 ${confirmModal.type === 'danger' ? 'bg-red-500 hover:bg-red-600 text-zinc-950' : 'bg-amber-500 hover:bg-amber-600 text-zinc-950'} font-black py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/10 text-sm`}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

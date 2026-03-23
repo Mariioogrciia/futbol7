@@ -9,6 +9,14 @@ export default function EspectadorPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
 
+  // Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -34,9 +42,17 @@ export default function EspectadorPage() {
     checkAuth();
   }, [router]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+  const handleLogout = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Cerrar Sesión',
+      message: '¿Estás seguro de que quieres salir?',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        await supabase.auth.signOut();
+        router.push('/login');
+      }
+    });
   };
 
   if (!user) return <div className="p-4">Cargando...</div>;
@@ -115,6 +131,32 @@ export default function EspectadorPage() {
           </p>
         </div>
       </div>
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-blue-900 border border-blue-700 p-6 rounded-2xl max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 text-white">
+            <h4 className="text-base font-bold tracking-tight mb-2">
+              {confirmModal.title}
+            </h4>
+            <p className="text-sm text-blue-100 leading-relaxed mb-6">
+              {confirmModal.message}
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="flex-1 bg-blue-800 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl border border-blue-600 transition-colors text-sm"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={confirmModal.onConfirm}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-md text-sm"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

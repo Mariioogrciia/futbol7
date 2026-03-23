@@ -401,7 +401,7 @@ export default function MiPerfil() {
                 <input required type="text" value={nombre} onChange={e => setNombre(e.target.value)}
                   className="w-full bg-bg-secondary border border-border-default rounded-2xl px-4 py-3.5 text-sm font-medium text-text-primary placeholder:text-text-muted focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 outline-none transition-all"
                   placeholder="Ej. Paco_Goleador" />
-                <p className="text-[10px] text-text-muted mt-1.5 ml-0.5">Aparece en rankings de El Oráculo</p>
+                <p className="text-[10px] text-text-muted mt-1.5 ml-0.5">Aparece en rankings de ImpersedBet</p>
               </div>
               <div className="flex items-end">
                 <button type="submit" disabled={isSavingProfile}
