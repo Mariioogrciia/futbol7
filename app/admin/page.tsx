@@ -72,6 +72,11 @@ export default function AdminPanel() {
   const totalScorersAssigned = Object.values(scorerCounts).reduce((a, b) => a + b, 0);
   const missingScorers = golesEquipo - totalScorersAssigned;
 
+  // New Apuestas States
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pendiente' | 'ganada' | 'perdida' | 'nula'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedBetId, setExpandedBetId] = useState<string | null>(null);
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -701,91 +706,178 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
+                  {/* Barra de Filtros y Búsqueda */}
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 bg-surface-card/30 p-4 rounded-2xl border border-border-subtle backdrop-blur-md">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(['all', 'pendiente', 'ganada', 'perdida', 'nula'] as const).map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => setFilterStatus(status)}
+                          className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 border ${
+                            filterStatus === status 
+                              ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/10' 
+                              : 'bg-surface-card/50 text-text-secondary border-border-default hover:bg-surface-card-hover hover:text-text-primary'
+                          }`}
+                        >
+                          {status === 'all' ? 'Todos' : status}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <div className="relative w-full md:w-64">
+                      <input
+                        type="text"
+                        placeholder="Buscar por usuario u opción..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-surface-card/50 border border-border-default rounded-xl px-4 py-2.5 pl-10 text-sm font-medium text-text-primary focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                      />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      </div>
+                    </div>
+                  </div>
+
                   {loadingApuestas ? (
                     <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] h-10 w-10" /></div>
-                  ) : apuestas.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 text-center bg-surface-card/50 dark:bg-surface-card/50 rounded-[2rem] border border-dashed border-border-default">
-                        <span className="text-5xl opacity-30 mb-4">💸</span>
-                        <p className="text-text-primary font-black text-xl tracking-tight">Sin Apuestas Registradas</p>
-                        <p className="text-text-secondary font-medium text-sm mt-2">Los jugadores aún no han realizado ninguna apuesta.</p>
-                    </div>
                   ) : (
-                    <div className="space-y-5">
+                    <div className="space-y-3">
                       {apuestas
                         .filter(b => b.mercado_id === 'combinada' || !b.mercado_id.startsWith('comb_'))
-                        .map(bet => {
-                          const isCombinada = bet.mercado_id === 'combinada';
-                          const children = isCombinada ? apuestas.filter(c => c.mercado_id === `comb_${bet.id}`) : [];
+                        .filter(b => filterStatus === 'all' || b.estado === filterStatus)
+                        .filter(b => {
+                          if (!searchQuery) return true;
+                          const s = searchQuery.toLowerCase();
+                          return b.usuario?.nombre?.toLowerCase().includes(s) || 
+                                 b.opcion_label?.toLowerCase().includes(s) || 
+                                 b.partido?.rival?.toLowerCase().includes(s);
+                        }).length > 0 ? (
+                        apuestas
+                          .filter(b => b.mercado_id === 'combinada' || !b.mercado_id.startsWith('comb_'))
+                          .filter(b => filterStatus === 'all' || b.estado === filterStatus)
+                          .filter(b => {
+                            if (!searchQuery) return true;
+                            const s = searchQuery.toLowerCase();
+                            return b.usuario?.nombre?.toLowerCase().includes(s) || 
+                                   b.opcion_label?.toLowerCase().includes(s) || 
+                                   b.partido?.rival?.toLowerCase().includes(s);
+                          })
+                          .map(bet => {
+                            const isCombinada = bet.mercado_id === 'combinada';
+                            const children = isCombinada ? apuestas.filter(c => c.mercado_id === `comb_${bet.id}`) : [];
+                            const isExpanded = expandedBetId === bet.id;
 
-                          return (
-                            <div key={bet.id} className="flex flex-col p-6 bg-surface-card dark:bg-surface-card rounded-[1.5rem] border border-border-default transition-all hover:shadow-md shadow-sm">
-                              <div className="flex justify-between items-start mb-5">
-                                <div className="flex items-center gap-3 flex-wrap">
-                                  <span className="font-black text-text-primary text-xl tracking-tight">{bet.usuario?.nombre || 'Hooligan'}</span>
-                                  {isCombinada && (
-                                    <span className="px-3 py-1 text-[10px] font-black tracking-[0.15em] rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 uppercase">
-                                      Combinada
-                                    </span>
-                                  )}
-                                  {bet.partido?.rival && (
-                                    <span className="px-3 py-1 text-[10px] font-bold tracking-[0.1em] rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 uppercase">
-                                      vs {bet.partido.rival}
-                                    </span>
-                                  )}
-                                </div>
-                                <span className={`px-4 py-1.5 text-[10px] font-black tracking-[0.15em] rounded-xl border uppercase ${bet.estado === 'pendiente' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30' : bet.estado === 'ganada' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30'}`}>
-                                  {bet.estado}
-                                </span>
-                              </div>
-                              <p className="text-base text-text-primary dark:text-text-secondary mb-5 font-bold">{bet.opcion_label}</p>
-                              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 bg-surface-card/50 dark:bg-surface-card/50 p-5 rounded-2xl border border-border-default">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                  <span className="text-text-secondary uppercase tracking-wider text-[10px] font-black">Apostado:</span>
-                                  <span className="text-text-primary dark:text-text-primary text-base"><span className="text-emerald-500 font-black">{bet.cantidad_apostada}</span> CP</span>
-                                  <span className="text-text-secondary text-xs mt-1 sm:mt-0 ml-0 sm:ml-2">{isCombinada ? `(Cuota Total: ${bet.cuota.toFixed(2)})` : `(Cuota: ${bet.cuota})`}</span>
-                                </div>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-right">
-                                  <span className="text-text-secondary uppercase tracking-wider text-[10px] font-black">Retorno:</span>
-                                  <span className="text-text-primary dark:text-text-primary text-base"><span className="text-emerald-500 font-black">{bet.ganancia_potencial.toFixed(2)}</span> CP</span>
-                                </div>
-                              </div>
-
-                              {!isCombinada && bet.estado === 'pendiente' && (
-                                <div className="flex flex-wrap items-center justify-end gap-3 mt-5 pt-5 border-t border-border-subtle">
-                                  <button onClick={() => validateBet(bet.id, 'ganada')} className="px-6 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black rounded-xl text-xs transition-colors border border-emerald-500/30 uppercase tracking-widest">✅ Ganada</button>
-                                  <button onClick={() => validateBet(bet.id, 'perdida')} className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-black rounded-xl text-xs transition-colors border border-red-500/30 uppercase tracking-widest">❌ Perdida</button>
-                                  <button onClick={() => validateBet(bet.id, 'nula')} className="px-6 py-2.5 bg-surface-card-hover hover:bg-surface-card-active dark:bg-surface-card/5 dark:hover:bg-surface-card/10 text-text-primary dark:text-text-secondary font-black rounded-xl text-xs transition-colors border border-border-default uppercase tracking-widest">➖ Nula</button>
-                                </div>
-                              )}
-
-                              {isCombinada && children.length > 0 && (
-                                <div className="mt-5 pl-5 border-l-2 border-emerald-500/30 space-y-3">
-                                  <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-3">Selecciones Combinadas ({children.length})</h4>
-                                  {children.map(child => (
-                                    <div key={child.id} className="flex justify-between items-center bg-surface-card/50 dark:bg-surface-card/50 p-4 rounded-2xl border border-border-default shadow-sm">
-                                      <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-text-primary dark:text-text-primary">{child.opcion_label}</span>
-                                        <span className="text-xs font-black text-emerald-500 mt-1">Cuota: {child.cuota}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        {child.estado !== 'pendiente' ? (
-                                          <span className={`px-3 py-1.5 text-[10px] font-black tracking-[0.1em] rounded-xl uppercase ${child.estado === 'ganada' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30'}`}>
-                                            {child.estado}
+                            return (
+                              <div key={bet.id} className={`flex flex-col bg-surface-card dark:bg-surface-card rounded-2xl border ${isExpanded ? 'border-emerald-500/50 shadow-lg shadow-emerald-500/5' : 'border-border-default hover:border-border-hover'} transition-all duration-300 overflow-hidden`}>
+                                {/* Header Colapsable */}
+                                <div 
+                                  onClick={() => setExpandedBetId(isExpanded ? null : bet.id)}
+                                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 cursor-pointer hover:bg-surface-card-hover/20 transition-colors gap-4"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-black text-sm shadow-sm shrink-0">
+                                      {bet.usuario?.nombre ? bet.usuario.nombre.charAt(0).toUpperCase() : 'H'}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-bold text-text-primary text-sm tracking-tight truncate">{bet.usuario?.nombre || 'Hooligan'}</span>
+                                        {isCombinada && (
+                                          <span className="px-2 py-0.5 text-[8px] font-black tracking-widest rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase">
+                                            Comb ({children.length})
                                           </span>
-                                        ) : bet.estado !== 'pendiente' ? null : (
-                                          <div className="flex gap-2">
-                                            <button onClick={() => validateBet(child.id, 'ganada')} className="p-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 rounded-xl transition-colors border border-emerald-500/30" title="Ganada">✅</button>
-                                            <button onClick={() => validateBet(child.id, 'perdida')} className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-xl transition-colors border border-red-500/30" title="Perdida">❌</button>
-                                          </div>
+                                        )}
+                                        {bet.partido?.rival && (
+                                          <span className="px-2 py-0.5 text-[8px] font-bold rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/10 uppercase">
+                                            vs {bet.partido.rival}
+                                          </span>
                                         )}
                                       </div>
+                                      <span className="text-xs text-text-secondary truncate mt-0.5">{bet.opcion_label}</span>
                                     </div>
-                                  ))}
+                                  </div>
+
+                                  <div className="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto mt-2 sm:mt-0">
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex flex-col items-start sm:items-end">
+                                        <span className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Apostado</span>
+                                        <span className="text-xs font-black text-text-primary"><span className="text-emerald-500">{bet.cantidad_apostada}</span> CP</span>
+                                      </div>
+                                      <div className="flex flex-col items-start sm:items-end">
+                                        <span className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Retorno</span>
+                                        <span className="text-xs font-black text-emerald-500">{bet.ganancia_potencial.toFixed(1)} CP</span>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <span className={`px-3 py-1 text-[9px] font-black tracking-wider rounded-lg border uppercase ${
+                                        bet.estado === 'pendiente' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                                        bet.estado === 'ganada' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
+                                        'bg-red-500/10 text-red-500 border-red-500/20'
+                                      }`}>
+                                        {bet.estado}
+                                      </span>
+                                      <div className={`text-text-secondary transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                                        <ChevronDown className="w-4 h-4" />
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-                          );
-                        })}
+
+                                {/* Detalle Expandible */}
+                                {isExpanded && (
+                                  <div className="border-t border-border-subtle bg-surface-card/30 p-5 space-y-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                                    {isCombinada && children.length > 0 ? (
+                                      <div className="space-y-2">
+                                        <h4 className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1">Selecciones ({children.length})</h4>
+                                        <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
+                                          {children.map(child => (
+                                            <div key={child.id} className="flex justify-between items-center bg-surface-card p-3 rounded-xl border border-border-default shadow-sm hover:shadow-md transition-all">
+                                              <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-text-primary">{child.opcion_label}</span>
+                                                <span className="text-[10px] font-black text-emerald-500 mt-0.5">Cuota: {child.cuota}</span>
+                                              </div>
+                                              <div className="flex items-center gap-1">
+                                                {child.estado !== 'pendiente' ? (
+                                                  <span className={`px-2 py-0.5 text-[8px] font-black rounded-md uppercase ${child.estado === 'ganada' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                    {child.estado}
+                                                  </span>
+                                                ) : bet.estado !== 'pendiente' ? null : (
+                                                  <div className="flex gap-1">
+                                                    <button onClick={(e) => { e.stopPropagation(); validateBet(child.id, 'ganada'); }} className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 rounded-lg transition-colors border border-emerald-500/20 text-[10px]">✅</button>
+                                                    <button onClick={(e) => { e.stopPropagation(); validateBet(child.id, 'perdida'); }} className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg transition-colors border border-red-500/20 text-[10px]">❌</button>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider">Detalle de la Cuota</span>
+                                        <p className="text-sm font-bold text-text-primary mt-0.5">Cuota: <span className="text-emerald-500">{bet.cuota}</span></p>
+                                      </div>
+                                    )}
+
+                                    {!isCombinada && bet.estado === 'pendiente' && (
+                                      <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+                                        <button onClick={(e) => { e.stopPropagation(); validateBet(bet.id, 'ganada'); }} className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 font-black rounded-xl text-xs transition-colors border border-emerald-500/20 uppercase tracking-widest">✅ Ganada</button>
+                                        <button onClick={(e) => { e.stopPropagation(); validateBet(bet.id, 'perdida'); }} className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-black rounded-xl text-xs transition-colors border border-red-500/20 uppercase tracking-widest">❌ Perdida</button>
+                                        <button onClick={(e) => { e.stopPropagation(); validateBet(bet.id, 'nula'); }} className="px-4 py-2 bg-surface-card-hover hover:bg-surface-card-active text-text-secondary font-black rounded-xl text-xs transition-colors border border-border-default uppercase tracking-widest">➖ Nula</button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-20 text-center bg-surface-card/50 dark:bg-surface-card/50 rounded-2xl border border-dashed border-border-default">
+                            <span className="text-4xl opacity-50 mb-3">🔍</span>
+                            <p className="text-text-primary font-black text-lg tracking-tight">Sin resultados</p>
+                            <p className="text-text-secondary font-medium text-xs mt-1">Intenta con otros filtros o términos de búsqueda.</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
