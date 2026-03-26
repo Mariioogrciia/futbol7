@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { EditableAvatar } from "@/components/editable-avatar";
 import { EditableStats } from "@/components/editable-stats";
 import { ModeToggle } from "@/components/mode-toggle";
+import { players as staticPlayers } from "@/lib/data";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -50,6 +51,17 @@ export default async function JugadorPage({ params }: PageProps) {
 
     const imgSrc = jugador.foto_url ||
         `https://ui-avatars.com/api/?name=${encodeURIComponent(jugador.nombre)}&background=0a3a2a&color=34d399&size=600&bold=true`;
+
+    const normalize = (str?: string) =>
+        (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const playerName = normalize(jugador.nombre);
+    const match = staticPlayers.find(sp => {
+        const spName = normalize(sp.name);
+        const nameParts = playerName.split(" ");
+        return spName === playerName ||
+            (spName.includes(nameParts[0]) && (nameParts.length > 1 ? spName.includes(nameParts[1]) : true));
+    });
+    const description = match?.description || "Compromiso, entrega y tercer tiempo garantizado. Miembro oficial del equipo.";
 
     return (
         <div className="min-h-screen bg-bg-primary relative overflow-x-hidden">
@@ -150,8 +162,8 @@ export default async function JugadorPage({ params }: PageProps) {
                         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-text-primary tracking-tighter leading-none drop-shadow-sm">
                             {jugador.nombre}
                         </h1>
-                        <p className="mt-3 text-text-secondary font-medium max-w-lg">
-                            Compromiso, entrega y tercer tiempo garantizado. Miembro oficial del equipo.
+                        <p className="mt-3 text-text-secondary font-medium max-w-lg italic">
+                            "{description}"
                         </p>
                     </div>
 

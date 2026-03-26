@@ -132,7 +132,7 @@ function PlayerCard({ player, index, onPhotoClick }: { player: any; index: numbe
 
       {/* Info panel */}
       <div className="flex flex-col flex-1 px-5 pt-4 pb-5 border-t border-border-subtle">
-        <p className="text-sm text-text-secondary font-medium leading-relaxed line-clamp-2 flex-1 mb-4">
+        <p className="text-sm text-text-secondary font-medium leading-relaxed flex-1 mb-4">
           {player.descripcion || "Jugador de Impersed Cubiertas FC."}
         </p>
 
